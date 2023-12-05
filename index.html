@@ -4,156 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página com Triângulos Dinâmicos Otimizada</title>
-    <style>
-        body { 
-            margin: 0; 
-            overflow: hidden; 
-            font-family: Arial, sans-serif;
-        }
-        canvas { 
-            display: block; 
-            position: fixed; 
-            z-index: -1;
-        }
-        #content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            max-width: 500px;
-            text-align: center;
-            color: #333;
-        }
-        #content h1 {
-            margin-bottom: 2rem;
-            font-size: 2.5em;
-            color: #333;
-        }
-        #content button {
-            padding: 1em 2em;
-            font-size: 1em;
-            color: #fff;
-            background: #007bff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            outline: none;
-        }
-        #content button:hover {
-            background: #0056b3;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="transition.css">
 </head>
 <body>
     <div id="content">
         <h1>Fábio Miguel - Web Dev - Portfolio</h1>
-        <button onclick="window.location.href='URL_DO_SEU_PORTFOLIO';">Ver portfólio</button>
+        <button id="portfolioButton" onclick="event.preventDefault();">Ver portfólio</button>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-    <script>
-        let pontos = [];
-        const maxSpeed = 0.444;
-        const edgeBuffer = 20;
-        const maxDistance = 150;
-        const maxDistSquared = maxDistance * maxDistance;
-        let grid, gridCellSize = maxDistance;
-
-        function setup() {
-            createCanvas(windowWidth, windowHeight);
-            let nPontos = (width * height) / (120 * 120);
-            for (let i = 0; i < nPontos; i++) {
-                pontos.push(createPoint());
-            }
-            grid = createGrid();
-        }
-
-        function createPoint() {
-            return {
-                x: random(width),
-                y: random(height),
-                vx: random(-maxSpeed, maxSpeed),
-                vy: random(-maxSpeed, maxSpeed)
-            };
-        }
-
-        function createGrid() {
-            let cols = ceil(width / gridCellSize);
-            let rows = ceil(height / gridCellSize);
-            let grid = Array(cols).fill().map(() => Array(rows).fill().map(() => []));
-
-            for (let p of pontos) {
-                let col = floor(p.x / gridCellSize);
-                let row = floor(p.y / gridCellSize);
-                grid[col][row].push(p);
-            }
-            return grid;
-        }
-
-        function updateGrid() {
-            for (let col of grid) {
-                for (let cell of col) {
-                    cell.length = 0;
-                }
-            }
-            for (let p of pontos) {
-                let col = floor(p.x / gridCellSize);
-                let row = floor(p.y / gridCellSize);
-                grid[col][row].push(p);
-            }
-        }
-
-        function draw() {
-            background(185, 200, 255);
-
-            updatePoints();
-            updateGrid();
-            drawTriangles();
-        }
-
-        function updatePoints() {
-            for (let p of pontos) {
-                p.x += p.vx;
-                p.y += p.vy;
-
-                if (p.x < edgeBuffer || p.x > width - edgeBuffer) p.vx *= -1;
-                if (p.y < edgeBuffer || p.y > height - edgeBuffer) p.vy *= -1;
-
-                p.x = constrain(p.x, 0, width);
-                p.y = constrain(p.y, 0, height);
-            }
-        }
-
-        function drawTriangles() {
-            stroke(0);
-            strokeWeight(1);
-            for (let col of grid) {
-                for (let cell of col) {
-                    for (let i = 0; i < cell.length; i++) {
-                        for (let j = i + 1; j < cell.length; j++) {
-                            let dx = cell[i].x - cell[j].x;
-                            let dy = cell[i].y - cell[j].y;
-                            if (dx * dx + dy * dy < maxDistSquared) {
-                                for (let k = j + 1; k < cell.length; k++) {
-                                    let dx1 = cell[j].x - cell[k].x;
-                                    let dy1 = cell[j].y - cell[k].y;
-                                    let dx2 = cell[k].x - cell[i].x;
-                                    let dy2 = cell[k].y - cell[i].y;
-                                    if (dx1 * dx1 + dy1 * dy1 < maxDistSquared && dx2 * dx2 + dy2 * dy2 < maxDistSquared) {
-                                        triangle(cell[i].x, cell[i].y, cell[j].x, cell[j].y, cell[k].x, cell[k].y);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        function windowResized() {
-            resizeCanvas(windowWidth, windowHeight);
-            grid = createGrid(); // Recria a grade quando o tamanho da janela muda
-        }
-    </script>
+    <script src="scripts.js"></script>
+    <script src="transition.js"></script>
 </body>
 </html>
