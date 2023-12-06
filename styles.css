@@ -1,8 +1,10 @@
 body { 
     margin: 0; 
-    overflow: hidden; 
-    font-family: Arial, sans-serif;
+    overflow: auto; 
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: rgb(28, 28, 211);
 }
+
 canvas { 
     display: block; 
     position: fixed; 
@@ -37,12 +39,6 @@ canvas {
     background: #0056b3;
 }
 
-body {
-    margin: 0;
-    font-family: 'Arial', sans-serif;
-    background-color: rgb(28, 28, 211);
-}
-
 .header {
     display: flex;
     align-items: center;
@@ -61,11 +57,11 @@ body {
 }
 
 .profile-icon {
-    border-radius: 10%;
-    width: 100px; /* or any other fixed size */
+    border-radius: 16px;
+    width: 120px; /* or any other fixed size */
     height: auto;
     max-width: 100%; /* ensures it is responsive and doesn't overflow its container */
-    margin-right: 20px;
+    margin-right: 30px;
 }
 
 
@@ -100,7 +96,7 @@ body {
 }
 
 .nav-link:hover {
-    background-color: #e0e0e0;
+    background-color: #e0e0e082;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -114,7 +110,6 @@ body {
     flex-grow: 3;
     width: 75%;
     margin: 10px;
-    height: 300px;
     /* From https://css.glass */
     background: rgba(255, 255, 255, 0.2);
     border-radius: 16px;
@@ -128,7 +123,6 @@ body {
     flex-grow: 1;
     width: 25%;
     margin: 10px;
-    height: 300px;
     /* From https://css.glass */
     background: rgba(255, 255, 255, 0.2);
     border-radius: 16px;
@@ -159,3 +153,4 @@ body {
     height: auto; /* A altura será ajustada automaticamente para manter a proporção original */
     /* Defina a largura desejada aqui, por exemplo, width: 200px; */
 }
+

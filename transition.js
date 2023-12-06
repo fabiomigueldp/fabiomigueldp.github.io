@@ -40,26 +40,63 @@ document.addEventListener('DOMContentLoaded', (event) => {
             <div class="title-container">
                 <h1>Fábio Miguel</h1>
                 <p>Under-graduated student majoring in Computer Science.</p>
+                <p>Feel free to reach out to me on Discord at fabiomigueldp if you have any questions or want to chat!</p>
             </div>
         </header>
         
         <nav class="navigation">
-            <a href="https://github.com" class="nav-link">GitHub</a>
-            <a href="https://linkedin.com" class="nav-link">Linked-In</a>
-            <a href="mailto:your@email.com" class="nav-link">Mail-to</a>
-            <a href="https://instagram.com" class="nav-link">Instagram</a>
-            <a href="https://discord.com" class="nav-link">Discord</a>
+            <a href="https://github.com/fabiomigueldp" class="nav-link">GitHub</a>
+            <a href="https://fabiomigueldp.github.io" class="nav-link">GitHub.io</a>
+            <a href="https://www.linkedin.com/in/fábio-miguel-428270239/" class="nav-link">Linked-In</a>
+            <a href="mailto:fabiomigueldp@gmail.com" class="nav-link">Mail-to</a>
+            <a href="https://www.instagram.com/fabiomigueldp/" class="nav-link">Instagram</a>
+            <a href="https://w.app/g3KTCV" class="nav-link">WhatsApp</a>
         </nav>
         
         <main class="main-content">
-            <section class="content-section"></section>
+            <section class="content-section">
+                <article>
+                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
+                </article>
+                <article>
+                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
+                </article>
+                <article>
+                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
+                </article>
+                <article>
+                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
+                </article>
+                <article>
+                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
+                </article>
+                <article>
+                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
+                </article>
+                <article>
+                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
+                </article>
+                <article>
+                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
+                </article>
+                <article>
+                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
+                </article>
+                <article>
+                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
+                </article>
+            </section>
             <aside class="sidebar">
                 <div class="github-stats">
                     <img src="https://github-readme-stats.vercel.app/api?username=fabiomigueldp&show_icons=true" alt="fabiomigueldp" class="github-stats-img">
-                </div>    </aside>
+                </div>
+            </aside>
         </main>
+        <footer>    
+        </footer>
         </body>
         </html>
+        
         
         
         `;
