@@ -100,3 +100,11 @@ function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
     grid = createGrid(); // Recria a grade quando o tamanho da janela muda
 }
+
+fetch('https://api.github.com/users/fabiomigueldp')
+  .then(response => response.json())
+  .then(data => {
+    console.log(data);
+    // Aqui você manipularia os dados e atualizaria o DOM conforme necessário
+  })
+  .catch(error => console.error(error));

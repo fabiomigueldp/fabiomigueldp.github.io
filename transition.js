@@ -25,7 +25,43 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const newContent = document.createElement('div');
         newContent.classList.add('new-content');
         newContent.innerHTML = `
-            <h1>Novo Conteúdo</h1>
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Fábio Miguel's Portfolio</title>
+            <link rel="stylesheet" href="styles.css">
+        </head>
+        <body>
+        
+        <header class="header">
+            <img src="profile-icon.png" alt="Fábio Miguel" class="profile-icon">
+            <div class="title-container">
+                <h1>Fábio Miguel</h1>
+                <p>Under-graduated student majoring in Computer Science.</p>
+            </div>
+        </header>
+        
+        <nav class="navigation">
+            <a href="https://github.com" class="nav-link">GitHub</a>
+            <a href="https://linkedin.com" class="nav-link">Linked-In</a>
+            <a href="mailto:your@email.com" class="nav-link">Mail-to</a>
+            <a href="https://instagram.com" class="nav-link">Instagram</a>
+            <a href="https://discord.com" class="nav-link">Discord</a>
+        </nav>
+        
+        <main class="main-content">
+            <section class="content-section"></section>
+            <aside class="sidebar">
+                <div class="github-stats">
+                    <img src="https://github-readme-stats.vercel.app/api?username=fabiomigueldp&show_icons=true" alt="fabiomigueldp" class="github-stats-img">
+                </div>    </aside>
+        </main>
+        </body>
+        </html>
+        
+        
         `;
 
         // Adicione o novo conteúdo ao corpo da página e aplique a classe show
