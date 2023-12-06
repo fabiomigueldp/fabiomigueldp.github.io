@@ -2,7 +2,7 @@ body {
     margin: 0; 
     overflow: auto; 
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    background-color: rgb(28, 28, 211);
+    background-color: rgba(248, 248, 248, 0);
 }
 
 canvas { 

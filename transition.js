@@ -25,16 +25,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const newContent = document.createElement('div');
         newContent.classList.add('new-content');
         newContent.innerHTML = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Fábio Miguel's Portfolio</title>
-            <link rel="stylesheet" href="styles.css">
-        </head>
-        <body>
-        
         <header class="header">
             <img src="profile-icon.png" alt="Fábio Miguel" class="profile-icon">
             <div class="title-container">
@@ -94,11 +84,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         </main>
         <footer>    
         </footer>
-        </body>
-        </html>
-        
-        
-        
         `;
 
         // Adicione o novo conteúdo ao corpo da página e aplique a classe show
