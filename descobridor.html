@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story Generator</title>
+</head>
+<body>
+    <div id="story-container"></div> <!-- Adicionando um elemento div para conter a história -->
+    <script>
+class Node {
+    constructor(phrase) {
+        this.phrase = phrase;
+        this.children = [];
+    }
+}
+
+// Nó raiz da história de Feka
+const root = new Node("Feka é um personagem singular, cuja vida é pontuada por uma série de eventos peculiares e inusitados.");
+
+// Adicionando diferentes eventos e caminhos possíveis para a história de Feka
+root.children.push(new Node("Feka tenta encontrar Bolas no Chiquinho do shopping Iguatemi, mas acaba esbarrando em um grupo de crianças que o ridicularizam por sua aparência estranha."));
+root.children.push(new Node("Feka decide frequentar a Academia da ACM na esperança de encontrar Bolas durante seu treino, mas acaba se machucando em uma máquina de exercícios e é expulso por não pagar a mensalidade."));
+root.children.push(new Node("Feka vai ao parque Campolim esperando encontrar Bolas em seu lugar favorito, mas acaba se perdendo em meio a uma multidão de pessoas e sendo acidentalmente empurrado para um lago sujo."));
+root.children.push(new Node("Feka marca uma consulta com o Dr. Arruda na esperança de encontrar Bolas na sala de espera, mas acaba vomitando de nervoso e sendo convidado a se retirar do consultório."));
+root.children.push(new Node("Feka decide frequentar o cursinho do colégio Ser na esperança de encontrar Bolas durante uma aula, mas acaba adormecendo e roncando alto, tornando-se alvo de risadas dos colegas."));
+
+// Possíveis eventos para cada caminho
+root.children[0].children.push(new Node("Ele se esconde no banheiro do Chiquinho, mas acaba trancado lá dentro e é obrigado a ser resgatado pelos funcionários, sendo exposto embaraçosamente na frente de todos."));
+root.children[0].children.push(new Node("Feka tenta impressionar Bolas com suas habilidades culinárias ao pedir um milkshake, mas acaba derramando a bebida em si mesmo e formando uma poça de urina no chão devido ao nervosismo."));
+root.children[0].children.push(new Node("Ele toma ansiolíticos antes do encontro, mas acaba ficando sonolento e desajeitado, espantando Bolas com seu comportamento estranho."));
+root.children[0].children.push(new Node("Ele tenta se justificar para Bolas, mas acaba gaguejando e dizendo coisas sem sentido, fazendo com que ela se afaste ainda mais."));
+root.children[0].children.push(new Node("Feka tenta limpar a poça de urina, mas acaba derrubando mais coisas e causando uma confusão ainda maior, sendo expulso do local embaraçosamente."));
+
+root.children[1].children.push(new Node("Ele se esconde no vestiário da academia na esperança de surpreender Bolas, mas acaba sendo confundido com um intruso e é expulso do local pelos seguranças."));
+root.children[1].children.push(new Node("Feka tenta impressionar Bolas levantando pesos, mas acaba exagerando e machucando a si mesmo, sendo motivo de risadas dos outros frequentadores da academia."));
+root.children[1].children.push(new Node("Ele toma antidepressivos para se sentir mais confiante, mas acaba tendo uma reação alérgica e desenvolvendo uma erupção cutânea embaraçosa durante o treino."));
+root.children[1].children.push(new Node("Ele tenta se esconder no armário do vestiário, mas acaba ficando preso lá dentro e é encontrado pelos funcionários da academia, que o expulsam e o proíbem de voltar."));
+root.children[1].children.push(new Node("Feka tenta se desculpar com Bolas pelo incidente, mas acaba sendo mal interpretado e recebendo um olhar de desdém, deixando-o ainda mais envergonhado."));
+
+root.children[2].children.push(new Node("Ele se esconde atrás de arbustos no parque na esperança de surpreender Bolas, mas acaba assustando um grupo de pombos que o ataca furiosamente."));
+root.children[2].children.push(new Node("Feka tenta fazer um piquenique romântico para Bolas, mas acaba esquecendo de trazer comida e sendo pego tentando roubar lanches de outras pessoas."));
+root.children[2].children.push(new Node("Ele toma ansiolíticos para se acalmar, mas acaba ficando tão relaxado que adormece no banco do parque, perdendo a chance de encontrar Bolas."));
+root.children[2].children.push(new Node("Ele tenta se disfarçar de arbusto para não ser notado, mas acaba sendo confundido com lixo e jogado fora por um funcionário do parque, perdendo completamente a chance de se encontrar com Bolas."));
+
+root.children[3].children.push(new Node("Ele se esconde no banheiro do consultório, mas acaba esquecendo de trancar a porta e é surpreendido por outros pacientes que o veem em uma situação constrangedora."));
+root.children[3].children.push(new Node("Feka tenta impressionar Bolas fingindo uma doença para receber atenção médica, mas acaba sendo diagnosticado com uma condição embaraçosa e é recomendado a procurar um especialista."));
+root.children[3].children.push(new Node("Ele toma antidepressivos antes da consulta, mas acaba ficando tão sonolento que mal consegue se concentrar durante a conversa com o médico, afastando Bolas com sua falta de atenção."));
+root.children[3].children.push(new Node("Ele tenta explicar para Bolas o que estava fazendo no banheiro, mas acaba se enrolando em suas palavras e sendo interrompido por outros pacientes que o ridicularizam, deixando-o humilhado e sem chance de se redimir."));
+
+root.children[4].children.push(new Node("Ele se esconde na sala de aula durante uma prova na esperança de ver Bolas, mas acaba sendo pego pelo professor e suspenso por tentativa de trapaça."));
+root.children[4].children.push(new Node("Feka tenta impressionar Bolas com suas habilidades acadêmicas, mas acaba cometendo um erro grave durante uma apresentação e sendo motivo de chacota dos colegas e da própria Bolas."));
+root.children[4].children.push(new Node("Ele toma ansiolíticos antes da aula, mas acaba tendo uma reação adversa e desmaia no meio da sala, sendo levado às pressas para a enfermaria e perdendo a chance de falar com Bolas."));
+root.children[4].children.push(new Node("Ele tenta se esconder na última fileira da sala de aula para observar Bolas, mas acaba adormecendo e roncando alto, sendo expulso pelo professor e ridicularizado pelos colegas."));
+
+// Adicionando mais nós filhos, netos e bisnetos para alguns caminhos
+root.children[0].children[0].children.push(new Node("Ele tenta se justificar para Bolas, mas acaba gaguejando e dizendo coisas sem sentido, fazendo com que ela se afaste ainda mais."));
+root.children[0].children[0].children.push(new Node("Feka tenta limpar a poça de urina, mas acaba derrubando mais coisas e causando uma confusão ainda maior, sendo expulso do local embaraçosamente."));
+root.children[0].children[0].children.push(new Node("Ele tenta acalmar as crianças, mas acaba assustando-as ainda mais com seu comportamento estranho, sendo visto como uma figura assustadora e afastando Bolas de vez."));
+
+root.children[1].children[0].children.push(new Node("Ele tenta se esconder no armário do vestiário, mas acaba ficando preso lá dentro e é encontrado pelos funcionários da academia, que o expulsam e o proíbem de voltar."));
+root.children[1].children[0].children.push(new Node("Feka tenta se desculpar com Bolas pelo incidente, mas acaba sendo mal interpretado e recebendo um olhar de desdém, deixando-o ainda mais envergonhado."));
+root.children[1].children[0].children.push(new Node("Ele tenta convencer os seguranças de que não é um intruso, mas acaba sendo levado à força para fora da academia, onde é visto por Bolas sendo enxotado como um criminoso."));
+
+root.children[2].children[0].children.push(new Node("Ele tenta se disfarçar de arbusto para não ser notado, mas acaba sendo confundido com lixo e jogado fora por um funcionário do parque, perdendo completamente a chance de se encontrar com Bolas."));
+root.children[2].children[0].children.push(new Node("Feka tenta convencer os pombos a deixá-lo em paz, mas acaba sendo atacado ainda mais furiosamente, sendo visto por Bolas como um alvo de zombaria e evitado a todo custo."));
+root.children[2].children[0].children.push(new Node("Ele tenta disfarçar sua sonolência fingindo estar meditando, mas acaba babando e roncando alto, sendo visto por Bolas como um esquisito e evitado a partir de então."));
+
+root.children[3].children[0].children.push(new Node("Ele tenta explicar para Bolas o que estava fazendo no banheiro, mas acaba se enrolando em suas palavras e sendo interrompido por outros pacientes que o ridicularizam, deixando-o humilhado e sem chance de se redimir."));
+root.children[3].children[0].children.push(new Node("Feka tenta convencer os outros pacientes de que não é um estranho, mas acaba se tornando o centro das atenções devido à sua condição embaraçosa, sendo evitado por Bolas e pelos demais pacientes a partir de então."));
+root.children[3].children[0].children.push(new Node("Ele tenta escapar do consultório pela janela do banheiro, mas acaba ficando preso e sendo encontrado pelos funcionários, que o expulsam e o proíbem de voltar, deixando-o ainda mais longe de seu objetivo de conquistar Bolas."));
+
+root.children[4].children[0].children.push(new Node("Ele tenta se esconder na última fileira da sala de aula para observar Bolas, mas acaba adormecendo e roncando alto, sendo expulso pelo professor e ridicularizado pelos colegas."));
+root.children[4].children[0].children.push(new Node("Feka tenta convencer o professor de que não estava dormindo, mas acaba se enrolando em suas palavras e sendo visto como um mentiroso, afastando Bolas e os demais colegas ainda mais."));
+
+// Adicionando mais nós para cada caminho
+root.children[0].children[0].children.push(new Node("Feka tenta chamar a atenção de Bolas com uma piada, mas acaba falando algo constrangedor e sendo ignorado completamente."));
+root.children[0].children[0].children.push(new Node("Ele tenta se desculpar com as crianças, mas acaba tropeçando e caindo de cara no chão, tornando-se ainda mais motivo de chacota."));
+root.children[0].children[0].children.push(new Node("Feka tenta fazer amizade com as crianças para conseguir se aproximar de Bolas, mas acaba sendo usado como bode expiatório em uma de suas brincadeiras, fazendo com que Bolas o veja como um bobo."));
+
+root.children[1].children[0].children.push(new Node("Ele tenta se explicar para os seguranças, mas acaba se atrapalhando nas palavras e sendo levado à força para fora do local."));
+root.children[1].children[0].children.push(new Node("Feka tenta pagar a mensalidade atrasada, mas acaba deixando cair a carteira e perdendo todo o dinheiro, sendo expulso da academia ainda mais humilhado."));
+root.children[1].children[0].children.push(new Node("Ele tenta se matricular em outra academia para impressionar Bolas, mas acaba escolhendo uma academia de dança e sendo ridicularizado pelos colegas de lá."));
+
+root.children[2].children[0].children.push(new Node("Ele tenta se esconder em uma lixeira para evitar os pombos, mas acaba sendo visto por Bolas sendo atacado pelas aves e sendo motivo de piada entre ela e os amigos."));
+root.children[2].children[0].children.push(new Node("Feka tenta convencer um guarda do parque a ajudá-lo a se livrar dos pombos, mas acaba sendo confundido com um mendigo e sendo expulso do parque."));
+root.children[2].children[0].children.push(new Node("Ele tenta se esconder em uma barraca de comida para fugir dos pombos, mas acaba sendo descoberto pelo dono e sendo expulso do parque, ainda mais sujo e envergonhado."));
+
+root.children[3].children[0].children.push(new Node("Ele tenta se desculpar com os outros pacientes, mas acaba sendo alvo de risadas ainda mais intensas, deixando-o constrangido e com a autoestima ainda mais baixa."));
+root.children[3].children[0].children.push(new Node("Feka tenta marcar uma nova consulta para reparar sua imagem, mas acaba ligando para o consultório errado e sendo visto como um completo idiota por Bolas e os outros pacientes."));
+root.children[3].children[0].children.push(new Node("Ele tenta fugir do consultório pela porta dos fundos, mas acaba se perdendo no prédio e sendo encontrado pelo Dr. Arruda, que o repreende e o expulsa do local."));
+
+root.children[4].children[0].children.push(new Node("Ele tenta convencer o professor de que estava apenas cochilando, mas acaba sendo chamado de preguiçoso e sendo repreendido na frente de toda a turma, incluindo Bolas."));
+root.children[4].children[0].children.push(new Node("Feka tenta impressionar Bolas com uma resposta inteligente durante a aula, mas acaba dando uma resposta completamente errada e sendo motivo de risadas ainda mais intensas, deixando-o completamente desanimado."));
+root.children[4].children[0].children.push(new Node("Ele tenta fugir da sala de aula pela janela, mas acaba ficando preso e sendo resgatado pelos bombeiros, sendo visto por Bolas sendo levado embora como um verdadeiro fracassado."));
+
+// Função para gerar história
+function generateStory(node, length) {
+    let story = node.phrase;
+    while (story.split(" ").length < length) {
+        if (node.children.length === 0) {
+            break;
+        }
+        node = node.children[Math.floor(Math.random() * node.children.length)];
+        story += " " + node.phrase;
+        if (node.children.length > 0) {
+            node = node.children[Math.floor(Math.random() * node.children.length)];
+            story += " " + node.phrase;
+            if (node.children.length > 0) {
+                node = node.children[Math.floor(Math.random() * node.children.length)];
+                story += " " + node.phrase;
+                if (node.children.length > 0) {
+                    node = node.children[Math.floor(Math.random() * node.children.length)];
+                    story += " " + node.phrase;
+                }
+            }
+        }
+    }
+    return story;
+}
+
+// Gerando uma história aleatória sobre Feka
+const story = generateStory(root, 500);
+console.log(story);
+// Exibindo a história no elemento HTML
+const storyContainer = document.getElementById('story-container');
+storyContainer.innerText = story;
+
+    </script>
+</body>
+</html>
