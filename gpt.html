@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatGPT</title>
+</head>
+<body>
+    <h1>ChatGPT</h1>
+    <p>Olá! Sou o ChatGPT. Como posso ajudar?</p>
+    <input type="text" id="userInput" placeholder="Digite aqui...">
+    <button onclick="sendMessage()">Enviar</button>
+    <div id="chat"></div>
+
+    <script>
+        function processInput(userInput) {
+            // Lista de possíveis respostas
+            const responses = [
+                "Interessante, me conte mais.",
+                "Isso é fascinante!",
+                "Entendi, continue.",
+                "Hmm, estou intrigado."
+            ];
+            // Retorna uma resposta aleatória
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        function sendMessage() {
+            const userInput = document.getElementById("userInput").value;
+            const chatDiv = document.getElementById("chat");
+            const userMessage = document.createElement("p");
+            userMessage.textContent = "Você: " + userInput;
+            chatDiv.appendChild(userMessage);
+            if (userInput.toLowerCase() === "sair") {
+                const goodbyeMessage = document.createElement("p");
+                goodbyeMessage.textContent = "ChatGPT: Até logo!";
+                chatDiv.appendChild(goodbyeMessage);
+                document.getElementById("userInput").disabled = true;
+            } else {
+                const response = processInput(userInput);
+                const chatGPTMessage = document.createElement("p");
+                chatGPTMessage.textContent = "ChatGPT: " + response;
+                chatDiv.appendChild(chatGPTMessage);
+            }
+            document.getElementById("userInput").value = "";
+        }
+    </script>
+</body>
+</html>
