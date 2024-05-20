@@ -9,7 +9,6 @@ const extendedMaxDistSquared = 0.716 * maxDistSquared;
 let grid, gridCellSize = maxDistance;
 
 let triangles = {}; // Objeto para armazenar os triângulos
-let distortions = []; // Array para armazenar as distorções
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -18,9 +17,6 @@ function setup() {
         pontos.push(createPoint());
     }
     grid = createGrid();
-
-    // Adiciona a função de distorção synthwave a cada 3 segundos
-    setInterval(createSynthwaveDistortion, 3000);
 }
 
 function createPoint() {
@@ -64,7 +60,6 @@ function draw() {
     updatePoints();
     updateGrid();
     drawTriangles();
-    drawDistortions(); // Desenha as distorções synthwave
 }
 
 function drawGradientBackground() {
@@ -147,31 +142,6 @@ function drawTriangles() {
         }
     }
     triangles = newTriangles;
-}
-
-function drawDistortions() {
-    for (let d of distortions) {
-        fill(d.color);
-        noStroke();
-        ellipse(d.x, d.y, d.size, d.size);
-    }
-}
-
-function createSynthwaveDistortion() {
-    let numDistortions = random(3, 10); // Número aleatório de distorções a serem criadas
-    for (let i = 0; i < numDistortions; i++) {
-        distortions.push({
-            x: random(width),
-            y: random(height),
-            size: random(10, 50),
-            color: color(random(200, 255), random(100, 255), random(100, 255), 150)
-        });
-    }
-
-    // Remove distorções antigas após um tempo
-    setTimeout(() => {
-        distortions.splice(0, numDistortions);
-    }, 1000);
 }
 
 function windowResized() {

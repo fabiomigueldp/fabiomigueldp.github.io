@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         newContent.classList.add('new-content');
         newContent.innerHTML = `
         <header class="header">
-            <img src="profile-icon.png" alt="Fábio Miguel" class="profile-icon">
+            <img src="owner51.jpg" alt="Fábio Miguel" class="profile-icon">
             <div class="title-container">
                 <h1>Fábio Miguel</h1>
                 <p>Under-graduated student majoring in Computer Science.</p>
@@ -78,7 +78,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
             </section>
             <aside class="sidebar">
                 <div class="github-stats">
-                    <img src="https://github-readme-stats.vercel.app/api?username=fabiomigueldp&show_icons=true" alt="fabiomigueldp" class="github-stats-img">
+                    <img alt="GitHub Stats" src="https://github-readme-stats.vercel.app/api?username=fabiomigueldp&theme=synthwave&show_icons=true&hide_border=true&count_private=true" class="github-stats-img" />
+                    <img alt="GitHub Streak" src="https://github-readme-streak-stats.herokuapp.com/?user=fabiomigueldp&theme=synthwave&hide_border=true" class="github-stats-img"/>
+                    <img alt="Top Languages" src="https://github-readme-stats.vercel.app/api/top-langs/?username=fabiomigueldp&theme=synthwave&show_icons=true&hide_border=true&layout=compact" class="github-stats-img"/>
                 </div>
             </aside>
         </main>

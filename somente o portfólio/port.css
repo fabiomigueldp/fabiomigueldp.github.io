@@ -1,0 +1,120 @@
+body {
+    margin: 0;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: rgb(28, 28, 211);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    color: rgb(0, 0, 0);
+    padding: 20px;
+    margin: 30px;
+    height: 150px; 
+    /* From https://css.glass */
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.profile-icon {
+    border-radius: 16px;
+    width: 120px; /* or any other fixed size */
+    height: auto;
+    max-width: 100%; /* ensures it is responsive and doesn't overflow its container */
+    margin-right: 30px;
+}
+
+
+.title-container {
+    text-align: left;
+}
+
+
+.navigation {
+    display: flex;
+    flex-grow: 1;
+    justify-content: center;
+    padding: 10px 0;
+    margin: 30px;
+    height: 40px; /* Adjust the height as needed */
+        /* From https://css.glass */
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #000000;
+    margin: 0 10px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.nav-link:hover {
+    background-color: #e0e0e082;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.main-content {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+}
+
+.content-section{
+    flex-grow: 3;
+    width: 75%;
+    margin: 10px;
+    /* From https://css.glass */
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.sidebar {
+    flex-grow: 1;
+    width: 25%;
+    margin: 10px;
+    /* From https://css.glass */
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+    .header, .navigation, .main-content {
+        flex-direction: column;
+    }
+    .nav-link {
+        margin: 10px 0;
+    }
+    
+}
+
+.github-stats {
+    text-align: center;
+}
+
+.github-stats-img {
+    padding-top: 16px;
+    max-width: 90%; /* A imagem não excederá a largura da div */
+    height: auto; /* A altura será ajustada automaticamente para manter a proporção original */
+    /* Defina a largura desejada aqui, por exemplo, width: 200px; */
+}
