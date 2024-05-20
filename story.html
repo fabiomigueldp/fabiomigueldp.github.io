@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Story</title>
+</head>
+<body>
+    <h1>Generated Story</h1>
+    <div id="story"></div>
+
+    <script>
+        class Node {
+            constructor(phrase) {
+                this.phrase = phrase;
+                this.children = [];
+            }
+        }
+
+        // Primeiro ato
+        const primeiro_ato = [
+            "Passeando com seu cachorro Lizzie, Feka depara-se com a presença repentina da Bolas",
+            "Em uma festa na ACM, Feka se depara com a Bolas",
+            "Enquanto espera sua consulta com o Dr. Arruda, Feka é surpreendido pela chegada da Bolas na sala de espera",
+            "Feka decide passar no Chiquinho do Iguatemi, na esperança de encontrar a Bolas",
+            "Fazendo uma caminhada no parque Campolim, Feka tem uma surpresa ao encontrar a Bolas",
+            "Feka resolve fazer compras no supermercado e encontra a Bolas no corredor de produtos enlatados",
+            "No dia da apresentação do coral da igreja, Feka se vê ao lado da Bolas no palco, suando frio com a perspectiva",
+            "Durante a aula de baixo, Feka fica vermelho quando a Bolas entra na sala e ele começa a tocar a nota errada repetidamente"
+        ];
+
+        // Segundo ato
+        const segundo_ato = [
+            "Tenta ser cavalheiro e segurar a porta para a Bolas, mas acaba prendendo seu dedo na dobradiça",
+            "Tenta impressioná-la com uma história, mas só consegue contar algo constrangedor",
+            "Oferece um petisco, mas acaba derrubando toda a travessa no colo da Bolas",
+            "Aperta sua mão com tanta força que a deixa desconfortável",
+            "Trocam olhares, mas Feka se perde nos próprios pensamentos e acaba dizendo besteira"
+        ];
+
+        // Terceiro ato
+        const terceiro_ato = [
+            "Tenta disfarçar o nervosismo, mas faz gestos estranhos que aumentam a tensão",
+            "Finge não se importar, mas fica vermelho como um tomate, chamando a atenção de todos",
+            "Disfarça um arroto, mas engasga com seu próprio hálito",
+            "Evita olhar para a Bolas, mas só chama ainda mais atenção para si mesmo",
+            "Finge não se importar, mas fica visivelmente desconfortável e suando frio"
+        ];
+
+        // Quarto ato
+        const quarto_ato = [
+            "Tenta evitar a Bolas a todo custo, mas acaba se metendo em uma situação ainda mais embaraçosa ao se esconder no banheiro e ser encontrado por ela",
+            "Decide sair de fininho, mas acaba esbarrando em tudo pelo caminho e derrubando uma pilha de cadeiras",
+            "Encerra a conversa de forma educada, mas sua voz denuncia todo o constrangimento",
+            "Foge da situação constrangedora, prometendo evitar qualquer contato futuro com ela",
+            "Tenta salvar a situação, mas só piora ao dizer algo ainda mais embaraçoso"
+        ];
+
+        // Quinto ato
+        const quinto_ato = [
+            "Decide enviar uma mensagem explicando tudo, mas se arrepende ao ver a resposta dela, que o deixa ainda mais constrangido",
+            "Fica tão nervoso que começa a suar frio e deixa uma poça no chão",
+            "Tem um encontro inesperado com a Bolas em um lugar inusitado, ficando totalmente sem jeito e tropeçando nas palavras",
+            "Fica tão envergonhado que deseja sumir dali naquele momento, considerando fugir pela janela",
+            "Vê a Bolas novamente e tenta se explicar, mas só confunde ainda mais e derruba uma bandeja de salgadinhos"
+        ];
+
+        // Sexto ato
+        const sexto_ato = [
+            "Decide procurar ajuda profissional para lidar com sua tendência a situações embaraçosas",
+            "Reflete sobre suas interações com a Bolas e elabora um plano para evitar futuros constrangimentos",
+            "Faz uma lista de tópicos de conversa seguros para usar em encontros futuros com a Bolas",
+            "Matricula-se em um curso de etiqueta para melhorar suas habilidades sociais e evitar gafes",
+            "Cria um perfil em um aplicativo de namoro na esperança de encontrar alguém que o faça esquecer os momentos embaraçosos com a Bolas"
+        ];
+
+        // Função para gerar uma história
+        function generateStory(node, length) {
+            let story = node.phrase;
+            while (story.split(" ").length < length) {
+                if (node.children.length === 0) {
+                    break;
+                }
+                node = node.children[Math.floor(Math.random() * node.children.length)];
+                story += " " + node.phrase;
+            }
+            return story;
+        }
+
+        // Exemplo de uso
+        const root = new Node("Certo dia, Feka");
+        primeiro_ato.forEach(phrase => {
+            const node = new Node(phrase);
+            root.children.push(node);
+            segundo_ato.forEach(second_phrase => {
+                const second_node = new Node(second_phrase);
+                node.children.push(second_node);
+                terceiro_ato.forEach(third_phrase => {
+                    const third_node = new Node(third_phrase);
+                    second_node.children.push(third_node);
+                    quarto_ato.forEach(fourth_phrase => {
+                        const fourth_node = new Node(fourth_phrase);
+                        third_node.children.push(fourth_node);
+                        quinto_ato.forEach(fifth_phrase => {
+                            const fifth_node = new Node(fifth_phrase);
+                            fourth_node.children.push(fifth_node);
+                            sexto_ato.forEach(sixth_phrase => {
+                                const sixth_node = new Node(sixth_phrase);
+                                fifth_node.children.push(sixth_node);
+                            });
+                        });
+                    });
+                });
+            });
+        });
+
+        const storyLength = 100;
+        const generatedStory = generateStory(root, storyLength);
+        const storyDiv = document.getElementById("story");
+        storyDiv.textContent = generatedStory;
+        console.log(generatedStory);
+    </script>
+</body>
+</html>

@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             <a href="https://www.linkedin.com/in/fábio-miguel-428270239/" class="nav-link">Linked-In</a>
             <a href="mailto:fabiomigueldp@gmail.com" class="nav-link">Mail-to</a>
             <a href="https://www.instagram.com/fabiomigueldp/" class="nav-link">Instagram</a>
-            <a href="https://w.app/g3KTCV" class="nav-link">WhatsApp</a>
+            <a href="gpt.html" class="nav-link">ChatGPT</a>
         </nav>
         
         <main class="main-content">
