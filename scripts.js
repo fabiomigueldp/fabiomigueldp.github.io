@@ -13,10 +13,6 @@ let distortions = []; // Array para armazenar as distorções
 let maxDistortions; // Limite de distorções
 const maxDistortionSpeed = 0.5; // Velocidade máxima das distorções
 
-let superPontos = []; // Array para armazenar os super pontos
-const maxSuperSpeed = 0.1;
-const superGeometryInterval = 5000; // Intervalo de 5 segundos para exibir a super geometria
-
 function setup() {
     createCanvas(windowWidth, windowHeight);
     calculateMaxDistortions();
@@ -28,12 +24,6 @@ function setup() {
 
     // Adiciona a função de distorção synthwave a cada 3 segundos
     setInterval(createSynthwaveDistortion, 3000);
-
-    // Adiciona a função de super geometria a cada 5 segundos
-    setInterval(createSuperGeometry, superGeometryInterval);
-
-    // Cria alguns super pontos
-    createSuperPontos();
 }
 
 function calculateMaxDistortions() {
@@ -51,18 +41,6 @@ function createPoint() {
         vx: random(-maxSpeed, maxSpeed),
         vy: random(-maxSpeed, maxSpeed)
     };
-}
-
-function createSuperPontos() {
-    let nSuperPontos = 10; // Define o número de super pontos
-    for (let i = 0; i < nSuperPontos; i++) {
-        superPontos.push({
-            x: random(width),
-            y: random(height),
-            vx: random(-maxSuperSpeed, maxSuperSpeed),
-            vy: random(-maxSuperSpeed, maxSuperSpeed)
-        });
-    }
 }
 
 function createGrid() {
@@ -95,12 +73,10 @@ function draw() {
     drawGradientBackground();
 
     updatePoints();
-    updateSuperPontos(); // Atualiza os super pontos
     updateGrid();
     drawTriangles();
     updateDistortions(); // Atualiza as posições das distorções
     drawDistortions(); // Desenha as distorções synthwave
-    drawSuperPontos(); // Desenha os super pontos
 }
 
 function drawGradientBackground() {
@@ -127,28 +103,6 @@ function updatePoints() {
 
         p.x = constrain(p.x, 0, width);
         p.y = constrain(p.y, 0, height);
-    }
-}
-
-function updateSuperPontos() {
-    for (let sp of superPontos) {
-        sp.x += sp.vx;
-        sp.y += sp.vy;
-
-        if (sp.x < edgeBuffer || sp.x > width - edgeBuffer) {
-            sp.vx = random(-maxSuperSpeed, maxSuperSpeed);
-            sp.x = constrain(sp.x, 0, width);
-            sp.y = constrain(sp.y, 0, height);
-        }
-
-        if (sp.y < edgeBuffer || sp.y > height - edgeBuffer) {
-            sp.vy = random(-maxSuperSpeed, maxSuperSpeed);
-            sp.x = constrain(sp.x, 0, width);
-            sp.y = constrain(sp.y, 0, height);
-        }
-
-        sp.x = constrain(sp.x, 0, width);
-        sp.y = constrain(sp.y, 0, height);
     }
 }
 
@@ -244,36 +198,6 @@ function updateDistortions() {
         d.x = constrain(d.x, 0, width);
         d.y = constrain(d.y, 0, height);
     }
-}
-
-function drawSuperPontos() {
-    for (let sp of superPontos) {
-        fill(0, 255, 0);
-        noStroke();
-        ellipse(sp.x, sp.y, 10, 10);
-    }
-}
-
-function createSuperGeometry() {
-    let numSuperPontos = floor(random(1, superPontos.length));
-    for (let i = 0; i < numSuperPontos; i++) {
-        let sp = superPontos[floor(random(superPontos.length))];
-        drawSuperGeometria(sp);
-    }
-}
-
-function drawSuperGeometria(sp) {
-    fill(0, 255, 0, 150);
-    noStroke();
-    let size = 50;
-    let angle = random(TWO_PI);
-    beginShape();
-    for (let a = 0; a < TWO_PI; a += PI / 6) {
-        let sx = sp.x + cosh(a) * size;
-        let sy = sp.y + sinh(a) * size;
-        vertex(sx, sy);
-    }
-    endShape(CLOSE);
 }
 
 function windowResized() {
