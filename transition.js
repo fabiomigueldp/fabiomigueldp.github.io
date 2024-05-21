@@ -40,40 +40,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
             <a href="https://www.linkedin.com/in/fábio-miguel-428270239/" class="nav-link">Linked-In</a>
             <a href="mailto:fabiomigueldp@gmail.com" class="nav-link">Mail-to</a>
             <a href="https://www.instagram.com/fabiomigueldp/" class="nav-link">Instagram</a>
-            <a href="gpt.html" class="nav-link">ChatGPT</a>
+            <a href="https://torbware.space" class="nav-link">Torbware</a>
         </nav>
         
         <main class="main-content">
             <section class="content-section">
                 <article>
-                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
-                </article>
-                <article>
-                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
-                </article>
-                <article>
-                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
-                </article>
-                <article>
-                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
-                </article>
-                <article>
-                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
-                </article>
-                <article>
-                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
-                </article>
-                <article>
-                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
-                </article>
-                <article>
-                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
-                </article>
-                <article>
-                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
-                </article>
-                <article>
-                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nisi quas beatae, repellat mollitia et molestias illum reiciendis soluta ipsam quia.</p>
+                <img src="chat.svg" alt="Ícone de Chat" id="chat-svg">
                 </article>
             </section>
             <aside class="sidebar">
