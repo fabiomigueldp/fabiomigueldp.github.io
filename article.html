@@ -116,12 +116,66 @@
 
         .plataforma-table {
             width: 100%;
-            /* overflow-x: auto;  Removed horizontal scroll */
+            /* overflow-x: auto;  Removed horizontal scroll - we will handle this differently */
         }
 
         .plataforma-table table {
             min-width: auto; /* Adjusted to auto to prevent forcing min-width */
         }
+
+        /*  Responsiveness for Tables - Enhanced */
+        .plataforma-table {
+            overflow-x: auto; /* Enable horizontal scroll on smaller screens */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        }
+
+        /* Stacked Table Style for very small screens (e.g., mobile phones) */
+        @media screen and (max-width: 600px) { /* Adjust breakpoint as needed */
+            .plataforma-table table {
+                display: block; /* Make table behave like a block */
+            }
+
+            .plataforma-table thead {
+                display: none; /* Hide table headers */
+            }
+
+            .plataforma-table tbody tr {
+                display: block; /* Make table rows behave like blocks */
+                margin-bottom: 15px; /* Add spacing between rows */
+                border: 1px solid #3e3e3e; /* Optional: Add border for row separation */
+                border-radius: 8px;
+                overflow: hidden; /* Ensure rounded corners are clipped properly */
+            }
+
+            .plataforma-table td {
+                display: block; /* Make table cells behave like blocks */
+                border-bottom: none; /* Remove cell bottom borders */
+                position: relative; /* For positioning the pseudo-element */
+                padding-left: 50%; /* Space for pseudo-element label */
+                text-align: left;
+            }
+
+            .plataforma-table td:before { /* Pseudo-element for header label */
+                position: absolute;
+                top: 6px;
+                left: 6px;
+                width: 45%; /* Adjust width as needed */
+                padding-right: 10px;
+                text-align: left;
+                font-weight: bold;
+                content: attr(data-label); /* Get header from data-label attribute */
+                color: #fff; /* Header label color - adjust as needed */
+            }
+
+            /* Add data-label attributes to each td to hold the header text */
+            .plataforma-table td:nth-of-type(1):before { content: "Plataforma"; }
+            .plataforma-table td:nth-of-type(2):before { content: "Tipos de Projeto"; }
+            .plataforma-table td:nth-of-type(3):before { content: "Taxas (Comissão)"; }
+            .plataforma-table td:nth-of-type(4):before { content: "Formas de Pagamento"; }
+            .plataforma-table td:nth-of-type(5):before { content: "Vantagens"; }
+            .plataforma-table td:nth-of-type(6):before { content: "Desvantagens"; }
+        }
+
 
         @media screen and (max-width: 768px) {
             .container {
@@ -185,52 +239,52 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Upwork</td>
-                                <td>Projetos diversos (curtos a longos); clientes postam vagas ou contratam por catálogo de projetos.</td>
-                                <td>~10% sobre o valor (antes 20% em projetos novos até US$500)​</td>
-                                <td>Transferência bancária, PayPal, Payoneer​</td>
-                                <td>Proteção de pagamento via escrow; grande volume de clientes internacionais; variedade de categorias​.</td>
-                                <td>Alta competição global; exige perfil e comunicação em inglês; número limitado de candidaturas grátis (Connects).</td>
+                                <td data-label="Plataforma">Upwork</td>
+                                <td data-label="Tipos de Projeto">Projetos diversos (curtos a longos); clientes postam vagas ou contratam por catálogo de projetos.</td>
+                                <td data-label="Taxas (Comissão)">~10% sobre o valor (antes 20% em projetos novos até US$500)​</td>
+                                <td data-label="Formas de Pagamento">Transferência bancária, PayPal, Payoneer​</td>
+                                <td data-label="Vantagens">Proteção de pagamento via escrow; grande volume de clientes internacionais; variedade de categorias​.</td>
+                                <td data-label="Desvantagens">Alta competição global; exige perfil e comunicação em inglês; número limitado de candidaturas grátis (Connects).</td>
                             </tr>
                             <tr>
-                                <td>Freelancer.com</td>
-                                <td>Projetos diversos + concursos de design/ideias.</td>
-                                <td>10% ou US$5 (o que for maior) por projeto​</td>
-                                <td>Cartão de crédito, PayPal, transferência bancária​</td>
-                                <td>Milhões de projetos disponíveis; suporte a concursos (competir por premiações); múltiplas opções de pagamento​.</td>
-                                <td>Concorrência muito alta​; plataforma cobra comissão em cada projeto concluído​; alguns projetos com orçamentos baixos.</td>
+                                <td data-label="Plataforma">Freelancer.com</td>
+                                <td data-label="Tipos de Projeto">Projetos diversos + concursos de design/ideias.</td>
+                                <td data-label="Taxas (Comissão)">10% ou US$5 (o que for maior) por projeto​</td>
+                                <td data-label="Formas de Pagamento">Cartão de crédito, PayPal, transferência bancária​</td>
+                                <td data-label="Vantagens">Milhões de projetos disponíveis; suporte a concursos (competir por premiações); múltiplas opções de pagamento​.</td>
+                                <td data-label="Desvantagens">Concorrência muito alta​; plataforma cobra comissão em cada projeto concluído​; alguns projetos com orçamentos baixos.</td>
                             </tr>
                             <tr>
-                                <td>Fiverr</td>
-                                <td>“Gigs” (serviços pré-definidos pelo freelancer, ex: site básico por $X).</td>
-                                <td>20% do valor de cada serviço (freelancer fica com 80%)​</td>
-                                <td>PayPal, cartão (via Payoneer), transferência bancária​</td>
-                                <td>Fácil de começar (basta criar um gig); ampla base de clientes buscando serviços digitais; não exige enviar propostas para cada trabalho​.</td>
-                                <td>Comissão alta (20%); demora de até 14 dias para liberar pagamento após conclusão​; competição por preço – iniciantes muitas vezes precisam cobrar menos para conseguir os primeiros clientes​.</td>
+                                <td data-label="Plataforma">Fiverr</td>
+                                <td data-label="Tipos de Projeto">“Gigs” (serviços pré-definidos pelo freelancer, ex: site básico por $X).</td>
+                                <td data-label="Taxas (Comissão)">20% do valor de cada serviço (freelancer fica com 80%)​</td>
+                                <td data-label="Formas de Pagamento">PayPal, cartão (via Payoneer), transferência bancária​</td>
+                                <td data-label="Vantagens">Fácil de começar (basta criar um gig); ampla base de clientes buscando serviços digitais; não exige enviar propostas para cada trabalho​.</td>
+                                <td data-label="Desvantagens">Comissão alta (20%); demora de até 14 dias para liberar pagamento após conclusão​; competição por preço – iniciantes muitas vezes precisam cobrar menos para conseguir os primeiros clientes​.</td>
                             </tr>
                             <tr>
-                                <td>Toptal</td>
-                                <td>Projetos de alto nível (desenvolvimento sofisticado, longo prazo).</td>
-                                <td>0% de comissão para o freelancer (a plataforma cobra dos clientes)​</td>
-                                <td>Transferência bancária (pagamento em USD)​</td>
-                                <td>Clientes de grande porte e orçamentos elevados; remuneração premium (freelancers definem sua tarifa)​; projetos desafiadores que agregam portfolio.</td>
-                                <td>Processo seletivo rigoroso – aceita ~3% dos candidatos​; voltado para experientes (difícil entrada para iniciantes); demanda tempo não remunerado no processo de triagem.</td>
+                                <td data-label="Plataforma">Toptal</td>
+                                <td data-label="Tipos de Projeto">Projetos de alto nível (desenvolvimento sofisticado, longo prazo).</td>
+                                <td data-label="Taxas (Comissão)">0% de comissão para o freelancer (a plataforma cobra dos clientes)​</td>
+                                <td data-label="Formas de Pagamento">Transferência bancária (pagamento em USD)​</td>
+                                <td data-label="Vantagens">Clientes de grande porte e orçamentos elevados; remuneração premium (freelancers definem sua tarifa)​; projetos desafiadores que agregam portfolio.</td>
+                                <td data-label="Desvantagens">Processo seletivo rigoroso – aceita ~3% dos candidatos​; voltado para experientes (difícil entrada para iniciantes); demanda tempo não remunerado no processo de triagem.</td>
                             </tr>
                             <tr>
-                                <td>Guru</td>
-                                <td>Projetos diversos (funciona por propostas, similar ao Upwork).</td>
-                                <td>~9% (plano básico gratuito) podendo cair a ~5% com planos pagos​</td>
-                                <td>PayPal, transferência bancária (via SafePay – sistema de escrow da Guru).</td>
-                                <td>Taxa de comissão menor que concorrentes se investir em plano premium; permite destacar perfil com assinatura paga; proteção de pagamento via escrow.</td>
-                                <td>Menor volume de projetos comparado a Upwork/Freelancer; planos pagos podem ser caros para iniciantes; concorrência também global.</td>
+                                <td data-label="Plataforma">Guru</td>
+                                <td data-label="Tipos de Projeto">Projetos diversos (funciona por propostas, similar ao Upwork).</td>
+                                <td data-label="Taxas (Comissão)">~9% (plano básico gratuito) podendo cair a ~5% com planos pagos​</td>
+                                <td data-label="Formas de Pagamento">PayPal, transferência bancária (via SafePay – sistema de escrow da Guru).</td>
+                                <td data-label="Vantagens">Taxa de comissão menor que concorrentes se investir em plano premium; permite destacar perfil com assinatura paga; proteção de pagamento via escrow.</td>
+                                <td data-label="Desvantagens">Menor volume de projetos comparado a Upwork/Freelancer; planos pagos podem ser caros para iniciantes; concorrência também global.</td>
                             </tr>
                             <tr>
-                                <td>Remote.co</td>
-                                <td>Vagas de emprego remoto (inclui contratos freelance e CLT internacionais).</td>
-                                <td>Nenhuma (site de listagem de vagas; negociação direta com empregador).</td>
-                                <td>Negociado fora da plataforma (normalmente depósito bancário, PayPal ou via sistema da empresa contratante).</td>
-                                <td>Vagas de qualidade filtradas (menos risco de scam); oportunidades de trabalho remoto em empresas consolidadas; não cobra taxas do profissional.</td>
-                                <td>Não intermedia pagamentos – freelancer cuida de contrato e recebimento; quantidade de vagas pode ser limitada e exige aplicar como em emprego tradicional (processo seletivo competitivo).</td>
+                                <td data-label="Plataforma">Remote.co</td>
+                                <td data-label="Tipos de Projeto">Vagas de emprego remoto (inclui contratos freelance e CLT internacionais).</td>
+                                <td data-label="Taxas (Comissão)">Nenhuma (site de listagem de vagas; negociação direta com empregador).</td>
+                                <td data-label="Formas de Pagamento">Negociado fora da plataforma (normalmente depósito bancário, PayPal ou via sistema da empresa contratante).</td>
+                                <td data-label="Vantagens">Vagas de qualidade filtradas (menos risco de scam); oportunidades de trabalho remoto em empresas consolidadas; não cobra taxas do profissional.</td>
+                                <td data-label="Desvantagens">Não intermedia pagamentos – freelancer cuida de contrato e recebimento; quantidade de vagas pode ser limitada e exige aplicar como em emprego tradicional (processo seletivo competitivo).</td>
                             </tr>
                         </tbody>
                     </table>
