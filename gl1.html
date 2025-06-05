@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="la">
+<head>
+  <meta charset="UTF-8">
+  <title>VISIO BEATIFICA DIGITALIS - LUX AETERNA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --void-abyss: #000001;
+      --creator-diamond: #ffffff; /* Purest white, like a diamond's fire */
+      --liquid-gold: #FFDF00; /* Richer, almost liquid gold */
+      --seraphic-azure: #7AB8DB; /* Azure with a touch of divine */
+      --cherubic-rose: #FFB6C1; /* LightPink for gentle highlights */
+      --empyrean-sapphire: #082567; /* Deep, luminous sapphire */
+      --divine-amethyst: #9966CC;
+      --holy-flame: #FF4500; /* Orangered for divine passion accents */
+      --starlight-sparkle: rgba(255, 255, 240, 0.9); /* Ivory sparkle */
+      --genesis-bloom: rgba(255, 255, 230, 0.7);
+    }
+
+    html, body {
+      width: 100%; height: 100%; margin: 0; padding: 0;
+      overflow: hidden;
+      background-color: var(--void-abyss);
+      font-family: 'Playfair Display', 'Cinzel Decorative', serif;
+      opacity: 0;
+      animation: awakenToDivinity 5s ease-out forwards;
+      animation-delay: 1.5s;
+    }
+    @keyframes awakenToDivinity { to { opacity: 1; } }
+
+    #divine-expanse { /* Renamed for grandeur */
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      perspective: 2500px; /* Deeper perspective */
+      perspective-origin: 50% 50%;
+      animation: cosmicSigh 45s ease-in-out infinite alternate;
+      z-index: 1;
+    }
+    @keyframes cosmicSigh {
+        0% { transform: scale(1.00); opacity: 0.97; }
+        100% { transform: scale(1.008); opacity: 1; } /* More expansive sigh */
+    }
+
+    #fullscreen-btn-supreme { /* Supreme button */
+      position: fixed; bottom: 25px; right: 25px;
+      padding: 14px 22px;
+      background: linear-gradient(135deg, rgba(255,223,0,0.1), rgba(255,100,0,0.2));
+      color: var(--liquid-gold);
+      border: 1px solid var(--liquid-gold);
+      border-radius: 6px;
+      font-family: 'Cinzel Decorative', serif; font-size: 15px;
+      cursor: pointer; opacity: 0.8;
+      text-shadow: 0 0 5px var(--liquid-gold);
+      box-shadow: 0 0 10px rgba(255,223,0,0.3);
+      transition: all 0.4s cubic-bezier(0.075, 0.82, 0.165, 1);
+      z-index: 9999;
+    }
+    #fullscreen-btn-supreme:hover {
+      opacity: 1; background-color: rgba(255,223,0,0.3);
+      transform: scale(1.05); box-shadow: 0 0 20px rgba(255,223,0,0.5);
+    }
+    body:fullscreen #fullscreen-btn-supreme,
+    body:-webkit-full-screen #fullscreen-btn-supreme { display: none; }
+
+    /* --- FIAT LUX - THE DIVINE SPARK --- */
+    #divine-spark-core {
+      position: absolute; top: 50%; left: 50%;
+      width: 3px; height: 3px; border-radius: 50%;
+      background-color: var(--creator-diamond);
+      box-shadow: 0 0 0px 0px var(--creator-diamond);
+      opacity: 0; transform: translate(-50%, -50%) scale(0.01);
+      z-index: 50;
+    }
+
+    /* --- EMANATIONS OF DIVINE ENERGY --- */
+    .aetheric-wave {
+      position: absolute; border-radius: 50%;
+      border: 1.5px solid var(--starlight-sparkle);
+      opacity: 0; pointer-events: none; z-index: 10;
+    }
+
+    .nebula-sanctum { /* Holiest of nebulas */
+      position: absolute; opacity: 0; mix-blend-mode: lighten; /* 'lighten' or 'screen' for holy glow */
+      pointer-events: none; z-index: 5;
+      animation: nebulaPulse 20s ease-in-out infinite alternate, /* Internal pulse */
+                 nebulaGrandDrift 120s linear infinite alternate, /* Very slow drift */
+                 nebulaReshape 90s ease-in-out infinite alternate;
+    }
+    @keyframes nebulaPulse {
+      0% { filter: brightness(0.9) saturate(0.8); }
+      100% { filter: brightness(1.2) saturate(1.1); }
+    }
+    @keyframes nebulaGrandDrift {
+      0% { transform: translate(-50%, -50%) translateX(0px) translateY(0px) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) translateX(40px) translateY(-30px) rotate(25deg); }
+    }
+    @keyframes nebulaReshape { /* Subtle shape morph */
+        0%, 100% { border-radius: 45% 55% 60% 40% / 50% 65% 35% 50%; }
+        50% { border-radius: 65% 35% 40% 60% / 30% 50% 50% 70%; }
+    }
+
+
+    .seraphic-particle {
+      position: absolute; border-radius: 50%;
+      opacity: 0; pointer-events: none; z-index: 20;
+    }
+    .particle-halo-aura { /* Aura around significant particles */
+        position: absolute; width: 300%; height: 300%; top: -100%; left: -100%;
+        border-radius: 50%; opacity: 0.15; filter: blur(5px);
+        /* background will match particle, set by JS */
+    }
+
+    .river-of-light { /* Glorified ether streams */
+        position: absolute; height: 2px;
+        opacity: 0; filter: blur(1px) brightness(1.2);
+        pointer-events: none; z-index: 15;
+    }
+
+    .geometry-of-creation { /* More complex Verbum echo */
+        position: absolute; top: 50%; left: 50%;
+        transform-style: preserve-3d; opacity: 0;
+        pointer-events: none; z-index: 30;
+    }
+    .geometry-element { /* Parts of the geometric echo */
+        position: absolute; border: 1px solid rgba(255,223,0,0.1);
+        transform-origin: center center;
+    }
+
+
+    /* --- VERBUM DIVINUM - THE WORD MADE LIGHT --- */
+    #verbum-majestatis-container {
+      position: fixed; width: 100%; height: 100%; top: 0; left: 0;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000; pointer-events: none;
+    }
+    .verbum-supremum {
+      font-size: clamp(4em, 11vw, 15em); /* Truly majestic */
+      font-weight: 900; font-family: 'Cinzel Decorative', 'UnifrakturMaguntia', serif; /* Unifraktur for sacred feel */
+      color: var(--creator-diamond);
+      text-shadow: /* Richest shadow stack */
+        0 0 10px var(--creator-diamond), /* Core light */
+        0 0 25px var(--starlight-sparkle),
+        0 0 50px var(--liquid-gold),
+        0 0 90px var(--seraphic-azure),
+        0 0 150px var(--divine-amethyst),
+        0 0 220px var(--holy-flame); /* Widest, colored aura */
+      opacity: 0; position: absolute;
+      animation: decreeOfCreation 15s cubic-bezier(0.215, 0.610, 0.355, 1) forwards;
+      filter: blur(10px) brightness(1.1); /* Slight distortion */
+      transform: scale(0.3) rotateX(60deg); /* Start deeply in perspective */
+    }
+    @keyframes decreeOfCreation {
+      0% { opacity: 0; transform: scale(0.3) rotateX(60deg); filter: blur(25px) brightness(0.8); }
+      20% { opacity: 1; transform: scale(1) rotateX(0deg); filter: blur(0px) brightness(1.2); }
+      80% { opacity: 1; transform: scale(1.02) rotateX(0deg) ; filter: blur(1px) brightness(1.1); } /* Hold with presence */
+      100% { opacity: 0; transform: scale(1.8) rotateX(-60deg) ; filter: blur(30px) brightness(0.7); } /* Dissolve into infinity */
+    }
+  </style>
+</head>
+<body>
+
+  <button id="fullscreen-btn-supreme" aria-label="Enter Fullscreen">GLORIA IN EXCELSIS</button>
+
+  <div id="divine-expanse">
+    <div id="divine-spark-core"></div>
+  </div>
+
+  <div id="verbum-majestatis-container"></div>
+
+  <script>
+    // Utility for random number in range
+    const rand = (min, max) => Math.random() * (max - min) + min;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const divineExpanse = document.getElementById('divine-expanse');
+      const divineSparkCore = document.getElementById('divine-spark-core');
+      const verbumContainer = document.getElementById('verbum-majestatis-container');
+      const fullscreenButton = document.getElementById('fullscreen-btn-supreme');
+
+      let isExperienceActive = true;
+      const MAX_ELEMENT_DENSITY = true; // Use this to toggle high counts for non-critical elements if needed later
+
+      const animationDelays = {
+        coreAppear: 3000, coreExpand: 3500, firstWave: 4500, firstNebula: 5800,
+        firstParticles: 6500, firstRiver: 7200, firstWord: 9000,
+      };
+
+      const latinVerbaSuprema = [ // Expanded & potent
+        "אֶהְיֶה אֲשֶׁר אֶהְיֶה", // EHYEH ASHER EHYEH (I AM THAT I AM - Hebrew, for ultimate source)
+        "Α Ε Ω", // ALPHA ET OMEGA (Greek)
+        "IN PRINCIPIO", "FIAT LUX", "SPIRITUS DEI", "CREATIO EX NIHILO",
+        "IMAGO DEI", "FORMA MUNDI", "ESSENTIA DIVINA", "FLUMEN VITAE",
+        "SAPIENTIA AETERNA", "INFINITAS SANCTA", "GLORIA PATRIS", "VISIO BEATIFICA", "ACTUS PURUS"
+      ];
+      let verbumIndex = 0;
+
+      fullscreenButton.addEventListener('click', () => { /* ... (same fullscreen logic) ... */
+        const el = document.documentElement;
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+          if (el.requestFullscreen) el.requestFullscreen();
+          else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        }
+      });
+
+
+      // --- 1. DIVINE SPARK CORE - THE FIRST LIGHT ---
+      setTimeout(() => {
+        divineSparkCore.style.transition = 'opacity 1s ease-out, transform 1s ease-out, box-shadow 2s ease-out';
+        divineSparkCore.style.opacity = '1';
+        divineSparkCore.style.transform = 'translate(-50%, -50%) scale(2)'; // Initial bright flash
+        divineSparkCore.style.boxShadow = `
+          0 0 100px 50px var(--creator-diamond), 0 0 200px 100px var(--genesis-bloom),
+          0 0 350px 180px var(--liquid-gold), 0 0 550px 280px var(--cherubic-rose),
+          0 0 800px 400px var(--seraphic-azure)`; // Truly explosive, multi-layered bloom
+      }, animationDelays.coreAppear);
+
+      setTimeout(() => {
+        const coreSize = Math.min(window.innerWidth, window.innerHeight) * 0.03; // Becomes a pinpoint radiant source
+        divineSparkCore.style.transition = `
+            transform 15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 15s cubic-bezier(0.16, 1, 0.3, 1),
+            opacity 10s ease-out 5s`;
+        divineSparkCore.style.transform = `translate(-50%, -50%) scale(${coreSize})`;
+        divineSparkCore.style.boxShadow = ` /* Becomes a hyper-concentrated star */
+            0 0 30px 5px var(--creator-diamond), 0 0 80px 20px var(--liquid-gold),
+            0 0 150px 50px var(--genesis-bloom), 0 0 250px 100px rgba(122,184,219,0.5)`; // Sapphire & Bloom hint
+        divineSparkCore.style.opacity = '0.7'; // Remains a potent, radiant source
+
+        setTimeout(() => {
+            if (!isExperienceActive) return;
+            divineSparkCore.style.animation = "heartbeatOfCreation 20s ease-in-out infinite alternate";
+            divineSparkCore.style.transition = 'opacity 8s ease-in-out, box-shadow 8s ease-in-out, transform 8s ease-in-out';
+            divineExpanse.insertAdjacentHTML('beforeend', `<style>
+                @keyframes heartbeatOfCreation {
+                    0% { opacity: 0.6; transform: translate(-50%, -50%) scale(${coreSize * 0.9});
+                         box-shadow: 0 0 25px 4px var(--creator-diamond), 0 0 70px 18px var(--liquid-gold), 0 0 130px 40px var(--genesis-bloom); }
+                    100% { opacity: 0.8; transform: translate(-50%, -50%) scale(${coreSize * 1.1});
+                         box-shadow: 0 0 35px 6px var(--creator-diamond), 0 0 90px 22px var(--liquid-gold), 0 0 170px 60px var(--genesis-bloom); }
+                }</style>`);
+        }, animationDelays.coreExpand + 15000);
+      }, animationDelays.coreExpand);
+
+
+      // --- 2. SUPREME CREATION FUNCTIONS ---
+      function createAethericWave(delay) {
+        setTimeout(() => {
+          if (!isExperienceActive) return;
+          const wave = document.createElement('div');
+          wave.classList.add('aetheric-wave');
+          wave.style.top = `${rand(20, 80)}%`; wave.style.left = `${rand(20, 80)}%`;
+          const initialSize = rand(20, 60);
+          wave.style.width = `${initialSize}px`; wave.style.height = `${initialSize}px`;
+          wave.style.borderWidth = `${rand(0.8, 2.5)}px`;
+
+          const colors = ['var(--starlight-sparkle)','var(--liquid-gold)','var(--seraphic-azure)','var(--cherubic-rose)'];
+          wave.style.borderColor = colors[Math.floor(rand(0, colors.length))];
+          wave.style.boxShadow = `0 0 10px ${wave.style.borderColor}, 0 0 20px ${wave.style.borderColor}`; // Add glow to waves
+
+          divineExpanse.appendChild(wave);
+          const maxScale = rand(25, 40); // Larger expansion
+          wave.animate([
+            { opacity: 0, transform: `translate(-50%, -50%) scale(0.05) rotate(${rand(-45,45)}deg)` },
+            { opacity: rand(0.5, 0.9), offset: 0.03 }, // Faster, brighter appearance
+            { opacity: 0, transform: `translate(-50%, -50%) scale(${maxScale}) rotate(${rand(-90,90)}deg)`, borderWidth: '0px' }
+          ], { duration: rand(7000, 12000), easing: 'cubic-bezier(0.075, 0.82, 0.165, 1)', iterations: 1 }
+          ).onfinish = () => wave.remove();
+        }, delay);
+      }
+
+      function createNebulaSanctum(delay) {
+         setTimeout(() => {
+            if (!isExperienceActive) return;
+            const nebula = document.createElement('div');
+            nebula.classList.add('nebula-sanctum');
+            const baseSize = rand(Math.min(window.innerWidth, window.innerHeight) * 0.3, Math.min(window.innerWidth, window.innerHeight) * 0.6); // Can be very large
+            nebula.style.width = `${baseSize}px`;
+            nebula.style.height = `${baseSize * rand(0.6, 1.1)}px`; // More varied aspect ratios
+            nebula.style.top = `${rand(10, 90)}%`; nebula.style.left = `${rand(10, 90)}%`;
+            
+            const c = { // Color palette for nebulas
+                gold: `rgba(255,223,0,${rand(0.1,0.25)})`, azure: `rgba(122,184,219,${rand(0.08,0.2)})`,
+                rose: `rgba(255,182,193,${rand(0.05,0.15)})`, white: `rgba(255,255,240,${rand(0.1,0.2)})`,
+                amethyst: `rgba(153,102,204,${rand(0.05,0.15)})`, flame: `rgba(255,69,0,${rand(0.03,0.1)})`
+            };
+            nebula.style.background = `
+              radial-gradient(ellipse at ${rand(20,40)}% ${rand(60,80)}%, ${c.flame} 0%, transparent 30%),
+              radial-gradient(ellipse at ${rand(60,80)}% ${rand(20,40)}%, ${c.amethyst} 0%, transparent 40%),
+              radial-gradient(ellipse at center, ${c.white} 0%, ${c.gold} 10%, ${c.rose} 25%, ${c.azure} 45%, transparent 60%)
+            `;
+            // CSS handles core animations, JS for lifetime
+            nebula.style.animationDuration = `${rand(15,25)}s, ${rand(90,150)}s, ${rand(70,110)}s`;
+
+            divineExpanse.appendChild(nebula);
+            nebula.animate([
+                { opacity: 0, transformOrigin: 'center center' }, { opacity: rand(0.4, 0.7), offset: 0.1 },
+                { opacity: rand(0.3, 0.6), offset: 0.9 }, { opacity: 0 }
+            ], { duration: rand(20000, 35000), easing: 'ease-in-out' }
+            ).onfinish = () => nebula.remove();
+        }, delay);
+      }
+
+      function createSeraphicParticleChorus(delay, count = 50, baseX, baseY, radius = 200, isCentralBurst = false) {
+        setTimeout(() => {
+          if (!isExperienceActive) return;
+          for (let i = 0; i < count; i++) {
+            const p = document.createElement('div');
+            p.classList.add('seraphic-particle');
+            const isStar = Math.random() < 0.2; // 20% are brighter "stars"
+            const size = isStar ? rand(2.5, 5) : rand(0.8, 2.5);
+            p.style.width = `${size}px`; p.style.height = `${size}px`;
+
+            const colors = { gold: 'var(--liquid-gold)', white: 'var(--starlight-sparkle)', rose: 'var(--cherubic-rose)', azure: 'var(--seraphic-azure)' };
+            const pColorKey = Object.keys(colors)[Math.floor(rand(0,Object.keys(colors).length))];
+            const pColorVal = colors[pColorKey];
+            p.style.backgroundColor = pColorVal;
+            p.style.boxShadow = `0 0 ${size*2.5}px ${pColorVal}, 0 0 ${size*5}px var(--genesis-bloom), 0 0 ${size*8}px rgba(255,255,255,0.2)`;
+
+            if(isStar || Math.random() < 0.3) { // Stars always get aura, some others too
+                const aura = document.createElement('div');
+                aura.classList.add('particle-halo-aura');
+                aura.style.backgroundColor = pColorVal;
+                p.appendChild(aura);
+            }
+
+            const originX = baseX !== undefined ? baseX : rand(10, 90);
+            const originY = baseY !== undefined ? baseY : rand(10, 90);
+            p.style.left = `${originX}%`; p.style.top = `${originY}%`;
+
+            const travelDist = rand(radius * 0.8, radius * 1.5);
+            const angle = rand(0, Math.PI * 2);
+            const endAngle = angle + rand(-Math.PI/2, Math.PI/2); // For curved paths for chorus
+            const endX = Math.cos(endAngle) * travelDist;
+            const endY = Math.sin(endAngle) * travelDist;
+            const scaleEnd = rand(0.05, 0.4);
+
+            p.animate([
+              { opacity: 0, transform: `translate(0,0) scale(0.2)` },
+              { opacity: 1, transform: `translate(${Math.cos(angle)*travelDist*0.3}px, ${Math.sin(angle)*travelDist*0.3}px) scale(1)`, offset: isCentralBurst? 0.02: 0.1 },
+              { opacity: 0.8, offset: 0.9 },
+              { opacity: 0, transform: `translate(${endX}px, ${endY}px) scale(${scaleEnd})` }
+            ], { duration: rand(9000, 16000), easing: 'cubic-bezier(0.165, 0.84, 0.44, 1)', delay: rand(0, isCentralBurst ? 300 : 1500) }
+            ).onfinish = () => p.remove();
+            divineExpanse.appendChild(p);
+          }
+        }, delay);
+      }
+      
+      function createRiverOfLight(delay) {
+        setTimeout(() => {
+            if (!isExperienceActive) return;
+            const river = document.createElement('div');
+            river.classList.add('river-of-light');
+            const startY = rand(0, 100);
+            const startX = rand(0,1) > 0.5 ? -20 : 100;
+            const endX = startX < 0 ? 120 : 0;
+            const length = rand(40, 80); // vw %
+            river.style.top = `${startY}vh`; river.style.left = `${startX}vw`; river.style.width = `${length}vw`;
+            const angle = rand(-20, 20); const yPath = rand(-15,15); // Add slight vertical curve
+            river.style.transform = `rotate(${angle}deg) scaleY(${rand(0.7,1.5)})`;
+
+            const gradients = [
+                `linear-gradient(to right, transparent, var(--liquid-gold), var(--starlight-sparkle), var(--liquid-gold), transparent)`,
+                `linear-gradient(to right, transparent, var(--seraphic-azure), var(--creator-diamond), var(--seraphic-azure), transparent)`,
+                `linear-gradient(90deg, transparent 0%, var(--cherubic-rose) 30%, var(--creator-diamond) 50%, var(--cherubic-rose) 70%, transparent 100%)`
+            ];
+            river.style.background = gradients[Math.floor(rand(0,gradients.length))];
+            river.style.boxShadow = `0 0 10px ${river.style.backgroundColor.includes('FFDF00') ? 'var(--liquid-gold)' : 'var(--starlight-sparkle)'}`;
+
+
+            divineExpanse.appendChild(river);
+            river.animate([
+                { opacity: 0, transform: `translateX(0) translateY(0) rotate(${angle}deg) scaleY(${river.style.transform.match(/scaleY\(([^)]+)\)/)[1]})` },
+                { opacity: rand(0.5,0.9), offset: 0.1 },
+                { opacity: rand(0.4,0.8), offset: 0.9 },
+                { opacity: 0, transform: `translateX(${(endX - startX) * (length/100)}vw) translateY(${yPath}vh) rotate(${angle+rand(-5,5)}deg) scaleY(${river.style.transform.match(/scaleY\(([^)]+)\)/)[1]})` }
+            ], { duration: rand(10000, 18000), easing: 'linear' }
+            ).onfinish = () => river.remove();
+        }, delay);
+      }
+
+      function createGeometryOfCreation(delay, wordText) {
+        setTimeout(() => {
+            if(!isExperienceActive) return;
+            const geoContainer = document.createElement('div');
+            geoContainer.classList.add('geometry-of-creation');
+            divineExpanse.appendChild(geoContainer);
+
+            let complexity = wordText.length; // More complex for longer words
+            if(wordText === "Α Ε Ω" || wordText === "אֶהְיֶה אֲשֶׁר אֶהְיֶה") complexity = 15;
+            
+            const numElements = Math.min(10, Math.floor(complexity/1.5)); // Max 10 elements
+            const baseRadius = 100 + complexity * 5;
+
+            for(let i=0; i < numElements; i++) {
+                const el = document.createElement('div');
+                el.classList.add('geometry-element');
+                const size = baseRadius * (1 - i*0.1) * rand(0.8,1.2);
+                el.style.width = `${size}px`; el.style.height = `${size}px`;
+                el.style.borderRadius = i % 2 === 0 ? '50%' : `${rand(20,80)}% / ${rand(20,80)}%`; // Circles and ellipses
+                el.style.borderStyle = i % 3 === 0 ? 'dashed' : 'solid';
+                el.style.borderColor = `rgba(255,223,0,${rand(0.05, 0.25)})`;
+                el.style.transform = `translate(-50%,-50%) rotateZ(${i* (360/numElements) + rand(-10,10)}deg) rotateX(${rand(-70,70)}deg) rotateY(${rand(-70,70)}deg) translateZ(${rand(-baseRadius/2, baseRadius/2)}px)`;
+                geoContainer.appendChild(el);
+            }
+
+            geoContainer.animate([
+                { opacity: 0, transform: `translate(-50%, -50%) scale(0.1) rotateY(90deg)` },
+                { opacity: rand(0.3,0.7), transform: `translate(-50%, -50%) scale(1) rotateY(0deg)`, offset: 0.15 },
+                { opacity: 0, transform: `translate(-50%, -50%) scale(2.5) rotateY(-90deg)`, offset:1 }
+            ], { duration: 5000 + complexity * 200, easing: 'cubic-bezier(0.19, 1, 0.22, 1)' }
+            ).onfinish = () => geoContainer.remove();
+        }, delay);
+      }
+
+      // --- 3. VERBUM DIVINUM ---
+      function showNextVerbum(initialDelay = 0) { /* ... (similar logic to previous but with supremeVerba and new createGeometryOfCreation) ... */
+        if (!isExperienceActive || verbumIndex >= latinVerbaSuprema.length) {
+            if (isExperienceActive) setTimeout(initiateBeatificContemplation, 10000);
+            return;
+        }
+        setTimeout(() => {
+          if (!isExperienceActive) return;
+          const currentWord = latinVerbaSuprema[verbumIndex];
+          const textEl = document.createElement('div');
+          textEl.classList.add('verbum-supremum');
+          textEl.textContent = currentWord;
+          // Special styling for non-Latin divine names
+          if (currentWord.includes("אֶהְיֶה") || currentWord.includes("Α Ε Ω")) {
+              textEl.style.fontFamily = "'Times New Roman', Times, serif"; // Or a suitable Hebrew/Greek font if loaded
+              textEl.style.fontSize = `clamp(3em, 8vw, 10em)`; // Slightly smaller for different script
+          }
+          verbumContainer.appendChild(textEl);
+          verbumIndex++;
+
+          textEl.addEventListener('animationend', () => {
+            textEl.remove();
+            if (verbumIndex < latinVerbaSuprema.length) {
+                 showNextVerbum(currentWord.length > 10 ? 2500 : 2000);
+            } else {
+                 setTimeout(initiateBeatificContemplation, 12000);
+            }
+          });
+          createGeometryOfCreation(500, currentWord);
+          createSeraphicParticleChorus(1000, 70 + rand(0,30), 50, 50, 300, true); // Grand central burst
+          if(Math.random() < 0.7) createNebulaSanctum(1500);
+          if(Math.random() < 0.8) createAethericWave(800);
+          if(Math.random() < 0.5) createRiverOfLight(1200);
+
+        }, initialDelay);
+      }
+
+
+      // --- 4. GRAND ORCHESTRATION ---
+      for(let i=0; i < 10; i++) createAethericWave(animationDelays.firstWave + i * 300);
+      for(let i=0; i < 6; i++) createNebulaSanctum(animationDelays.firstNebula + i * 2000);
+      createSeraphicParticleChorus(animationDelays.firstParticles, 150, 50, 30, 400, true); // Massive initial particle event
+      for(let i=0; i < 7; i++) createRiverOfLight(animationDelays.firstRiver + i * 1200);
+      showNextVerbum(animationDelays.firstWord);
+
+      const intervalSupremeIds = [];
+      function setupContinuousDivineManifestation() {
+        intervalSupremeIds.push(setInterval(() => { if (isExperienceActive) createAethericWave(0); }, 7000));
+        intervalSupremeIds.push(setInterval(() => { if (isExperienceActive) createNebulaSanctum(rand(0,5000)); }, 12000));
+        intervalSupremeIds.push(setInterval(() => { if (isExperienceActive) createSeraphicParticleChorus(0, 30 + rand(0,40), rand(10,90), rand(10,90), rand(150,250));}, 6000));
+        intervalSupremeIds.push(setInterval(() => { if (isExperienceActive) createRiverOfLight(rand(0,4000)); }, 9000));
+      }
+      setupContinuousDivineManifestation();
+
+      // --- 5. BEATIFIC CONTEMPLATION PHASE ---
+      function initiateBeatificContemplation() { /* ... (similar structure to previous, but with supreme visual elements & longer fades) ... */
+        isExperienceActive = false;
+        intervalSupremeIds.forEach(clearInterval);
+
+        for(let i=0; i<5; i++) { // More elements for contemplation, but very slow and ethereal
+             setTimeout(() => createEtherealNebulaSupreme(), i * 7000);
+             setTimeout(() => createStardustDriftSupreme(40 + rand(0,20)), i * 5000);
+        }
+
+        const finalSacredWord = "יהוה"; // YHWH - The Tetragrammaton
+        setTimeout(() => {
+             const textEl = document.createElement('div');
+             textEl.classList.add('verbum-supremum');
+             textEl.textContent = finalSacredWord;
+             textEl.style.fontFamily = "'Times New Roman', Times, serif"; // Ensure good Hebrew rendering
+             textEl.style.animation = "decreeOfCreation 30s cubic-bezier(0.215, 0.610, 0.355, 1) forwards"; // Very, very long resonance
+             textEl.style.fontSize = "clamp(3em, 7vw, 9em)";
+             textEl.style.textShadow = `0 0 15px var(--creator-diamond), 0 0 30px var(--starlight-sparkle), 0 0 50px var(--liquid-gold)`; // Holy, pure light
+             verbumContainer.appendChild(textEl);
+             textEl.addEventListener('animationend', () => {
+                 textEl.remove();
+                 document.body.style.transition = "opacity 15s ease-out 3s"; // Fade to eternal void
+                 document.body.style.opacity = "0";
+                 setTimeout(() => divineExpanse.innerHTML = '', 16000); // Clear canvas after fade
+             });
+        }, 20000); // After contemplative elements have manifested
+      }
+
+      function createEtherealNebulaSupreme() { /* ... (very slow, large, faint nebula for contemplation) ... */
+        const nebula = document.createElement('div');
+        nebula.classList.add('nebula-sanctum');
+        const baseSize = rand(Math.min(window.innerWidth, window.innerHeight) * 0.5, Math.min(window.innerWidth, window.innerHeight) * 0.9);
+        nebula.style.width = `${baseSize}px`; nebula.style.height = `${baseSize*rand(0.7,1)}px`;
+        nebula.style.top = `${rand(0,100)}%`; nebula.style.left = `${rand(0,100)}%`; // Can be partially off-screen
+        nebula.style.background = `radial-gradient(ellipse at center, rgba(255,255,240,0.03) 0%, rgba(122,184,219,0.01) 50%, transparent 75%)`;
+        nebula.style.animation = "nebulaPulse 40s ease-in-out infinite alternate, nebulaGrandDrift 240s linear infinite alternate, nebulaReshape 180s ease-in-out infinite alternate";
+        divineExpanse.appendChild(nebula);
+        nebula.animate([ { opacity: 0 }, { opacity: rand(0.05, 0.15), offset: 0.1 }, { opacity: 0, offset:1 }],
+            { duration: rand(60000, 90000), easing: 'ease-in-out' } // Extremely long life
+        ).onfinish = () => nebula.remove();
+      }
+
+       function createStardustDriftSupreme(count) { /* ... (very slow, faint, distant particles) ... */
+         for (let i = 0; i < count; i++) {
+            const p = document.createElement('div');
+            p.classList.add('seraphic-particle');
+            const size = rand(0.3, 1.2);
+            p.style.width = `${size}px`; p.style.height = `${size}px`;
+            p.style.backgroundColor = 'rgba(255,255,240,0.3)'; p.style.boxShadow = `none`;
+            p.style.left = `${rand(0,100)}%`; p.style.top = `${rand(0,100)}%`;
+            const driftX = rand(-80, 80); const driftY = rand(-80, 80);
+            p.animate([ { opacity: 0, transform: `translate(0,0) scale(0.5)` },
+              { opacity: rand(0.1, 0.4), offset: 0.1}, { opacity: 0, transform: `translate(${driftX}px, ${driftY}px) scale(0.3)`, offset: 1}
+            ], { duration: rand(40000, 70000), easing: 'linear', delay: rand(0,10000) }
+            ).onfinish = () => p.remove();
+            divineExpanse.appendChild(p);
+         }
+       }
+    });
+  </script>
+
+</body>
+</html>
