@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="la">
+<head>
+  <meta charset="UTF-8">
+  <title>VISIO ACTUS PURI - GLORIA INFINITA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=EB+Garamond:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --void-black: #000002; /* Even darker */
+      --creator-white: #ffffff;
+      --pure-gold: #FFD700;
+      --ethereal-blue: #2c5a8c; /* Slightly deeper blue */
+      --cosmic-azure: #1e3a5f;
+      --divine-crimson: #a02040; /* Richer crimson */
+      --seraphic-pink: rgba(255, 182, 193, 0.4); /* LightPink for highlights */
+      --stardust-gold: rgba(255, 215, 0, 0.8);
+      --genesis-glow: rgba(255, 255, 220, 0.6); /* Warmer white glow */
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: var(--void-black);
+      font-family: 'EB Garamond', 'Cinzel', serif;
+      opacity: 0;
+      animation: fadeInPage 3.5s ease-out forwards;
+      animation-delay: 1s; /* Slightly longer void pause */
+    }
+
+    @keyframes fadeInPage {
+      to { opacity: 1; }
+    }
+
+    #divine-canvas {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      perspective: 1800px; /* Increased perspective for more depth */
+      perspective-origin: 50% 50%;
+      animation: universeBreath 30s ease-in-out infinite alternate; /* Subtle universe pulse */
+      z-index: 1;
+    }
+    @keyframes universeBreath {
+        0% { transform: scale(1); opacity: 0.95; }
+        100% { transform: scale(1.005); opacity: 1; }
+    }
+
+    #fullscreen-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 10px 15px;
+      background-color: rgba(255,215,0,0.2);
+      color: var(--stardust-gold);
+      border: 1px solid var(--stardust-gold);
+      border-radius: 5px;
+      font-family: 'Cinzel', serif;
+      font-size: 14px;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.3s, background-color 0.3s;
+      z-index: 9999;
+    }
+    #fullscreen-button:hover {
+      opacity: 1;
+      background-color: rgba(255,215,0,0.4);
+    }
+    body:fullscreen #fullscreen-button,
+    body:-webkit-full-screen #fullscreen-button, /* Safari */
+    body:-moz-full-screen #fullscreen-button, /* Firefox */
+    body:-ms-fullscreen #fullscreen-button { /* IE/Edge */
+      display: none;
+    }
+
+
+    /* --- THE FIAT LUX CORE --- */
+    #fiat-lux-core {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 5px; height: 5px; /* Smaller start */
+      border-radius: 50%;
+      background-color: var(--creator-white);
+      box-shadow: 0 0 0px 0px var(--creator-white);
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.05);
+      z-index: 10;
+    }
+
+    /* --- EMANATIONS OF CREATION --- */
+    .energy-wave {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid var(--stardust-gold); /* Thinner for subtlety */
+      opacity: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .nebula-of-glory {
+      position: absolute;
+      border-radius: 30% 70% 60% 40% / 50% 40% 60% 50%; /* Dynamic shapes */
+      opacity: 0;
+      mix-blend-mode: screen;
+      pointer-events: none;
+      animation: slowNebulaDrift 60s linear infinite alternate,
+                 nebulaMorph 45s ease-in-out infinite alternate;
+      z-index: 3;
+      /* Background handled by JS for more complexity */
+    }
+    @keyframes slowNebulaDrift { /* Gentle drift */
+        0% { transform: translate(-50%, -50%) translateX(0px) translateY(0px) rotate(0deg) scale(1); }
+        100% { transform: translate(-50%, -50%) translateX(20px) translateY(-15px) rotate(15deg) scale(1.05); }
+    }
+    @keyframes nebulaMorph { /* Subtle shape changes */
+      0%, 100% { border-radius: 30% 70% 60% 40% / 50% 40% 60% 50%; }
+      50% { border-radius: 60% 40% 70% 30% / 40% 60% 30% 70%; }
+    }
+
+    .celestial-particle { /* Renamed from divine-particle */
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 7;
+      /* background & shadow set by JS */
+    }
+    .particle-trail { /* Optional trail for larger particles */
+        position: absolute;
+        width: 100%; height: 100%;
+        border-radius: 50%;
+        opacity: 0.3;
+        transform: scale(1.5);
+        filter: blur(3px);
+         /* background set by JS to match particle */
+    }
+
+    .ether-stream {
+        position: absolute;
+        height: 1.5px; /* Thinner */
+        background: linear-gradient(to right, transparent, var(--pure-gold), transparent);
+        opacity: 0;
+        filter: blur(0.5px);
+        pointer-events: none;
+        z-index: 6;
+    }
+
+    .sacred-geometry-echo { /* For Verbum echoes */
+        position: absolute;
+        width: 300px; height: 300px;
+        border: 1px solid rgba(255,215,0,0.2);
+        border-radius: 50%; /* Default: simple circle */
+        opacity: 0;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%) scale(0.1);
+        pointer-events: none;
+        z-index: 8;
+        /* More complex shapes possible by overlaying divs or SVG */
+    }
+
+    /* --- THE CREATIVE WORD (VERBUM DIVINUM) --- */
+    #verbum-divinum-container {
+      position: fixed;
+      width: 100%; height: 100%;
+      top: 0; left: 0;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100;
+      pointer-events: none;
+    }
+    .verbum-text {
+      font-size: clamp(3.5em, 9vw, 11em); /* Slightly larger */
+      font-weight: 900;
+      font-family: 'Cinzel', serif;
+      color: var(--creator-white);
+      text-shadow:
+        0 0 10px var(--creator-white), /* Inner core bloom */
+        0 0 25px var(--genesis-glow),
+        0 0 45px var(--pure-gold),
+        0 0 75px var(--ethereal-blue),
+        0 0 120px var(--seraphic-pink); /* Added softer outer glow */
+      opacity: 0;
+      position: absolute;
+      animation: resonateVerbum 12s cubic-bezier(0.19, 1, 0.22, 1) forwards; /* Smoother curve */
+      filter: blur(8px);
+    }
+    @keyframes resonateVerbum {
+      0% { opacity: 0; transform: scale(0.4) rotateX(45deg); filter: blur(20px); }
+      15% { opacity: 1; transform: scale(1) rotateX(0deg); filter: blur(0px); }
+      75% { opacity: 1; transform: scale(1.03) rotateX(0deg); filter: blur(1px); }
+      100% { opacity: 0; transform: scale(1.6) rotateX(-45deg); filter: blur(25px); }
+    }
+  </style>
+</head>
+<body>
+
+  <button id="fullscreen-button" aria-label="Enter Fullscreen">GLORIA MAXIMA (Fullscreen)</button>
+
+  <div id="divine-canvas">
+    <div id="fiat-lux-core"></div>
+  </div>
+
+  <div id="verbum-divinum-container"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const divineCanvas = document.getElementById('divine-canvas');
+      const fiatLuxCore = document.getElementById('fiat-lux-core');
+      const verbumContainer = document.getElementById('verbum-divinum-container');
+      const fullscreenButton = document.getElementById('fullscreen-button');
+
+      let isExperienceActive = true; // To control intervals if page fades out
+
+      const animationDelays = { // Timings in milliseconds
+        coreAppear: 2500,
+        coreExpand: 3000,
+        firstWave: 4000,
+        firstNebula: 5000,
+        firstParticles: 5500,
+        firstStream: 6000,
+        firstWord: 7500, // Slightly later for more buildup
+      };
+
+      const latinVerba = [
+        "PRINCIPIUM", "FIAT", "LUX", "SPIRITUS", "CREATIO", "FORMA", "ESSENTIA", "INFINITAS", "GLORIA", "SANCTUS", "ACTUS PURUS"
+      ];
+      let verbumIndex = 0;
+
+      // --- FULLSCREEN FUNCTIONALITY ---
+      fullscreenButton.addEventListener('click', () => {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
+          const el = document.documentElement;
+          if (el.requestFullscreen) el.requestFullscreen();
+          else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); // Safari
+          else if (el.mozRequestFullScreen) el.mozRequestFullScreen();   // Firefox
+          else if (el.msRequestFullscreen) el.msRequestFullscreen();     // IE/Edge
+        }
+      });
+
+
+      // --- 1. FIAT LUX CORE ---
+      setTimeout(() => {
+        fiatLuxCore.style.transition = 'opacity 0.8s ease-out, transform 0.8s ease-out, box-shadow 1.5s ease-out';
+        fiatLuxCore.style.opacity = '1';
+        fiatLuxCore.style.transform = 'translate(-50%, -50%) scale(1.5)'; // Slightly larger initial reveal
+        fiatLuxCore.style.boxShadow = `
+          0 0 80px 40px var(--creator-white),
+          0 0 150px 80px var(--genesis-glow),
+          0 0 250px 150px var(--stardust-gold),
+          0 0 400px 250px var(--seraphic-pink)`; // More layered, softer initial glow
+      }, animationDelays.coreAppear);
+
+      setTimeout(() => {
+        const coreSize = Math.min(window.innerWidth, window.innerHeight) * 0.08;
+        fiatLuxCore.style.transition = `
+            transform 10s cubic-bezier(0.165, 0.84, 0.44, 1),
+            box-shadow 10s cubic-bezier(0.165, 0.84, 0.44, 1),
+            opacity 6s ease-out 4s`; // Opacity fade starts after 4s into expansion
+        fiatLuxCore.style.transform = `translate(-50%, -50%) scale(${coreSize})`;
+        fiatLuxCore.style.boxShadow = `
+            0 0 3000px 1500px var(--genesis-glow),
+            0 0 5000px 2500px rgba(255,215,0,0.15),
+            0 0 8000px 4000px rgba(44,90,140,0.1)`; // Vast, soft, multi-hued glow
+        fiatLuxCore.style.opacity = '0.05'; // Becomes a very faint, distant sun/source
+
+        // After its grand expansion, it could subtly pulse
+        setTimeout(() => {
+            if (!isExperienceActive) return;
+            fiatLuxCore.style.animation = "distantSunPulse 25s ease-in-out infinite alternate";
+            fiatLuxCore.style.transition = 'opacity 5s ease-in-out, box-shadow 5s ease-in-out'; // For smoother pulse
+            divineCanvas.insertAdjacentHTML('beforeend', `
+                <style>
+                @keyframes distantSunPulse {
+                    0% { opacity: 0.03; box-shadow: 0 0 2000px 1000px var(--genesis-glow), 0 0 3000px 1500px rgba(255,215,0,0.05); }
+                    100% { opacity: 0.07; box-shadow: 0 0 2500px 1250px var(--genesis-glow), 0 0 3750px 1875px rgba(255,215,0,0.08); }
+                }
+                </style>
+            `);
+        }, animationDelays.coreExpand + 10000);
+
+      }, animationDelays.coreExpand);
+
+      // --- 2. DYNAMIC CREATION FUNCTIONS REFINED ---
+      function createEnergyWave(delay) {
+        setTimeout(() => {
+          if (!isExperienceActive) return;
+          const wave = document.createElement('div');
+          wave.classList.add('energy-wave');
+          wave.style.top = `${Math.random()*40 + 30}%`; // Originate more variedly
+          wave.style.left = `${Math.random()*40 + 30}%`;
+          const initialSize = Math.random() * 30 + 10;
+          wave.style.width = `${initialSize}px`;
+          wave.style.height = `${initialSize}px`;
+          wave.style.borderWidth = `${Math.random()*1.5+0.5}px`; // Thinner variations
+
+          const colors = [ 'var(--stardust-gold)', 'var(--creator-white)', 'var(--ethereal-blue)', 'var(--seraphic-pink)'];
+          wave.style.borderColor = colors[Math.floor(Math.random() * colors.length)];
+
+          divineCanvas.appendChild(wave);
+          const maxScale = Math.random() * 20 + 15;
+          wave.animate([
+            { opacity: 0, transform: `translate(-50%, -50%) scale(0.1)` },
+            { opacity: Math.random() * 0.4 + 0.4, offset: 0.05 }, // Quicker appear, brighter
+            { opacity: 0, transform: `translate(-50%, -50%) scale(${maxScale})`, borderWidth: '0px' }
+          ], {
+            duration: Math.random() * 6000 + 5000,
+            easing: 'cubic-bezier(0.12, 0, 0.39, 0)', // More energetic expansion
+            iterations: 1
+          }).onfinish = () => wave.remove();
+        }, delay);
+      }
+
+      function createNebulaOfGlory(delay) {
+         setTimeout(() => {
+            if (!isExperienceActive) return;
+            const nebula = document.createElement('div');
+            nebula.classList.add('nebula-of-glory'); // CSS handles some animation
+            const baseSize = Math.random() * Math.min(window.innerWidth, window.innerHeight) * 0.25 + 150;
+            nebula.style.width = `${baseSize}px`;
+            nebula.style.height = `${baseSize * (Math.random() * 0.5 + 0.7)}px`;
+            nebula.style.top = `${Math.random() * 70 + 15}%`;
+            nebula.style.left = `${Math.random() * 70 + 15}%`;
+            // CSS handles initial transform for drift
+            
+            const c1 = `rgba(255,215,0,${Math.random()*0.15+0.05})`;  // Gold
+            const c2 = `rgba(44,90,140,${Math.random()*0.1+0.05})`; // Cosmic Azure/Ethereal Blue
+            const c3 = `rgba(255,255,255,${Math.random()*0.1+0.03})`;// White core
+            const c4 = `rgba(160,32,64,${Math.random()*0.08+0.02})`;  // Divine Crimson
+            const c5 = `rgba(255,182,193,${Math.random()*0.1+0.05})`; // Seraphic Pink
+
+            nebula.style.background = `
+              radial-gradient(ellipse at 30% 70%, ${c5} 0%, transparent 40%),
+              radial-gradient(ellipse at 70% 30%, ${c4} 0%, transparent 50%),
+              radial-gradient(ellipse at center, ${c3} 0%, ${c1} 15%, ${c2} 40%, transparent 65%)
+            `;
+            nebula.style.animationDuration = `${Math.random()*40+40}s, ${Math.random()*30+30}s`; // For drift and morph
+
+            divineCanvas.appendChild(nebula);
+            nebula.animate([ // Fade in/out separate from drift/morph
+                { opacity: 0, transformOrigin: 'center center' /* Fix transform for drift */},
+                { opacity: Math.random() * 0.5 + 0.3, offset: 0.1 },
+                { opacity: Math.random() * 0.4 + 0.2, offset: 0.9 },
+                { opacity: 0 }
+            ], {
+                duration: Math.random() * 15000 + 12000,
+                easing: 'ease-in-out',
+            }).onfinish = () => nebula.remove();
+        }, delay);
+      }
+
+      function createCelestialParticleSwarm(delay, count = 25, baseX, baseY) {
+        setTimeout(() => {
+          if (!isExperienceActive) return;
+          for (let i = 0; i < count; i++) {
+            const p = document.createElement('div');
+            p.classList.add('celestial-particle');
+            const isLargeStarseed = Math.random() < 0.1; // 10% are larger "starseeds"
+            const size = isLargeStarseed ? (Math.random() * 4 + 3) : (Math.random() * 2 + 0.5);
+            p.style.width = `${size}px`;
+            p.style.height = `${size}px`;
+
+            const colors = ['var(--stardust-gold)', 'var(--creator-white)', 'var(--seraphic-pink)'];
+            const particleColor = colors[Math.floor(Math.random()*colors.length)];
+            p.style.backgroundColor = particleColor;
+            p.style.boxShadow = `0 0 ${size*2}px ${particleColor}, 0 0 ${size*4}px var(--genesis-glow)`;
+
+            if(isLargeStarseed) {
+                const trail = document.createElement('div');
+                trail.classList.add('particle-trail');
+                trail.style.backgroundColor = particleColor;
+                p.appendChild(trail); // Trail child of particle
+            }
+
+            const originX = baseX !== undefined ? baseX : (Math.random() * 70 + 15);
+            const originY = baseY !== undefined ? baseY : (Math.random() * 70 + 15);
+            p.style.left = `${originX}%`;
+            p.style.top = `${originY}%`;
+
+            const travelRadius = Math.random() * 300 + 150;
+            const angle = Math.random() * Math.PI * 2;
+            const travelX = Math.cos(angle) * travelRadius;
+            const travelY = Math.sin(angle) * travelRadius;
+            const scaleEnd = Math.random() * 0.6 + 0.1;
+
+            p.animate([
+              { opacity: 0, transform: `translate(0,0) scale(0.3)` },
+              { opacity: 1, transform: `translate(0,0) scale(1)`, offset: 0.05 },
+              { opacity: 0.7, offset: 0.85 },
+              { opacity: 0, transform: `translate(${travelX}px, ${travelY}px) scale(${scaleEnd})` }
+            ], {
+              duration: Math.random() * 8000 + 5000,
+              easing: 'cubic-bezier(0.22, 1, 0.36, 1)', // Graceful arc
+              delay: Math.random() * 800,
+            }).onfinish = () => p.remove();
+            divineCanvas.appendChild(p);
+          }
+        }, delay);
+      }
+      
+      function createEtherStream(delay) {
+        setTimeout(() => {
+            if (!isExperienceActive) return;
+            const stream = document.createElement('div');
+            stream.classList.add('ether-stream');
+            const startY = Math.random() * 100;
+            const startX = Math.random() > 0.5 ? -15 : 95;
+            const endX = startX < 0 ? 115 : -5;
+            const length = Math.random() * 50 + 30; // vw %
+            stream.style.top = `${startY}vh`;
+            stream.style.left = `${startX}vw`;
+            stream.style.width = `${length}vw`;
+            const angle = (Math.random() - 0.5) * 15;
+            stream.style.transform = `rotate(${angle}deg) scaleY(${Math.random()*0.5+0.7})`; // Vary thickness
+
+            const colors = [
+                `linear-gradient(to right, transparent, var(--pure-gold), transparent)`,
+                `linear-gradient(to right, transparent, var(--creator-white), transparent)`,
+                `linear-gradient(to right, transparent, var(--seraphic-pink), transparent)`
+            ];
+            stream.style.background = colors[Math.floor(Math.random()*colors.length)];
+
+            divineCanvas.appendChild(stream);
+            stream.animate([
+                { opacity: 0, left: `${startX}vw` },
+                { opacity: Math.random() * 0.6 + 0.2, offset: 0.1 },
+                { opacity: Math.random() * 0.5 + 0.1, offset: 0.9 },
+                { opacity: 0, left: `${endX}vw`}
+            ], {
+                duration: Math.random() * 9000 + 7000, // Longer, slower streams
+                easing: 'linear',
+            }).onfinish = () => stream.remove();
+        }, delay);
+      }
+
+      function createSacredEcho(delay, wordText) { // Echo linked to Verbum
+        setTimeout(() => {
+            if(!isExperienceActive) return;
+            const echo = document.createElement('div');
+            echo.classList.add('sacred-geometry-echo');
+            
+            // Customize echo based on word, e.g. "LUX" more intense
+            let scaleFactor = 1.5;
+            let borderColor = `rgba(255,215,0,${Math.random()*0.1+0.15})`; // Gold default
+
+            if (wordText === "LUX" || wordText === "GLORIA" || wordText === "ACTUS PURUS") {
+                scaleFactor = 2.5;
+                borderColor = `rgba(255,255,255,${Math.random()*0.2+0.25})`; // Whiter, brighter
+                echo.style.boxShadow = `0 0 20px ${borderColor}`;
+            }
+             if (wordText === "SPIRITUS") {
+                echo.style.borderRadius = '30% 70% 50% 50% / 50% 30% 70% 50%'; // more fluid
+                borderColor = `rgba(44,90,140,${Math.random()*0.1+0.15})`; // Blueish
+            }
+
+            echo.style.borderColor = borderColor;
+            divineCanvas.appendChild(echo);
+
+            echo.animate([
+                { opacity: 0, transform: `translate(-50%, -50%) scale(0.1) rotate(0deg)` },
+                { opacity: 0.7, transform: `translate(-50%, -50%) scale(${scaleFactor}) rotate(${Math.random()*90-45}deg)`, offset: 0.2 },
+                { opacity: 0, transform: `translate(-50%, -50%) scale(${scaleFactor * 1.5}) rotate(${Math.random()*180-90}deg)` }
+            ], {
+                duration: 4000 + (wordText.length * 100), // Duration based on word
+                easing: 'cubic-bezier(0, .72, .23, 1)',
+            }).onfinish = () => echo.remove();
+
+        }, delay);
+      }
+
+      // --- 3. THE CREATIVE WORD (VERBUM DIVINUM) ---
+      function showNextVerbum(initialDelay = 0) {
+        if (!isExperienceActive || verbumIndex >= latinVerba.length) {
+            if (isExperienceActive) setTimeout(initiateContemplativePhase, 5000); // Start fade to contemplation
+            return;
+        }
+        setTimeout(() => {
+          if (!isExperienceActive) return;
+          const currentWord = latinVerba[verbumIndex];
+          const textEl = document.createElement('div');
+          textEl.classList.add('verbum-text');
+          textEl.textContent = currentWord;
+          verbumContainer.appendChild(textEl);
+          verbumIndex++;
+
+          textEl.addEventListener('animationend', () => {
+            textEl.remove();
+            if (verbumIndex < latinVerba.length) {
+                 showNextVerbum(currentWord.length > 7 ? 2000 : 1500); // Longer pause for longer words
+            } else {
+                 setTimeout(initiateContemplativePhase, 8000); // Longer pause before final phase
+            }
+          });
+
+          // Trigger visuals linked to the word
+          createSacredEcho(300, currentWord);
+          createCelestialParticleSwarm(800, 30 + Math.random()*20, 50, 50); // Central burst
+          if(Math.random() < 0.6) createNebulaOfGlory(1200); // More frequent nebulas with words
+          if(Math.random() < 0.8) createEnergyWave(500);
+
+
+        }, initialDelay);
+      }
+
+      // --- 4. ORCHESTRATION ---
+      for(let i=0; i < 7; i++) createEnergyWave(animationDelays.firstWave + i * 400);
+      for(let i=0; i < 4; i++) createNebulaOfGlory(animationDelays.firstNebula + i * 1800);
+      createCelestialParticleSwarm(animationDelays.firstParticles, 70, 50, 40);
+      for(let i=0; i < 5; i++) createEtherStream(animationDelays.firstStream + i * 1000);
+
+      showNextVerbum(animationDelays.firstWord);
+
+      // Continuous, gentle creation during word sequence and beyond (less frequent over time)
+      const intervalIds = [];
+      function setupContinuousCreation() {
+        intervalIds.push(setInterval(() => { if (isExperienceActive) createEnergyWave(0); }, 9000));
+        intervalIds.push(setInterval(() => { if (isExperienceActive) createNebulaOfGlory(Math.random()*4000); }, 15000));
+        intervalIds.push(setInterval(() => { if (isExperienceActive) createCelestialParticleSwarm(0, 15 + Math.random()*10, Math.random()*100, Math.random()*100);}, 7000));
+        intervalIds.push(setInterval(() => { if (isExperienceActive) createEtherStream(Math.random()*3000); }, 11000));
+      }
+      setupContinuousCreation();
+
+      // --- 5. CONTEMPLATIVE PHASE / FADE OUT ---
+      function initiateContemplativePhase() {
+        isExperienceActive = false; // Stop new major timed elements, let intervals handle their last run if any
+        intervalIds.forEach(clearInterval); // Stop continuous generation of new major elements
+
+        // Optionally, create a few very slow, ethereal elements for the contemplation phase
+        for(let i=0; i<3; i++) {
+             setTimeout(() => createSlowFadingNebula(), i * 5000);
+             setTimeout(() => createGentleParticleDrift(20), i * 3000);
+        }
+
+        const finalVerbum = "AMEN"; // Or "PAX", "FINIS"
+        setTimeout(() => {
+             const textEl = document.createElement('div');
+             textEl.classList.add('verbum-text');
+             textEl.textContent = finalVerbum;
+             textEl.style.animation = "resonateVerbum 20s cubic-bezier(0.19, 1, 0.22, 1) forwards"; // Very slow resonance
+             textEl.style.fontSize = "clamp(2em, 5vw, 7em)"; // Smaller, more solemn
+             textEl.style.textShadow = `0 0 10px var(--creator-white), 0 0 20px var(--stardust-gold)`; // Softer shadow
+             verbumContainer.appendChild(textEl);
+             textEl.addEventListener('animationend', () => {
+                 textEl.remove();
+                 // Fully fade out the page to void black
+                 document.body.style.transition = "opacity 8s ease-out 2s"; // Long fade after AMEN
+                 document.body.style.opacity = "0";
+             });
+        }, 10000); // After other elements have started fading
+      }
+
+      function createSlowFadingNebula() { // Special nebula for contemplation
+        const nebula = document.createElement('div');
+        nebula.classList.add('nebula-of-glory'); // Re-use class but override animation
+        const baseSize = Math.random() * Math.min(window.innerWidth, window.innerHeight) * 0.4 + 200;
+        nebula.style.width = `${baseSize}px`; nebula.style.height = `${baseSize * (Math.random() * 0.3 + 0.9)}px`;
+        nebula.style.top = `${Math.random() * 60 + 20}%`; nebula.style.left = `${Math.random() * 60 + 20}%`;
+        nebula.style.background = `radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%, rgba(44,90,140,0.05) 40%, transparent 70%)`;
+        nebula.style.animation = "slowNebulaDrift 120s linear infinite alternate, nebulaMorph 90s ease-in-out infinite alternate"; // Very slow
+        divineCanvas.appendChild(nebula);
+        nebula.animate([ { opacity: 0 }, { opacity: Math.random() * 0.15 + 0.05, offset: 0.1 }, { opacity: 0, offset:1 }],
+            { duration: 45000 + Math.random()*15000, easing: 'ease-in-out' }
+        ).onfinish = () => nebula.remove();
+      }
+
+       function createGentleParticleDrift(count) {
+         for (let i = 0; i < count; i++) {
+            const p = document.createElement('div');
+            p.classList.add('celestial-particle');
+            const size = Math.random() * 1.5 + 0.3; // Very small
+            p.style.width = `${size}px`; p.style.height = `${size}px`;
+            p.style.backgroundColor = 'rgba(255,223,100,0.5)'; // Faint gold
+            p.style.boxShadow = `0 0 ${size*2}px rgba(255,223,100,0.3)`;
+            p.style.left = `${Math.random()*100}%`; p.style.top = `${Math.random()*100}%`;
+
+            const driftX = (Math.random() - 0.5) * 100; // Slower drift
+            const driftY = (Math.random() - 0.5) * 100;
+            p.animate([
+              { opacity: 0, transform: `translate(0,0)` },
+              { opacity: Math.random() * 0.4 + 0.2, offset: 0.1},
+              { opacity: 0, transform: `translate(${driftX}px, ${driftY}px)`, offset: 1}
+            ], {
+              duration: 30000 + Math.random()*20000, // Very long life
+              easing: 'linear', delay: Math.random() * 5000
+            }).onfinish = () => p.remove();
+            divineCanvas.appendChild(p);
+         }
+       }
+    });
+  </script>
+
+</body>
+</html>
