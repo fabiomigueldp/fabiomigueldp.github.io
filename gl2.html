@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="la">
+<head>
+  <meta charset="UTF-8">
+  <title>LUX DIVINA - PROCESSUS ET REDITUS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Trajan+Pro:wght@400;700&family=Noto+Serif+Hebrew:wght@400;700&family=Noto+Serif+Greek:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --divine-darkness: #000000; /* Superluminous Dark */
+      --uncreated-light: #FFFFFF;
+      --seraphic-fire: #FF4500; /* OrangeRed for Seraphim */
+      --cherubic-sapphire: #0F52BA; /* Sapphire for Cherubim */
+      --throne-diamond: #F0F8FF; /* AliceBlue - Diamond for Thrones */
+      --grace-gold: #FFD700;
+      --wisdom-amethyst: #9966CC;
+      --ethereal-emerald: #50C878;
+      --divine-pearl: #F8F8FF; /* GhostWhite, softer pearl */
+      --anima-mundi-rose: rgba(255, 192, 203, 0.5); /* Pink for life essence */
+      --lumen-subtle-glow: rgba(240, 248, 255, 0.05); /* Very faint background aura */
+    }
+
+    html, body {
+      width: 100%; height: 100%; margin: 0; padding: 0;
+      overflow: hidden; background-color: var(--divine-darkness);
+      font-family: 'Trajan Pro', 'Noto Serif Greek', 'Noto Serif Hebrew', serif;
+      opacity: 0; /* Fade in overall page */
+      animation: pageAnagoge 6s ease-out forwards; animation-delay: 2s;
+    }
+    @keyframes pageAnagoge { to { opacity: 1; } }
+
+    #theophany-space { /* Where the Divine manifests */
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      perspective: 3000px; perspective-origin: 50% 50%;
+      z-index: 1;
+      /* Subtle background 'breathing' managed by a canvas layer for performance */
+    }
+    #background-canvas {
+        position: fixed; top:0; left:0; width:100%; height:100%; z-index: -1;
+    }
+
+    #fullscreen-sanctum-button {
+      position: fixed; bottom: 30px; right: 30px; padding: 15px 25px;
+      background: linear-gradient(145deg, rgba(255,215,0,0.05), rgba(255,120,0,0.1));
+      color: var(--grace-gold); border: 1.5px solid var(--grace-gold); border-radius: 5px;
+      font-family: 'Trajan Pro', serif; font-size: 16px; text-transform: uppercase; letter-spacing: 1px;
+      cursor: pointer; opacity: 0.7; text-shadow: 0 0 8px var(--grace-gold);
+      box-shadow: 0 0 15px rgba(255,215,0,0.2), inset 0 0 5px rgba(255,255,255,0.05);
+      transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1); z-index: 9999;
+    }
+    #fullscreen-sanctum-button:hover {
+      opacity: 1; transform: scale(1.03) translateY(-2px);
+      box-shadow: 0 5px 25px rgba(255,215,0,0.4), inset 0 0 10px rgba(255,255,255,0.1);
+    }
+    body:fullscreen #fullscreen-sanctum-button, body:-webkit-full-screen #fullscreen-sanctum-button { display: none; }
+
+
+    /* --- THE UNCREATED SPARK (SCINTILLA ANIMAE) --- */
+    #scintilla-divina {
+      position: absolute; top: 50%; left: 50%; width: 1px; height: 1px;
+      border-radius: 50%; background-color: var(--uncreated-light);
+      opacity: 0; transform: translate(-50%, -50%) scale(0.001);
+      z-index: 100;
+      /* Intense, piercing initial shadow managed by JS for performance on animation */
+    }
+
+    /* --- FIRST EMANATION - LUX INACCESSIBILIS --- */
+    .lux-primordialis-wave {
+      position: absolute; border-radius: 50%;
+      border: 0.5px solid var(--uncreated-light); /* Extremely fine */
+      opacity: 0; pointer-events: none; z-index: 50;
+      filter: blur(0.5px) brightness(1.5);
+    }
+
+    /* --- SECOND EMANATION - LUMEN CREATUM --- */
+    .celestial-choir-particle { /* Seraphim, Cherubim, Thrones etc. */
+      position: absolute; border-radius: 50%;
+      opacity: 0; pointer-events: none; z-index: 20;
+      /* background-color, box-shadow, size, trails animated/set by JS */
+    }
+    .particle-light-trail { /* Smoother, fading trails */
+      position: absolute; top:50%; left:50%; width:50%; height:1px; /* Trail as a line */
+      transform-origin: 0% 50%;
+      opacity: 0;
+      /* background-gradient and transform set by JS */
+    }
+
+    .nebula-sapientiae { /* Wisdom Nebulas - more layered & complex */
+      position: absolute; opacity: 0; mix-blend-mode: add; /* 'add' for intense light疊加 */
+      pointer-events: none; z-index: 10;
+      transform-style: preserve-3d; /* For layered internal elements */
+      animation: nebulaCosmicWaltz 240s linear infinite alternate,
+                 nebulaFormEvolve 180s ease-in-out infinite alternate;
+    }
+    /* Inner nebula layers will be added dynamically if desired for hyper-complexity */
+    @keyframes nebulaCosmicWaltz {
+        0% { transform: translate(-50%,-50%) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1); }
+        100% { transform: translate(-50%,-50%) rotateX(20deg) rotateY(15deg) rotateZ(30deg) scale(1.05); }
+    }
+    @keyframes nebulaFormEvolve {
+        0%, 100% { border-radius: 40% 60% 70% 30% / 30% 50% 50% 70%; filter: saturate(1) brightness(1); }
+        50% { border-radius: 70% 30% 50% 50% / 60% 40% 30% 70%; filter: saturate(1.2) brightness(1.1); }
+    }
+
+    .flumen-gratiae-stream { /* Rivers of Grace */
+      position: absolute; height: 1.5px; opacity: 0;
+      pointer-events: none; z-index: 15;
+      filter: blur(1px) drop-shadow(0 0 5px var(--grace-gold)); /* Softer, glowing shadow */
+    }
+
+    /* --- THE DIVINE LOGOS / VERBUM --- */
+    #logos-rhema-container {
+      position: fixed; width: 100%; height: 100%; top: 0; left: 0;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10000; pointer-events: none; /* Highest non-UI z-index */
+    }
+    .logos-manifest {
+      font-size: clamp(3.5em, 10vw, 14em); /* Size hierarchy depending on sacredness */
+      font-weight: 700; /* Trajan Pro is already quite bold */
+      color: var(--uncreated-light);
+      text-shadow: /* Canonical Light Stack */
+        0 0 12px var(--uncreated-light),       /* Inner Core Radiance */
+        0 0 30px var(--divine-pearl),          /* First Aura - Purity */
+        0 0 60px var(--grace-gold),           /* Second Aura - Grace & Majesty */
+        0 0 100px var(--seraphic-fire),        /* Third Aura - Divine Love/Power */
+        0 0 160px var(--cherubic-sapphire),    /* Fourth Aura - Divine Wisdom */
+        0 0 250px var(--wisdom-amethyst);       /* Widest Aura - Mystery */
+      opacity: 0; position: absolute;
+      animation: verbumFiatLux 18s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+      filter: blur(12px) brightness(1.1);
+      transform: scale(0.2) rotateX(70deg) translateZ(-500px); /* Deep perspective emergence */
+    }
+    @keyframes verbumFiatLux { /* God's Word Commanding Creation */
+      0% { opacity: 0; transform: scale(0.2) rotateX(70deg) translateZ(-500px); filter: blur(30px) brightness(0.7); }
+      25% { opacity: 1; transform: scale(1) rotateX(0deg) translateZ(0px); filter: blur(0px) brightness(1.3); } /* Full Manifestation */
+      75% { opacity: 1; transform: scale(1.01) rotateX(0deg) translateZ(0px); filter: blur(0.5px) brightness(1.2); } /* Sustaining Presence */
+      100% { opacity: 0; transform: scale(2.2) rotateX(-70deg) translateZ(800px); filter: blur(40px) brightness(0.6); } /* Return to Mystery / Expansion into Infinity */
+    }
+
+    .logos-echo-fractal { /* Geometric Echo */
+      position: absolute; top:50%; left:50%;
+      transform-style: preserve-3d; opacity:0;
+      pointer-events: none; z-index: 30;
+    }
+    .fractal-segment { /* Pieces of the fractal */
+      position: absolute; transform-origin: center center;
+      border: 0.5px solid rgba(255,215,0,0.05); /* Extremely faint base */
+      box-shadow: 0 0 5px rgba(255,215,0,0.1);
+    }
+
+  </style>
+</head>
+<body>
+  <canvas id="background-canvas"></canvas>
+  <button id="fullscreen-sanctum-button" aria-label="Enter Fullscreen Sanctum">VISIO PLENA</button>
+
+  <div id="theophany-space">
+    <div id="scintilla-divina"></div>
+  </div>
+
+  <div id="logos-rhema-container"></div>
+
+  <script>
+    // Animation Frame Loop for precise timing and complex sequences
+    let lastFrameTime = 0;
+    let rafId;
+
+    const rand = (min, max) => Math.random() * (max - min) + min;
+    const choice = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+    // Background Canvas for subtle cosmic dust / ether
+    const bgCanvas = document.getElementById('background-canvas');
+    const bgCtx = bgCanvas.getContext('2d');
+    let bgParticles = [];
+    const NUM_BG_PARTICLES = 150; // Increased for supreme
+
+    function setupBackgroundCanvas() {
+        bgCanvas.width = window.innerWidth;
+        bgCanvas.height = window.innerHeight;
+        bgParticles = [];
+        for (let i = 0; i < NUM_BG_PARTICLES; i++) {
+            bgParticles.push({
+                x: Math.random() * bgCanvas.width,
+                y: Math.random() * bgCanvas.height,
+                size: rand(0.1, 0.8), // Very tiny
+                opacity: rand(0.02, 0.15), // Very faint
+                vx: (Math.random() - 0.5) * 0.1, // Extremely slow drift
+                vy: (Math.random() - 0.5) * 0.1
+            });
+        }
+    }
+
+    function drawBackground() {
+        bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+        bgParticles.forEach(p => {
+            bgCtx.beginPath();
+            bgCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            bgCtx.fillStyle = `rgba(240, 248, 255, ${p.opacity})`; // var(--lumen-subtle-glow)
+            bgCtx.fill();
+            p.x += p.vx;
+            p.y += p.vy;
+            if (p.x < 0 || p.x > bgCanvas.width) p.vx *= -1;
+            if (p.y < 0 || p.y > bgCanvas.height) p.vy *= -1;
+        });
+    }
+    
+    window.addEventListener('resize', setupBackgroundCanvas);
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const theophanySpace = document.getElementById('theophany-space');
+      const scintillaDivina = document.getElementById('scintilla-divina');
+      const logosContainer = document.getElementById('logos-rhema-container');
+      const fullscreenButton = document.getElementById('fullscreen-sanctum-button');
+      
+      setupBackgroundCanvas(); // Initialize background canvas
+
+      let isExperienceActive = true;
+      const K_ANIM_DELAYS = { // Canon animation delays (in ms)
+        sparkAppear: 3500, sparkExpand: 4000,
+        firstLuxWave: 5000, firstChoir: 6500, firstNebula: 7500,
+        firstGraceRiver: 8500, firstLogos: 11000,
+      };
+
+      const K_LOGOS_SEQUENCE = [ // The Divine Words in order of manifestation
+        { text: "אור", font: "'Noto Serif Hebrew', serif", size: "10em", meaning: "Light (Hebrew)"}, // Or (Light)
+        { text: "λόγος", font: "'Noto Serif Greek', serif", size: "12em", meaning: "Word/Reason (Greek)"}, // Logos
+        { text: "FIAT LUX", font: "'Trajan Pro', serif", size: "14em", meaning: "Let there be Light"},
+        { text: "IN PRINCIPIO", font: "'Trajan Pro', serif", size: "13em", meaning:"In the Beginning"},
+        { text: "SPIRITUS SANCTUS", font: "'Trajan Pro', serif", size: "12em", meaning:"Holy Spirit"},
+        { text: "CREATIO CONTINUA", font: "'Trajan Pro', serif", size: "11em", meaning:"Continuous Creation"},
+        { text: "SAPIENTIA", font: "'Trajan Pro', serif", size: "13em", meaning:"Wisdom"},
+        { text: "AMOR", font: "'Trajan Pro', serif", size: "15em", meaning:"Love"},
+        { text: "GLORIA DEI", font: "'Trajan Pro', serif", size: "14em", meaning:"Glory of God"},
+        { text: "VISIO BEATIFICA", font: "'Trajan Pro', serif", size: "12em", meaning:"Beatific Vision"}
+      ];
+      let logosIndex = 0;
+
+      fullscreenButton.addEventListener('click', () => { /* ... (same fullscreen logic) ... */
+         const el = document.documentElement;
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+          if (el.requestFullscreen) el.requestFullscreen();
+          else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        }
+      });
+
+
+      // --- 1. SCINTILLA DIVINA ---
+      setTimeout(() => {
+        // Initial explosive flash - pure CSS could stutter, WAAPI is better.
+        scintillaDivina.animate([
+            { opacity: 0, transform: 'translate(-50%, -50%) scale(0.001)', boxShadow: '0 0 0px 0px var(--uncreated-light)' },
+            { opacity: 1, transform: 'translate(-50%, -50%) scale(3)', 
+              boxShadow: `0 0 150px 75px var(--uncreated-light), 0 0 300px 150px var(--divine-pearl), 0 0 500px 250px var(--grace-gold)`, 
+              offset: 0.05 }, // Quick, intense flash
+            { opacity: 0.9, transform: 'translate(-50%, -50%) scale(1)', 
+              boxShadow: `0 0 20px 5px var(--uncreated-light), 0 0 50px 15px var(--divine-pearl), 0 0 90px 30px var(--grace-gold)`,
+              offset: 0.15 }, // Recedes to a potent point
+            { opacity: 0.8, transform: 'translate(-50%, -50%) scale(1)', // Holds as the source
+              boxShadow: `0 0 20px 5px var(--uncreated-light), 0 0 50px 15px var(--divine-pearl), 0 0 90px 30px var(--grace-gold)` }
+        ], { duration: K_ANIM_DELAYS.sparkExpand - K_ANIM_DELAYS.sparkAppear + 1000, easing: 'cubic-bezier(0.6, -0.28, 0.735, 0.045)', fill: 'forwards' });
+        // Begin the 'Heartbeat of God' animation after initial sequence.
+        setTimeout(() => {
+             if (!isExperienceActive) return;
+             scintillaDivina.style.animation = "heartbeatOfGod 25s ease-in-out infinite alternate";
+             theophanySpace.insertAdjacentHTML('beforeend', `<style>
+                @keyframes heartbeatOfGod {
+                    0% { opacity: 0.7; transform: translate(-50%,-50%) scale(0.9); box-shadow: 0 0 15px 4px var(--uncreated-light), 0 0 40px 12px var(--divine-pearl); }
+                    100% { opacity: 0.9; transform: translate(-50%,-50%) scale(1.1); box-shadow: 0 0 25px 6px var(--uncreated-light), 0 0 60px 18px var(--divine-pearl); }
+                }</style>`);
+        }, K_ANIM_DELAYS.sparkExpand - K_ANIM_DELAYS.sparkAppear + 2000);
+
+      }, K_ANIM_DELAYS.sparkAppear);
+
+      // --- 2. CANONICAL CREATION FUNCTIONS ---
+      // Function for Lux Primordialis Wave
+      function createLuxPrimordialisWave(delay) {
+        setTimeout(() => {
+          if (!isExperienceActive) return;
+          const wave = document.createElement('div');
+          wave.classList.add('lux-primordialis-wave');
+          wave.style.top = `50%`; wave.style.left = `50%`; // Originates from Scintilla
+          const initialSize = rand(10,30);
+          wave.style.width = `${initialSize}px`; wave.style.height = `${initialSize}px`;
+          theophanySpace.appendChild(wave);
+          const maxScale = rand(30, 50); // Massive, quick expansion
+          wave.animate([
+            { opacity: 0, transform: `translate(-50%,-50%) scale(0.01)`},
+            { opacity: rand(0.3,0.7), filter: `blur(0.5px) brightness(${rand(1.5,2.5)})`, offset: 0.02},
+            { opacity: 0, transform: `translate(-50%,-50%) scale(${maxScale})`, filter: 'blur(2px) brightness(1)', borderWidth: '0px' }
+          ], { duration: rand(4000,7000), easing: 'cubic-bezier(0.19, 1, 0.22, 1)', iterations: 1 }
+          ).onfinish = () => wave.remove();
+        }, delay);
+      }
+
+      function createCelestialChoirParticle(delay, choirType, origin = {x:50, y:50, z:0}, orbitRadius = 200) {
+          setTimeout(() => {
+            if (!isExperienceActive) return;
+            const p = document.createElement('div');
+            p.classList.add('celestial-choir-particle');
+            let pColor, pSize, pBoxShadow, pTrailColor;
+            let pMoveDuration = rand(12000, 25000);
+            let orbitSpeedFactor = 1;
+
+            switch(choirType) {
+                case 'seraphim':
+                    pColor = `var(--seraphic-fire)`; pSize = rand(2.5,5); orbitSpeedFactor = 1.5;
+                    pBoxShadow = `0 0 ${pSize*2}px ${pColor}, 0 0 ${pSize*4}px var(--grace-gold), 0 0 ${pSize*6}px rgba(255,255,255,0.3)`;
+                    pTrailColor = `linear-gradient(to right, rgba(255,69,0,0), rgba(255,69,0,0.6) 50%, rgba(255,215,0,0.4))`;
+                    break;
+                case 'cherubim':
+                    pColor = `var(--cherubic-sapphire)`; pSize = rand(2,4); orbitSpeedFactor = 1;
+                    pBoxShadow = `0 0 ${pSize*2}px ${pColor}, 0 0 ${pSize*4}px var(--divine-pearl), 0 0 ${pSize*6}px rgba(100,149,237,0.3)`;
+                    pTrailColor = `linear-gradient(to right, rgba(15,82,186,0), rgba(15,82,186,0.5) 50%, rgba(240,248,255,0.3))`;
+                    break;
+                case 'thrones':
+                    pColor = `var(--throne-diamond)`; pSize = rand(3,6); orbitSpeedFactor = 0.7;
+                    pBoxShadow = `0 0 ${pSize*3}px ${pColor}, 0 0 ${pSize*6}px var(--uncreated-light), 0 0 ${pSize*9}px rgba(200,200,255,0.2)`;
+                    pTrailColor = `linear-gradient(to right, rgba(240,248,255,0), rgba(240,248,255,0.7) 60%, rgba(220,220,255,0.5))`;
+                    break;
+                default: // Other choirs / generic divine light
+                    pColor = choice(['var(--wisdom-amethyst)', 'var(--ethereal-emerald)', 'var(--anima-mundi-rose)']);
+                    pSize = rand(1.5,3.5); orbitSpeedFactor = rand(0.8, 1.2);
+                    pBoxShadow = `0 0 ${pSize*1.5}px ${pColor}, 0 0 ${pSize*3}px var(--divine-pearl)`;
+                    pTrailColor = `linear-gradient(to right, transparent, ${pColor.replace('var(','rgba(').replace(')',',0.4)')} 50%, ${pColor.replace('var(','rgba(').replace(')',',0.2)')})`;
+            }
+            pMoveDuration /= orbitSpeedFactor;
+
+            p.style.width = `${pSize}px`; p.style.height = `${pSize}px`;
+            p.style.backgroundColor = pColor; p.style.boxShadow = pBoxShadow;
+            p.style.left = `${origin.x}%`; p.style.top = `${origin.y}%`;
+            p.style.transform = `translate(-50%,-50%) translateZ(${origin.z || 0}px)`;
+
+            // Add trail
+            const trail = document.createElement('div');
+            trail.classList.add('particle-light-trail');
+            trail.style.height = `${pSize * 0.3}px`; // Trail thickness relative to particle
+            trail.style.background = pTrailColor;
+            trail.style.width = `${pSize * rand(5,15)}px`; // Trail length
+            p.appendChild(trail); // Trail is child of particle, easier to manage
+
+            theophanySpace.appendChild(p);
+
+            const numWaypoints = 5 + Math.floor(orbitSpeedFactor*3); // More waypoints for faster/complex orbits
+            const keyframes = [{ opacity: 0, transform: p.style.transform + ' scale(0.2)', offset:0 }];
+            trail.style.opacity = 0; // Trail starts invisible
+
+            let currentAngle = rand(0, Math.PI * 2);
+            let currentRadius = orbitRadius * rand(0.7, 1.3);
+            let currentZ = (origin.z || 0) + rand(-orbitRadius/2, orbitRadius/2);
+
+            for (let i = 1; i <= numWaypoints; i++) {
+                currentAngle += rand(Math.PI / 3, Math.PI * 2 / 3) * (rand(0,1)>0.5?1:-1) ; // Change direction sometimes
+                currentRadius = orbitRadius * rand(0.5, 1.5);
+                currentZ += rand(-orbitRadius/4, orbitRadius/4);
+                const x = Math.cos(currentAngle) * currentRadius;
+                const y = Math.sin(currentAngle) * currentRadius * rand(0.7,1.3); // Elliptical orbits
+
+                const pointTransform = `translate(-50%,-50%) translate3d(${x}px, ${y}px, ${currentZ}px) scale(${rand(0.8,1.2)})`;
+                const trailRotation = Math.atan2(y - (keyframes[i-1] ? parseFloat(keyframes[i-1].transform.match(/translate3d\([^,]+,\s*([^,]+)px/)?.[1] || 0) : 0),
+                                            x - (keyframes[i-1] ? parseFloat(keyframes[i-1].transform.match(/translate3d\(\s*([^,]+)px/)?.[1] || 0) : 0)) * (180/Math.PI);
+
+                if (i === 1) keyframes.push({ opacity: 1, transform: pointTransform, offset: 0.05 });
+                else keyframes.push({ opacity: rand(0.7,1), transform: pointTransform, offset: i / numWaypoints * 0.9 + 0.05 }); // Distribute over 90% of duration
+
+                // Animate trail opacity and rotation separately (complex, needs finesse)
+                // For simplicity, here just a fade for trail with particle. Real trails need per-frame updates or SVG.
+                // This is a placeholder for AAA trail.
+                if (i===1) trail.style.opacity = rand(0.3,0.7);
+            }
+            keyframes.push({ opacity: 0, transform: keyframes[numWaypoints].transform + ' scale(0.1)', offset:1});
+
+            p.animate(keyframes, {
+                duration: pMoveDuration,
+                easing: 'cubic-bezier(0.455, 0.03, 0.515, 0.955)', // Smooth celestial motion
+                delay: rand(0,2000)
+            }).onfinish = () => p.remove();
+
+          }, delay);
+      }
+      
+      function createNebulaSapientiae(delay) { /* Complex gradients and layers */
+        setTimeout(() => {
+            if(!isExperienceActive) return;
+            const nebula = document.createElement('div');
+            nebula.classList.add('nebula-sapientiae');
+            const baseSize = rand(Math.min(window.innerWidth, window.innerHeight) * 0.4, Math.min(window.innerWidth, window.innerHeight) * 0.8);
+            nebula.style.width = `${baseSize}px`; nebula.style.height = `${baseSize * rand(0.5,1)}px`;
+            nebula.style.top = `${rand(0,100)}%`; nebula.style.left = `${rand(0,100)}%`;
+
+            const c = { // Palette for Wisdom Nebulae
+                amethyst: `rgba(153,102,204,${rand(0.05,0.2)})`, emerald: `rgba(80,200,120,${rand(0.05,0.2)})`,
+                pearl: `rgba(248,248,255,${rand(0.08,0.25)})`, gold: `rgba(255,215,0,${rand(0.03,0.15)})`,
+                sapphire: `rgba(15,82,186,${rand(0.02,0.1)})`
+            };
+            nebula.style.background = `
+                radial-gradient(ellipse at ${rand(10,30)}% ${rand(70,90)}%, ${c.sapphire} 0%, transparent 40%),
+                radial-gradient(ellipse at ${rand(70,90)}% ${rand(10,30)}%, ${c.gold} 0%, transparent 35%),
+                radial-gradient(ellipse at center, ${c.pearl} 0%, ${c.amethyst} 20%, ${c.emerald} 45%, transparent 60%)
+            `;
+            // Subtle animation of background positions for internal movement
+            nebula.style.backgroundSize = "200% 200%, 150% 150%, 250% 250%"; // Allow movement
+            nebula.style.animation = `
+                nebulaCosmicWaltz ${rand(180,300)}s linear infinite alternate,
+                nebulaFormEvolve ${rand(120,220)}s ease-in-out infinite alternate,
+                nebulaInternalFlow 45s ease-in-out infinite alternate
+            `;
+            theophanySpace.insertAdjacentHTML('beforeend', `<style>
+                @keyframes nebulaInternalFlow {
+                    0% { background-position: 0% 0%, 100% 100%, 50% 50%; }
+                    50% { background-position: 50% 100%, 50% 0%, 0% 50%; }
+                    100% { background-position: 0% 0%, 100% 100%, 50% 50%; }
+                }</style>`);
+
+            theophanySpace.appendChild(nebula);
+            nebula.animate([
+                { opacity: 0, transform: nebula.style.transform + ' scale(0.3)' },
+                { opacity: rand(0.5,0.85), offset:0.1}, { opacity: rand(0.4,0.7), offset:0.9},
+                { opacity: 0, transform: nebula.style.transform + ' scale(1.2)' }
+            ], { duration: rand(30000, 50000), easing: 'ease-in-out'})
+            .onfinish = () => nebula.remove();
+        }, delay);
+      }
+      
+      function createFlumenGratiaeStream(delay) { /* Enhanced Rivers of Grace */
+        setTimeout(() => {
+            if(!isExperienceActive) return;
+            const stream = document.createElement('div');
+            stream.classList.add('flumen-gratiae-stream');
+            const startY = rand(0,100);
+            const pathPoints = [{x: (rand(0,1)>0.5 ? -20 : 100), y: startY }]; // Start off-screen
+            const numSegments = 5 + Math.floor(rand(0,5)); // More segments for curvier rivers
+            for(let i=1; i<=numSegments; i++){
+                pathPoints.push({
+                    x: rand(0,100), y: rand(0,100)
+                });
+            }
+            pathPoints.push({x: (pathPoints[0].x < 0 ? 120 : -20), y: rand(0,100)}); // End off-screen
+
+            // Path for WAAPI (cannot directly do SVG path animation on DOM element, this is a linear segment approach)
+            // For true AAA curved paths, SVG <path> with animateMotion is king. This is a DOM approximation.
+            const keyframes = [{opacity:0, offset:0, motionOffset: "0%"}]; // Use motionOffset for path-like anim
+            let motionPath = `M ${pathPoints[0].x}vw ${pathPoints[0].y}vh`;
+            for(let i=1; i<pathPoints.length; i++){
+                 motionPath += ` L ${pathPoints[i].x}vw ${pathPoints[i].y}vh`;
+            }
+            stream.style.offsetPath = `path("${motionPath}")`;
+
+            keyframes.push({opacity:rand(0.6,0.9), offset:0.1, motionOffset: "10%"});
+            keyframes.push({opacity:rand(0.5,0.8), offset:0.9, motionOffset: "90%"});
+            keyframes.push({opacity:0, offset:1, motionOffset: "100%"});
+
+            stream.style.width = `${rand(200,500)}px`; // Long segments of light
+            stream.style.height = `${rand(1,2.5)}px`;
+            stream.style.background = `linear-gradient(to right, transparent, var(--grace-gold) 20%, var(--divine-pearl) 50%, var(--grace-gold) 80%, transparent)`;
+            stream.style.boxShadow = `0 0 8px var(--grace-gold), 0 0 15px var(--divine-pearl)`;
+
+            theophanySpace.appendChild(stream);
+            stream.animate(keyframes, {duration: rand(15000, 25000), easing: 'cubic-bezier(0.5, 0, 0.5, 1)'})
+            .onfinish = () => stream.remove();
+
+        }, delay);
+      }
+
+      function createLogosEchoFractal(delay, logosText) {
+        setTimeout(() => {
+            if (!isExperienceActive) return;
+            const fractalContainer = document.createElement('div');
+            fractalContainer.classList.add('logos-echo-fractal');
+            theophanySpace.appendChild(fractalContainer);
+
+            let iterations = 3 + Math.floor(logosText.length / 4); // More iterations for potent words
+            if(logosText.includes("אור") || logosText.includes("λόγος")) iterations = 5;
+            let currentRadius = rand(150, 300);
+            let segmentCount = 6 + iterations * 2;
+            let currentAngle = rand(0,360);
+            const depthFactor = 200;
+
+            function generateFractalLayer(parent, depth, radius, angleOffset, numSegs) {
+                if (depth <= 0) return;
+                for (let i = 0; i < numSegs; i++) {
+                    const segment = document.createElement('div');
+                    segment.classList.add('fractal-segment');
+                    const angle = angleOffset + (i * (360 / numSegs));
+                    const segLength = radius * rand(0.3, 0.7);
+                    segment.style.width = `${segLength}px`;
+                    segment.style.height = `${rand(0.5,1.5)}px`; // Thin lines
+                    const x = Math.cos(angle * Math.PI / 180) * radius * 0.5;
+                    const y = Math.sin(angle * Math.PI / 180) * radius * 0.5;
+                    const z = (depth - iterations/2) * depthFactor/2 * rand(-1,1) ;
+
+                    segment.style.transform = `translate(-50%,-50%) translate3d(${x}px, ${y}px, ${z}px) rotateZ(${angle + 90}deg) rotateX(${rand(-60,60)}deg) rotateY(${rand(-60,60)}deg)`;
+                    segment.style.borderColor = `rgba(255,215,0,${rand(0.05, 0.3) / (iterations - depth + 1)})`; // Fainter for deeper levels
+                    segment.style.boxShadow = `0 0 ${2/(iterations-depth+1)}px rgba(255,215,0,${0.1/(iterations-depth+1)})`;
+                    parent.appendChild(segment);
+                    // Recursively add smaller segments if iterations allow for true fractal
+                    if (depth > 1 && numSegs > 3) {
+                       // For true fractals this would spawn new ones at ends of segments
+                    }
+                }
+            }
+            generateFractalLayer(fractalContainer, iterations, currentRadius, currentAngle, segmentCount);
+
+            fractalContainer.animate([
+                { opacity: 0, transform: `translate(-50%,-50%) scale3d(0.1,0.1,0.1) rotateY(180deg)`},
+                { opacity: rand(0.5,0.9), transform: `translate(-50%,-50%) scale3d(1,1,1) rotateY(0deg)`, offset: 0.2},
+                { opacity: 0, transform: `translate(-50%,-50%) scale3d(0.05,0.05,0.05) rotateY(-180deg) rotateZ(360deg)`, offset:1}
+            ], { duration: 6000 + iterations * 500, easing: 'cubic-bezier(0.165, 0.84, 0.44, 1)'})
+            .onfinish = () => fractalContainer.remove();
+        }, delay);
+      }
+
+
+      // --- 3. THE LOGOS / VERBUM MANIFESTATION ---
+      function showNextLogos(initialDelay = 0) { /* Similar logic, more potent visual triggers */
+         if (!isExperienceActive || logosIndex >= K_LOGOS_SEQUENCE.length) {
+            if (isExperienceActive) setTimeout(initiateAnagogicReturn, 15000); // Longer pause
+            return;
+        }
+        setTimeout(() => {
+          if (!isExperienceActive) return;
+          const currentLogos = K_LOGOS_SEQUENCE[logosIndex];
+          const textEl = document.createElement('div');
+          textEl.classList.add('logos-manifest');
+          textEl.textContent = currentLogos.text;
+          textEl.style.fontFamily = currentLogos.font;
+          textEl.style.fontSize = `clamp(${parseFloat(currentLogos.size)*0.5}em, ${parseFloat(currentLogos.size)*0.8}vw, ${currentLogos.size})`; // Dynamic font scaling
+
+
+          logosContainer.appendChild(textEl);
+          logosIndex++;
+
+          textEl.addEventListener('animationend', () => {
+            textEl.remove();
+            if (logosIndex < K_LOGOS_SEQUENCE.length) {
+                 showNextLogos(currentLogos.text.length > 15 ? 3000 : 2500); // Slightly longer pause
+            } else {
+                 setTimeout(initiateAnagogicReturn, 18000); // Grand pause
+            }
+          });
+
+          // Potent Visual Triggers for each Logos
+          createLogosEchoFractal(800, currentLogos.text);
+          createCelestialChoirParticle(1200, 'seraphim', {x:rand(30,70), y:rand(30,70), z:rand(-300,300)}, rand(300,500));
+          createCelestialChoirParticle(1500, 'cherubim', {x:rand(30,70), y:rand(30,70), z:rand(-300,300)}, rand(300,500));
+          if(Math.random() < 0.8) createNebulaSapientiae(1800);
+          if(Math.random() < 0.9) createLuxPrimordialisWave(1000);
+          if(Math.random() < 0.7) createFlumenGratiaeStream(1400);
+
+        }, initialDelay);
+      }
+
+
+      // --- 4. GRAND ORCHESTRATION OF THEOPHANY ---
+      // Initial burst, more elements and variety
+      for(let i=0; i < 15; i++) createLuxPrimordialisWave(K_ANIM_DELAYS.firstLuxWave + i * 200);
+      for(let i=0; i < 3; i++) createCelestialChoirParticle(K_ANIM_DELAYS.firstChoir + i * 400, 'seraphim', {x:50,y:20,z:-200}, 400);
+      for(let i=0; i < 3; i++) createCelestialChoirParticle(K_ANIM_DELAYS.firstChoir + i * 500, 'cherubim',{x:20,y:50,z:0}, 350);
+      for(let i=0; i < 2; i++) createCelestialChoirParticle(K_ANIM_DELAYS.firstChoir + i * 600, 'thrones',{x:80,y:80,z:200}, 300);
+      for(let i=0; i < 8; i++) createNebulaSapientiae(K_ANIM_DELAYS.firstNebula + i * 2200);
+      for(let i=0; i < 10; i++) createFlumenGratiaeStream(K_ANIM_DELAYS.firstGraceRiver + i * 1500);
+      
+      showNextLogos(K_ANIM_DELAYS.firstLogos); // Begin Divine Word sequence
+
+      // Continuous Theophany - More frequent, more variety
+      const intervalCanonIds = [];
+      function setupContinuousTheophany() {
+        intervalCanonIds.push(setInterval(() => { if (isExperienceActive) createLuxPrimordialisWave(0); }, 6000));
+        intervalCanonIds.push(setInterval(() => { if (isExperienceActive) createNebulaSapientiae(rand(0,3000)); }, 10000));
+        intervalCanonIds.push(setInterval(() => { if (isExperienceActive) createCelestialChoirParticle(0, choice(['seraphim','cherubim','thrones','other']), {x:rand(10,90),y:rand(10,90),z:rand(-400,400)}, rand(250,500));}, 5000));
+        intervalCanonIds.push(setInterval(() => { if (isExperienceActive) createFlumenGratiaeStream(rand(0,2000)); }, 8000));
+      }
+      setupContinuousTheophany();
+      
+      // Animation Loop Start (for background canvas & any other per-frame updates)
+      function animationLoop(currentTime) {
+        if (!lastFrameTime) lastFrameTime = currentTime;
+        //const deltaTime = currentTime - lastFrameTime; // Can be used for physics if needed
+        drawBackground(); // Update background canvas
+        lastFrameTime = currentTime;
+        rafId = requestAnimationFrame(animationLoop);
+      }
+      rafId = requestAnimationFrame(animationLoop);
+
+
+      // --- 5. ANAGOGIC RETURN - THE SOUL'S ASCENT ---
+      function initiateAnagogicReturn() { /* ... similar structure, very slow, ethereal elements, ends with pure darkness and a single point of light ... */
+         isExperienceActive = false; // Cease new manifestations
+         intervalCanonIds.forEach(clearInterval);
+
+         // Clear most existing dynamic elements gracefully or quickly depending on desired effect
+         Array.from(theophanySpace.children).forEach(child => {
+             if (child.id !== 'scintilla-divina' && child.animate) { // Keep the divine spark
+                child.animate([{opacity: child.style.opacity || 1}, {opacity: 0}], {duration: rand(5000,10000), easing:'ease-in'})
+                     .onfinish = () => child.remove();
+             }
+         });
+         
+        // Final Word: EGO SUM ALPHA ET OMEGA (I am Alpha and Omega) - symbol of ultimate unity
+        const finalLogos = { text: "EGO SUM Α ET Ω", font: "'Trajan Pro', 'Noto Serif Greek', serif", size: "10em" };
+        setTimeout(() => {
+             const textEl = document.createElement('div');
+             textEl.classList.add('logos-manifest');
+             textEl.textContent = finalLogos.text;
+             textEl.style.fontFamily = finalLogos.font;
+             textEl.style.fontSize = `clamp(${parseFloat(finalLogos.size)*0.4}em, ${parseFloat(finalLogos.size)*0.7}vw, ${finalLogos.size})`;
+             textEl.style.animation = "verbumFiatLux 35s cubic-bezier(0.23,1,0.32,1) forwards"; // Very long, final utterance
+             textEl.style.textShadow = `0 0 20px var(--uncreated-light), 0 0 40px var(--divine-pearl), 0 0 70px var(--grace-gold)`; // Purest light
+             logosContainer.appendChild(textEl);
+
+             textEl.addEventListener('animationend', () => {
+                 textEl.remove();
+                 // Fade everything else except the Scintilla to near black over very long time
+                 document.body.style.transition = "background-color 20s ease-out 5s";
+                 document.body.style.backgroundColor = "#000000"; // Absolute black
+
+                 // The Scintilla Divina remains, perhaps grows infinitesimally, then fades after a long pause
+                 scintillaDivina.animate([
+                    {opacity: 0.8, transform: 'translate(-50%,-50%) scale(1)'},
+                    {opacity: 1, transform: 'translate(-50%,-50%) scale(1.5)', offset: 0.5}, // Slight intensification
+                    {opacity: 0, transform: 'translate(-50%,-50%) scale(0.0001)', offset:1}
+                 ], {duration: 30000, delay: 10000, easing: 'ease-in-out', fill:'forwards'})
+                 .onfinish = () => {
+                    scintillaDivina.remove();
+                    cancelAnimationFrame(rafId); // Stop animation loop
+                    // The End. Pure silent darkness.
+                 };
+             });
+        }, 15000); // After universe quiets down
+      }
+    });
+  </script>
+
+</body>
+</html>
