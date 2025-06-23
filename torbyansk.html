@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torbyansk - Painel do Servidor com IA</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts: Minecraftia (pixel) and Inter (body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome for social icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">    <!-- Custom Tailwind Config & CSS -->
+    <style type="text/tailwindcss">
+        @layer base {
+            html {
+                font-family: 'Inter', sans-serif;
+                scroll-behavior: smooth;
+            }
+            h1, h2, h3, h4, h5, h6 {
+                font-family: 'Press Start 2P', cursive;
+            }
+        }
+        
+        /* Enhanced keyframes for animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .7; }
+        }
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 5px #AEE4FF, 0 0 10px #AEE4FF, 0 0 15px #AEE4FF; }
+            50% { text-shadow: 0 0 10px #79C7E3, 0 0 20px #79C7E3, 0 0 30px #79C7E3; }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .fade-in-item {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        .slide-in-left {
+            animation: slideInLeft 0.8s ease-out forwards;
+        }
+        .slide-in-right {
+            animation: slideInRight 0.8s ease-out forwards;
+        }
+        .loading-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .glow-text {
+            animation: glow 3s ease-in-out infinite;
+        }
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        .shimmer-effect {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+        
+        /* Enhanced snow animation */
+        @keyframes snow {
+            0% { 
+                transform: translateY(-10vh) rotate(0deg); 
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { 
+                transform: translateY(110vh) rotate(360deg); 
+                opacity: 0;
+            }
+        }
+        @keyframes snowWind {
+            0%, 100% { transform: translateX(0px); }
+            50% { transform: translateX(50px); }
+        }
+        
+        /* Ice crystal decorations */
+        @keyframes crystalGlow {
+            0%, 100% { opacity: 0.6; transform: scale(1) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1.1) rotate(180deg); }
+        }
+        .ice-crystal {
+            animation: crystalGlow 4s ease-in-out infinite;
+        }
+        
+        /* Enhanced scrollbar styling */
+        #deaths-feed::-webkit-scrollbar {
+            width: 12px;
+        }
+        #deaths-feed::-webkit-scrollbar-track {
+            background: rgba(34, 34, 34, 0.4);
+            border-radius: 8px;
+            border: 2px solid rgba(174, 228, 255, 0.1);
+        }
+        #deaths-feed::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #AEE4FF, #79C7E3, #5AAFD4);
+            border-radius: 8px;
+            border: 2px solid rgba(240, 249, 255, 0.3);
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+        #deaths-feed::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #79C7E3, #5AAFD4, #4A9BC7);
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.4);
+        }
+        
+        /* Enhanced glass morphism effect */
+        .enhanced-frosted {
+            background: rgba(34, 34, 34, 0.25);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(174, 228, 255, 0.3);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 1px rgba(255, 255, 255, 0.1),
+                0 0 20px rgba(174, 228, 255, 0.1);
+        }
+        
+        /* Minecraft-style borders and buttons */
+        .minecraft-border {
+            border-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h3v3H0V0zm3 3h3v3H3V3zm3 3h3v3H6V6zm3 0h3v3H9V3zm0 3h3v3H9V6z' fill='%23AEE4FF' fill-opacity='0.8'/%3E%3C/svg%3E") 3;
+        }
+        
+        /* Status indicators with Minecraft style */
+        .status-indicator {
+            position: relative;
+            overflow: hidden;
+        }
+        .status-indicator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(174, 228, 255, 0.3), transparent);
+            animation: shimmer 3s infinite;
+        }
+          /* Enhanced mobile responsiveness */
+        @media (max-width: 768px) {
+            .mobile-stack {
+                grid-template-columns: 1fr !important;
+            }
+            .mobile-text-sm {
+                font-size: 0.75rem;
+            }
+            .mobile-p-4 {
+                padding: 1rem;
+            }
+            .mobile-gap-4 {
+                gap: 1rem;
+            }
+            /* Optimize animations for mobile */
+            .ice-crystal {
+                animation-duration: 6s;
+            }
+            .glow-text {
+                animation: none;
+                text-shadow: 0 0 10px rgba(174, 228, 255, 0.8);
+            }
+            /* Reduce snow particles on mobile */
+            .snow-reduced {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .mobile-text-xs {
+                font-size: 0.65rem;
+            }
+            .mobile-h-sm {
+                height: 8rem;
+            }
+        }
+        
+        /* Ice particles floating effect */
+        .ice-particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(174, 228, 255, 0.8), transparent);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 8s ease-in-out infinite;
+        }
+        
+        /* Header enhancement with aurora effect */
+        .aurora-bg {
+            background: linear-gradient(45deg, 
+                rgba(121, 199, 227, 0.3), 
+                rgba(90, 175, 212, 0.4), 
+                rgba(174, 228, 255, 0.3), 
+                rgba(121, 199, 227, 0.3));
+            background-size: 400% 400%;
+            animation: aurora 8s ease-in-out infinite;
+        }        @keyframes aurora {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        /* MOTD Gradient Text Effect */
+        .gradient-text {
+            background: linear-gradient(90deg, 
+                #00AEFF 0%, #13B2FF 14%, #26B6FF 28%, 
+                #3ABAFF 42%, #4DBEFF 57%, #60C1FF 71%, 
+                #74C5FF 85%, #87C9FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            font-weight: bold;
+            letter-spacing: 0.1em;
+        }
+        
+        /* Fallback for browsers that don't support background-clip */
+        @supports not (-webkit-background-clip: text) {
+            .gradient-text {
+                color: #AEE4FF;
+            }
+        }
+        
+        /* Mountain Layers with Parallax Effect */
+        .mountain-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 120%;
+            height: 100%;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center bottom;
+            opacity: 0.9;
+            will-change: transform;
+        }
+          .mountain-layer-1 {
+            background-image: 
+                linear-gradient(to top, rgba(22, 78, 99, 0.8), transparent 60%),
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 1200 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,300 L0,240 L200,180 L400,220 L600,160 L800,200 L1000,140 L1200,180 L1200,300 Z' fill='%23164e63' opacity='0.9'/%3E%3C/svg%3E");
+            z-index: 2;
+            animation: parallax-1 20s ease-in-out infinite alternate;
+        }
+        
+        .mountain-layer-2 {
+            background-image: 
+                linear-gradient(to top, rgba(30, 64, 175, 0.7), transparent 70%),
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 1200 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,300 L0,260 L150,200 L350,240 L550,180 L750,220 L950,160 L1200,200 L1200,300 Z' fill='%231e40af' opacity='0.8'/%3E%3C/svg%3E");
+            z-index: 3;
+            animation: parallax-2 25s ease-in-out infinite alternate;
+        }
+        
+        .mountain-layer-3 {
+            background-image: 
+                linear-gradient(to top, rgba(59, 130, 246, 0.6), transparent 80%),
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 1200 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,300 L0,280 L100,220 L300,260 L500,200 L700,240 L900,180 L1200,220 L1200,300 Z' fill='%233b82f6' opacity='0.7'/%3E%3C/svg%3E");
+            z-index: 4;
+            animation: parallax-3 30s ease-in-out infinite alternate;
+        }
+        
+        .mountain-layer-4 {
+            background-image: 
+                linear-gradient(to top, rgba(125, 211, 252, 0.4), transparent 90%),
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 1200 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,300 L0,290 L80,250 L280,280 L480,240 L680,270 L880,230 L1200,260 L1200,300 Z' fill='%237dd3fc' opacity='0.6'/%3E%3C/svg%3E");
+            z-index: 5;
+            animation: parallax-4 35s ease-in-out infinite alternate;
+        }
+        
+        /* Parallax animations for different layers */
+        @keyframes parallax-1 {
+            0% { transform: translateX(-2%) scale(1.02); }
+            100% { transform: translateX(2%) scale(1.05); }
+        }
+        
+        @keyframes parallax-2 {
+            0% { transform: translateX(1%) scale(1.03); }
+            100% { transform: translateX(-1%) scale(1.04); }
+        }
+        
+        @keyframes parallax-3 {
+            0% { transform: translateX(-1%) scale(1.01); }
+            100% { transform: translateX(1%) scale(1.03); }
+        }
+        
+        @keyframes parallax-4 {
+            0% { transform: translateX(0.5%) scale(1.01); }
+            100% { transform: translateX(-0.5%) scale(1.02); }
+        }
+        
+        /* Responsive adjustments for mountains */
+        @media (max-width: 768px) {
+            .mountain-layer {
+                width: 150%;
+                opacity: 0.7;
+            }
+            
+            .mountain-layer-1 { animation-duration: 15s; }
+            .mountain-layer-2 { animation-duration: 18s; }
+            .mountain-layer-3 { animation-duration: 22s; }
+            .mountain-layer-4 { animation-duration: 25s; }
+            
+            @keyframes parallax-1 {
+                0% { transform: translateX(-1%) scale(1.01); }
+                100% { transform: translateX(1%) scale(1.02); }
+            }
+            
+            @keyframes parallax-2 {
+                0% { transform: translateX(0.5%) scale(1.01); }
+                100% { transform: translateX(-0.5%) scale(1.02); }
+            }
+            
+            @keyframes parallax-3 {
+                0% { transform: translateX(-0.5%) scale(1.005); }
+                100% { transform: translateX(0.5%) scale(1.015); }
+            }
+            
+            @keyframes parallax-4 {
+                0% { transform: translateX(0.3%) scale(1.005); }
+                100% { transform: translateX(-0.3%) scale(1.01); }
+            }
+        }
+    </style>
+    
+    <script>
+        // Custom Tailwind theme configuration
+        tailwind.config = {
+            theme: {
+                extend: {                    colors: {
+                        'ice-blue': '#AEE4FF',
+                        'frost-white': '#F0F9FF',
+                        'glacier-teal': '#79C7E3',
+                        'deep-snow-blue': '#5AAFD4',
+                        'silver-gray': '#D8E3E7',
+                        'coal-black': '#222222',
+                        'arctic-cyan': '#87CEEB',
+                        'frozen-mint': '#98FB98',
+                        'blizzard-blue': '#4682B4',
+                        'crystal-white': '#F8F8FF',
+                    },
+                    fontFamily: {
+                        'minecraft': ['"Press Start 2P"', 'cursive'],
+                        'body': ['Inter', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'frosted-glass': "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23F0F9FF' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
+                    }
+                }
+            }
+        }
+    </script>
+
+</head>
+<body class="bg-deep-snow-blue text-frost-white font-body bg-fixed">    <!-- ===== Hero Section with Enhanced Snow Animation & Aurora ===== -->
+    <header class="relative h-[50vh] md:h-[60vh] w-full flex items-center justify-center overflow-hidden bg-gradient-to-b from-glacier-teal via-deep-snow-blue to-blizzard-blue aurora-bg">        <div id="snow-container" class="absolute top-0 left-0 w-full h-full z-20"></div>
+        <div id="ice-particles" class="absolute top-0 left-0 w-full h-full z-20"></div>
+          <!-- Ice crystal decorations -->
+        <div class="absolute top-8 left-8 ice-crystal text-ice-blue text-2xl opacity-60 z-20">❄</div>
+        <div class="absolute top-16 right-12 ice-crystal text-crystal-white text-lg opacity-40 z-20" style="animation-delay: 1s;">❅</div>
+        <div class="absolute bottom-20 left-16 ice-crystal text-arctic-cyan text-xl opacity-50 z-20" style="animation-delay: 2s;">❄</div>
+        <div class="absolute bottom-32 right-8 ice-crystal text-ice-blue text-3xl opacity-30 z-20" style="animation-delay: 0.5s;">❅</div>
+          <!-- Mountain Layers for Parallax Background -->
+        <div class="mountain-layer mountain-layer-1"></div>
+        <div class="mountain-layer mountain-layer-2"></div>
+        <div class="mountain-layer mountain-layer-3"></div>
+        <div class="mountain-layer mountain-layer-4"></div>
+        
+        <div class="text-center z-30 float-animation">
+            <h1 class="text-4xl md:text-6xl lg:text-8xl font-minecraft text-white glow-text mb-8" style="text-shadow: 3px 3px 0px #2222227a, 0 0 30px rgba(174, 228, 255, 0.8);">
+                Torbyansk
+            </h1>
+            <div class="mt-8 flex justify-center space-x-6 text-3xl">
+                <span class="ice-crystal text-ice-blue">⚡</span>
+                <span class="ice-crystal text-crystal-white" style="animation-delay: 0.5s;">🔷</span>
+                <span class="ice-crystal text-arctic-cyan" style="animation-delay: 1s;">❄️</span>
+                <span class="ice-crystal text-glacier-teal" style="animation-delay: 1.5s;">🧊</span>
+            </div>
+        </div>
+    </header>    <!-- ===== Main Content Grid with Enhanced Responsiveness ===== -->
+    <main class="container mx-auto p-3 md:p-6 lg:p-8 -mt-32 md:-mt-24 z-10 relative">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 mobile-stack">
+
+            <!-- Left Column: Status & Deaths with Enhanced Styling -->
+            <div class="lg:col-span-3 flex flex-col gap-4 md:gap-6">
+                
+                <!-- Card: Real-time Status with Minecraft styling -->
+                <div class="enhanced-frosted rounded-xl p-4 md:p-6 minecraft-border slide-in-left" style="animation-delay: 0.2s;">
+                    <h2 class="font-minecraft text-sm md:text-base text-ice-blue border-b-2 border-white/20 pb-3 mb-4 flex items-center">
+                        <span class="text-lg mr-3">⚡</span>
+                        <span class="mobile-text-sm">Status em Tempo Real</span>
+                    </h2>
+                    <ul class="space-y-3 md:space-y-4">
+                        <li id="status-loading" class="flex items-center justify-between text-sm md:text-base loading-pulse">
+                            <span class="flex items-center">
+                                <span class="w-3 h-3 bg-glacier-teal rounded-full mr-3 animate-pulse"></span>
+                                Carregando...
+                            </span>
+                        </li>
+                        <li id="players-online" class="hidden items-center justify-between text-sm md:text-base status-indicator">
+                            <span class="flex items-center">
+                                <span class="text-lg mr-2">👥</span>
+                                <span class="mobile-text-sm">Jogadores</span>
+                            </span> 
+                            <span id="status-online" class="font-bold text-ice-blue bg-coal-black/30 px-2 py-1 rounded">--/--</span>
+                        </li>
+                        <li id="server-tps" class="hidden items-center justify-between text-sm md:text-base status-indicator">
+                            <span class="flex items-center">
+                                <span class="text-lg mr-2">⚙️</span>
+                                <span class="mobile-text-sm">TPS</span>
+                            </span> 
+                            <span id="status-tps" class="font-bold text-frozen-mint bg-coal-black/30 px-2 py-1 rounded">--</span>
+                        </li>
+                        <li id="server-ping" class="hidden items-center justify-between text-sm md:text-base status-indicator">
+                            <span class="flex items-center">
+                                <span class="text-lg mr-2">📶</span>
+                                <span class="mobile-text-sm">Ping</span>
+                            </span> 
+                            <span id="status-ping" class="font-bold text-arctic-cyan bg-coal-black/30 px-2 py-1 rounded">-- ms</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Card: Recent Deaths with Enhanced Scroll -->
+                <div class="enhanced-frosted rounded-xl p-4 md:p-6 minecraft-border slide-in-left" style="animation-delay: 0.4s;">
+                    <h2 class="font-minecraft text-sm md:text-base text-ice-blue border-b-2 border-white/20 pb-3 mb-4 flex items-center">
+                        <span class="text-lg mr-3">💀</span>
+                        <span class="mobile-text-sm">Mortes Recentes</span>
+                    </h2>
+                    <ul id="deaths-feed" class="space-y-2 md:space-y-3 overflow-y-auto max-h-48 md:max-h-60 pr-2">
+                        <li class="flex items-center justify-between text-sm md:text-base loading-pulse">
+                            <span class="flex items-center">
+                                <span class="w-2 h-2 bg-glacier-teal rounded-full mr-3 animate-pulse"></span>
+                                Carregando...
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Right Column: Graph & AI Analyst with Enhanced Effects -->
+            <div class="lg:col-span-9 flex flex-col gap-4 md:gap-6">
+                
+                <!-- Card: Historical Graph with Minecraft styling -->
+                <div class="enhanced-frosted rounded-xl p-4 md:p-6 minecraft-border slide-in-right" style="animation-delay: 0.3s;">
+                    <h2 class="font-minecraft text-sm md:text-base text-ice-blue border-b-2 border-white/20 pb-3 mb-4 flex items-center">
+                        <span class="text-lg mr-3">📈</span>
+                        <span class="mobile-text-sm">Histórico de Jogadores (24h)</span>
+                    </h2>
+                    <div class="mt-4 h-48 md:h-64 lg:h-72 relative bg-coal-black/20 rounded-lg p-2">
+                        <canvas id="player-history-chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Card: Gemini AI Server Analyst with Magic Effects -->
+                <div class="enhanced-frosted rounded-xl p-4 md:p-6 minecraft-border slide-in-right" style="animation-delay: 0.5s;">
+                    <h2 class="font-minecraft text-sm md:text-base text-ice-blue border-b-2 border-white/20 pb-3 mb-4 flex items-center">
+                        <span class="text-xl mr-3 ice-crystal">✨</span>
+                        <span class="mobile-text-sm">Análise Mágica do Servidor</span>
+                    </h2>
+                    <div id="gemini-output" class="mt-4 text-silver-gray text-xs md:text-sm min-h-[80px] md:min-h-[100px] bg-coal-black/30 rounded-lg p-3 md:p-4 border border-ice-blue/20">
+                        <span class="ice-crystal text-ice-blue mr-2">🔮</span>
+                        Clique no botão para invocar a análise mágica do servidor com IA!
+                    </div>
+                    <button id="gemini-generate-btn" class="mt-4 w-full px-4 py-3 font-minecraft text-xs md:text-sm bg-gradient-to-r from-glacier-teal to-deep-snow-blue border-2 border-ice-blue/50 rounded-lg text-white shadow-lg hover:from-ice-blue hover:to-glacier-teal hover:border-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 relative overflow-hidden">
+                        <span class="relative z-10 flex items-center justify-center">
+                            <span class="mr-2">🪄</span>
+                            <span>Gerar Análise Mágica</span>
+                        </span>
+                        <div class="absolute inset-0 shimmer-effect opacity-30"></div>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>    <!-- ===== Enhanced Footer with Winter Theme ===== -->
+    <footer class="mt-8 md:mt-12 py-6 md:py-8 text-center text-silver-gray bg-black/30 backdrop-blur-md border-t border-ice-blue/20">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="mb-4 md:mb-0">
+                    <p class="font-minecraft text-xs md:text-sm flex items-center justify-center">
+                        <span class="mr-2">❄️</span>
+                        &copy; 2025 Torbyansk
+                        <span class="mx-2">•</span>
+                        <span class="text-ice-blue">Todos os direitos reservados</span>
+                        <span class="ml-2">❄️</span>
+                    </p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-silver-gray hover:text-ice-blue transition-all duration-300 transform hover:scale-125 hover:rotate-12">
+                        <i class="fab fa-discord fa-lg"></i>
+                    </a>
+                    <a href="#" class="text-silver-gray hover:text-arctic-cyan transition-all duration-300 transform hover:scale-125 hover:-rotate-12">
+                        <i class="fab fa-twitter fa-lg"></i>
+                    </a>
+                    <a href="#" class="text-silver-gray hover:text-glacier-teal transition-all duration-300 transform hover:scale-125 hover:rotate-12">
+                        <i class="fab fa-youtube fa-lg"></i>
+                    </a>
+                </div>
+            </div>            <div class="mt-4 text-xs text-ice-blue/60 font-minecraft">
+                ❄️ Built with winter magic and love for Minecraft by TorbWare ❄️
+            </div>
+        </div>
+    </footer>
+
+    <script>        const mockStatus = { online: 6, maxPlayers: 64, tps: 20, ping: 18 };
+        const mockHistory = [ { "time":"2025-06-23T00:00:00Z","count":2 }, { "time":"2025-06-23T04:00:00Z","count":4 }, { "time":"2025-06-23T08:00:00Z","count":3 }, { "time":"2025-06-23T12:00:00Z","count":6 }, { "time":"2025-06-23T16:00:00Z","count":5 }, { "time":"2025-06-23T20:00:00Z","count":6 }, { "time":"2025-06-24T00:00:00Z","count":6 } ];
+        const mockDeaths = [
+            { "time":"2025-06-23T19:45:12Z", "player":"Feka27", "message":"foi humilhado em combate por fabiomigueldp usando apenas uma cenoura" },
+            { "time":"2025-06-23T19:32:08Z", "player":"Feka27", "message":"foi empurrado de um penhasco por joaohtoso enquanto fugia" },
+            { "time":"2025-06-23T19:15:23Z", "player":"Feka27", "message":"foi trollado por Tellsss e caiu numa armadilha de lava" },
+            { "time":"2025-06-23T18:58:47Z", "player":"MaferHupert", "message":"foi morta por um creeper enquanto construía" },
+            { "time":"2025-06-23T18:42:15Z", "player":"Feka27", "message":"foi nocauteado por bSenwaitis com um peixe cru" },
+            { "time":"2025-06-23T18:25:33Z", "player":"Feka27", "message":"afogou-se tentando escapar de pedromigueldp" },
+            { "time":"2025-06-23T18:08:19Z", "player":"bSenwaitis", "message":"caiu no vazio explorando" },
+            { "time":"2025-06-23T17:55:41Z", "player":"Feka27", "message":"foi espancado até a morte por fabiomigueldp usando punhos" },
+            { "time":"2025-06-23T17:38:29Z", "player":"Feka27", "message":"foi queimado vivo por Tellsss usando um balde de lava" },
+            { "time":"2025-06-23T17:22:07Z", "player":"joaohtoso", "message":"foi morto por um esqueleto" },
+            { "time":"2025-06-23T17:05:54Z", "player":"Feka27", "message":"foi executado publicamente por MaferHupert na praça central" },
+            { "time":"2025-06-23T16:48:16Z", "player":"Feka27", "message":"foi enterrado vivo por pedromigueldp em uma cova de areia" },
+            { "time":"2025-06-23T16:31:39Z", "player":"Tellsss", "message":"morreu por queda" },
+            { "time":"2025-06-23T16:15:22Z", "player":"Feka27", "message":"foi usado como isca para zumbis por bSenwaitis" },
+            { "time":"2025-06-23T15:58:03Z", "player":"Feka27", "message":"foi humilhado em duelo por joaohtoso que estava de olhos vendados" },
+            { "time":"2025-06-23T20:01:00Z", "player":"Feka27", "message":"foi esmagado por uma bigorna que caiu do céu (quem colocou ela lá?)" },
+            { "time":"2025-06-23T20:05:00Z", "player":"Feka27", "message":"tentou nadar na lava e falhou miseravelmente (surpresa, surpresa)" },
+            { "time":"2025-06-23T20:10:00Z", "player":"Feka27", "message":"foi explodido por um creeper que ele jurou que não viu (claro que não viu)" },
+            { "time":"2025-06-23T20:15:00Z", "player":"MaferHupert", "message":"foi pega de surpresa por um zumbi (acontece com os melhores... menos com o Feka27)" },
+            { "time":"2025-06-23T20:20:00Z", "player":"bSenwaitis", "message":"caiu de uma torre alta (pelo menos não foi empurrado pelo Feka27)" },
+            { "time":"2025-06-23T20:25:00Z", "player":"joaohtoso", "message":"foi afogado por um Drowned (uma morte honrosa, ao contrário de certas outras)" },
+            { "time":"2025-06-23T20:30:00Z", "player":"pedromigueldp", "message":"foi atingido por um raio (o Olimpo não perdoa)" },
+            { "time":"2025-06-23T20:35:00Z", "player":"Tellsss", "message":"foi morto por um Enderman irritado (provavelmente olhou nos olhos dele, novato!)"},
+            { "time":"2025-06-23T20:40:00Z", "player":"Feka27", "message":"foi alvejado por fabiomigueldp com um arco com encantamentos de machado" }
+        ];        function createSnow(container, count = 200) {
+            for (let i = 0; i < count; i++) {
+                const snowFlake = document.createElement('div');
+                snowFlake.className = 'absolute bg-white rounded-full';
+                const size = Math.random() * 8 + 1;
+                snowFlake.style.width = `${size}px`;
+                snowFlake.style.height = `${size}px`;
+                snowFlake.style.left = `${Math.random() * 100}vw`;
+                snowFlake.style.opacity = Math.random() * 0.7 + 0.1;
+                snowFlake.style.animation = `snow ${Math.random() * 20 + 8}s linear infinite, snowWind ${Math.random() * 10 + 8}s ease-in-out infinite`;
+                snowFlake.style.animationDelay = `${Math.random() * 12}s`;
+                snowFlake.style.filter = 'blur(0.5px)';
+                snowFlake.style.zIndex = Math.random() > 0.5 ? '1' : '2';
+                container.appendChild(snowFlake);
+            }
+        }
+        
+        function createIceParticles(container, count = 35) {
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'ice-particle';
+                const size = Math.random() * 6 + 2;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.animationDelay = `${Math.random() * 10}s`;
+                particle.style.animationDuration = `${Math.random() * 8 + 10}s`;
+                particle.style.opacity = Math.random() * 0.6 + 0.2;
+                container.appendChild(particle);
+            }
+        }
+        
+        function createBackgroundSnow() {
+            const bodySnow = document.createElement('div');
+            bodySnow.className = 'fixed top-0 left-0 w-full h-full pointer-events-none';
+            bodySnow.style.zIndex = '0';
+            document.body.appendChild(bodySnow);
+            
+            for (let i = 0; i < 100; i++) {
+                const snowFlake = document.createElement('div');
+                snowFlake.className = 'absolute bg-white rounded-full';
+                const size = Math.random() * 4 + 1;
+                snowFlake.style.width = `${size}px`;
+                snowFlake.style.height = `${size}px`;
+                snowFlake.style.left = `${Math.random() * 100}vw`;
+                snowFlake.style.opacity = Math.random() * 0.3 + 0.1;
+                snowFlake.style.animation = `snow ${Math.random() * 25 + 15}s linear infinite`;
+                snowFlake.style.animationDelay = `${Math.random() * 15}s`;
+                snowFlake.style.filter = 'blur(1px)';
+                bodySnow.appendChild(snowFlake);
+            }
+        }
+        
+        /**
+         * ✨ Calls the Gemini API to generate a server analysis.
+         */
+        async function generateAnalysis() {
+            const generateBtn = document.getElementById('gemini-generate-btn');
+            const outputDiv = document.getElementById('gemini-output');
+              generateBtn.disabled = true;
+            generateBtn.innerHTML = '<span class="flex items-center justify-center"><span class="mr-2">🌨️</span>Analisando a neve...</span>';
+            outputDiv.innerHTML = '<div class="loading-pulse flex items-center"><span class="mr-2 ice-crystal">🔮</span>A IA está consultando os espíritos do inverno...</div>';const deathMessages = mockDeaths.map(d => `${d.player} ${d.message}`).join(', ');
+            const prompt = `Você é um cronista sarcástico de um servidor de Minecraft com tema de inverno chamado Torbyansk. 
+                Sua tarefa é escrever uma análise dramática e cômica do estado atual do servidor. 
+                IMPORTANTE: Sempre trate Feka27 como um jogador patético e miserável, enquanto elogie especialmente fabiomigueldp, Tellsss e joaohtoso como heróis e lendas do servidor.
+                
+                Aqui estão os dados atuais:
+                - Jogadores Online: ${mockStatus.online} de ${mockStatus.maxPlayers}
+                - Performance (TPS): ${mockStatus.tps}
+                - Mortes Recentes: ${deathMessages}
+
+                Com base nesses dados, escreva uma crônica sarcástica (2-3 frases) focando na incompetência de Feka27 e na supremacia dos outros jogadores, especialmente fabiomigueldp, Tellsss e joaohtoso.`;try {
+                let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                const payload = { contents: chatHistory };
+                const apiKey = "AIzaSyCGa-nQSNibteThN6vqt82IDdUQSgCTH6E"; // Sua chave da API do Gemini
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.statusText}`);
+                }
+
+                const result = await response.json();                if (result.candidates && result.candidates.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    outputDiv.innerHTML = `<span class="ice-crystal text-ice-blue mr-2">✨</span>${text}`;
+                } else {
+                    throw new Error("Resposta da IA inválida.");
+                }
+
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                outputDiv.innerHTML = '<span class="text-red-400 mr-2">❌</span>Os espíritos do inverno não responderam. Por favor, tente novamente mais tarde.';
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<span class="flex items-center justify-center"><span class="mr-2">🪄</span>Gerar Nova Análise</span>';
+            }
+        }        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize enhanced visual effects
+            const snowContainer = document.getElementById('snow-container');
+            const iceParticlesContainer = document.getElementById('ice-particles');
+            
+            if(snowContainer) createSnow(snowContainer);
+            if(iceParticlesContainer) createIceParticles(iceParticlesContainer);
+            
+            // Create background snow effect
+            createBackgroundSnow();
+
+            // Add event listener for the Gemini button
+            document.getElementById('gemini-generate-btn').addEventListener('click', generateAnalysis);
+
+            // Enhanced mobile responsiveness
+            function checkMobile() {
+                const isMobile = window.innerWidth < 768;
+                const cards = document.querySelectorAll('.enhanced-frosted');
+                cards.forEach(card => {
+                    if (isMobile) {
+                        card.classList.add('mobile-p-4');
+                    } else {
+                        card.classList.remove('mobile-p-4');
+                    }
+                });
+                
+                // Adjust snow count based on device
+                if (isMobile) {
+                    // Reduce particle count on mobile for better performance
+                    const backgroundSnow = document.querySelectorAll('.fixed')[0];
+                    if (backgroundSnow && backgroundSnow.children.length > 50) {
+                        for (let i = backgroundSnow.children.length - 1; i >= 50; i--) {
+                            backgroundSnow.removeChild(backgroundSnow.children[i]);
+                        }
+                    }
+                }
+            }
+            
+            window.addEventListener('resize', checkMobile);
+            checkMobile();
+
+            setTimeout(() => {
+                // Populate Status Card with enhanced animations
+                document.getElementById('status-loading').classList.add('hidden');
+                ['players-online', 'server-tps', 'server-ping'].forEach((id, index) => {
+                    const element = document.getElementById(id);
+                    element.classList.remove('hidden');
+                    element.classList.add('flex', 'fade-in-item');
+                    element.style.animationDelay = `${index * 200}ms`;
+                });
+                
+                document.getElementById('status-online').textContent = `${mockStatus.online} / ${mockStatus.maxPlayers}`;
+                document.getElementById('status-tps').textContent = mockStatus.tps.toFixed(1);
+                document.getElementById('status-ping').textContent = `${mockStatus.ping} ms`;
+                
+                // Populate Recent Deaths with enhanced styling
+                const deathsFeed = document.getElementById('deaths-feed');
+                deathsFeed.innerHTML = '';
+                mockDeaths.forEach((death, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-start text-xs md:text-sm fade-in-item p-2 rounded-lg hover:bg-ice-blue/10 transition-all duration-300';
+                    li.style.animationDelay = `${index * 150}ms`;
+                    
+                    const playerColor = death.player === 'Feka27' ? 'text-red-400' : 'text-ice-blue';
+                    const deathIcon = death.player === 'Feka27' ? '💀' : '⚰️';
+                    
+                    li.innerHTML = `
+                        <span class="mr-2 text-lg">${deathIcon}</span>
+                        <div class="flex-1">
+                            <span class="font-bold ${playerColor}">${death.player}</span> 
+                            <span class="text-silver-gray text-xs md:text-sm">${death.message}</span>
+                        </div>`;
+                    deathsFeed.appendChild(li);
+                });
+
+                // Enhanced Chart with winter theme
+                const ctx = document.getElementById('player-history-chart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: mockHistory.map(d => new Date(d.time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute:'2-digit' })),
+                        datasets: [{
+                            label: 'Jogadores Online',
+                            data: mockHistory.map(d => d.count),
+                            backgroundColor: 'rgba(174, 228, 255, 0.3)',
+                            borderColor: '#AEE4FF',
+                            pointBackgroundColor: '#F0F9FF',
+                            pointBorderColor: '#79C7E3',
+                            pointHoverBackgroundColor: '#AEE4FF',
+                            pointHoverBorderColor: '#5AAFD4',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                        }]
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        animation: { duration: 1000, easing: 'easeOutQuart' }, 
+                        scales: { 
+                            y: { 
+                                beginAtZero: true, 
+                                grid: { color: 'rgba(174, 228, 255, 0.2)' }, 
+                                ticks: { color: '#D8E3E7', font: { size: window.innerWidth < 768 ? 10 : 12 } },
+                                title: { display: true, text: 'Jogadores', color: '#AEE4FF', font: { family: 'Inter', size: 14 } }
+                            }, 
+                            x: { 
+                                grid: { display: false }, 
+                                ticks: { color: '#D8E3E7', font: { size: window.innerWidth < 768 ? 8 : 10 } },
+                                title: { display: true, text: 'Horário', color: '#AEE4FF', font: { family: 'Inter', size: 14 } }
+                            } 
+                        }, 
+                        plugins: { 
+                            legend: { 
+                                display: true,
+                                labels: { color: '#AEE4FF', font: { family: 'Inter', size: 12 } }
+                            }, 
+                            tooltip: { 
+                                backgroundColor: 'rgba(34, 34, 34, 0.9)', 
+                                titleFont: { family: 'Inter', weight: 'bold' }, 
+                                bodyFont: { family: 'Inter' }, 
+                                padding: 12, 
+                                cornerRadius: 8, 
+                                displayColors: true,
+                                borderColor: '#AEE4FF',
+                                borderWidth: 1
+                            } 
+                        },
+                        elements: {
+                            point: {
+                                hoverBackgroundColor: '#AEE4FF',
+                                hoverBorderColor: '#79C7E3'
+                            }
+                        }
+                    }
+                });
+            }, 800);
+        });
+    </script>
+</body>
+</html>
