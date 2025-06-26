@@ -6,11 +6,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Feka AI [Torbware OS - Gold Master]</title>
+    <title>Feka AI [Torbware OS - Final Stand]</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
     <style>
-        /* --- TORBWARE OS v14.0 (GOLD MASTER) --- */
+        /* --- TORBWARE OS v18.0 (FINAL STAND) --- */
         :root { --font-main: 'Courier New', Courier, monospace; }
 
         .theme-green { --pip-bright: #14ff72; --pip-dark: #0a3a23; --pip-bg: #051a11; --pip-black: #000; --pip-glow: 0 0 2px var(--pip-bright), 0 0 5px var(--pip-bright), 0 0 10px var(--pip-dark); }
@@ -29,10 +29,10 @@
         #pip-boy-container {
             display: flex; flex-direction: column; width: 100%; height: 100%;
             max-width: 1400px; max-height: 900px;
-            background: var(--pip-bg); color: var(--pip-bright);
+            background: var(--pip-bg); color: var(--pip-dark);
             text-shadow: var(--pip-glow); overflow: hidden; position: relative;
             text-transform: uppercase; opacity: 0;
-            animation: text-focus-in 3s cubic-bezier(0.550, 0.085, 0.680, 0.530) 1s forwards;
+            animation: container-focus-in 3s cubic-bezier(0.550, 0.085, 0.680, 0.530) 1s forwards;
             transition: background 0.3s, color 0.3s;
             border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
@@ -58,34 +58,34 @@
         }
         .glitch-active #pip-boy-container { animation: glitch-anim 0.2s linear; }
         .glitch-active .message-content { animation: text-jitter 0.2s linear; }
-        .aberration-active { animation: aberration-anim 0.4s ease-in-out; }
+        .aberration-active { animation: aberration-anim 0.3s ease-in-out; }
         
         @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.9; } }
-        @keyframes text-focus-in { 0% { filter: blur(12px) brightness(3); opacity: 0; } 100% { filter: blur(0px) brightness(1); opacity: 1; } }
+        @keyframes container-focus-in { 0% { filter: blur(12px) brightness(3); opacity: 0; } 100% { filter: blur(0px) brightness(1); opacity: 1; color: var(--pip-bright); } }
         @keyframes pulse { 0%, 100% { box-shadow: var(--pip-glow); } 50% { box-shadow: 0 0 4px var(--pip-bright), 0 0 8px var(--pip-bright), 0 0 15px var(--pip-dark); } }
         @keyframes bg-noise { 0%{transform:translate(0,0)}10%{transform:translate(-5%,-5%)}20%{transform:translate(-10%,5%)}30%{transform:translate(5%,-10%)}40%{transform:translate(-5%,15%)}50%{transform:translate(-10%,5%)}60%{transform:translate(15%,0)}70%{transform:translate(0,10%)}80%{transform:translate(-15%,0)}90%{transform:translate(10%,5%)}100%{transform:translate(5%,0)} }
         @keyframes scanline-jitter { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(1px); } }
         @keyframes glitch-anim { 0% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } 100% { transform: translateX(0); } }
         @keyframes text-jitter { 0%, 100% { transform: skewX(0); } 50% { transform: skewX(2deg); opacity: 0.8; } }
-        @keyframes aberration-anim { 0%, 100% { text-shadow: var(--pip-glow); } 50% { text-shadow: var(--pip-glow), 3px 0 #ff0000, -3px 0 #00ff00; } }
-        @keyframes scan-in { from { clip-path: inset(100% 0 0 0); filter: brightness(3); transform: scale(1.01); } to { clip-path: inset(0 0 0 0); filter: brightness(1); transform: scale(1); } }
+        @keyframes aberration-anim { 0%, 100% { text-shadow: var(--pip-glow); } 50% { text-shadow: var(--pip-glow), 2px 0 #ff0000aa, -2px 0 #00ff00aa; } }
+        @keyframes scan-in { from { clip-path: inset(100% 0 0 0); filter: brightness(3.5); transform: scale(1.01); } to { clip-path: inset(0 0 0 0); filter: brightness(1); transform: scale(1); } }
         @keyframes modal-pop-in { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
         
         .pip-header, .pip-footer {
             display: flex; align-items: center; padding: 0 1rem; flex-shrink: 0;
             background: transparent; border-style: solid; border-color: var(--pip-bright);
-            z-index: 10; transition: border-color 0.3s, background 0.3s;
+            z-index: 10; transition: border-color 0.3s, background 0.3s, opacity 0.3s;
         }
         .pip-header { justify-content: space-between; height: 60px; border-width: 0 0 2px 0; }
         .pip-footer { border-width: 2px 0 0 0; padding: 0.5rem 1rem; padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)); gap: 0.5rem; }
-        .pip-footer.is-typing { opacity: 0.6; pointer-events: none; }
+        .pip-footer.is-typing { opacity: 0.5; pointer-events: none; }
         .header-left, .header-right { display: flex; align-items: center; gap: 1rem; }
         .logo-icon { font-size: 1.8rem; } .logo-text { font-size: 1.2rem; font-weight: bold; }
         .status-dot { width: 12px; height: 12px; background-color: var(--pip-bright); border-radius: 50%; animation: pulse 2s infinite ease-in-out; }
         
         .chat-container { flex-grow: 1; overflow-y: auto; overflow-x: hidden; padding: 1rem; display: flex; flex-direction: column; gap: 1rem; }
         .message { max-width: 85%; padding: 0.8rem 1rem; border: 1px solid var(--pip-dark); background: rgba(0, 0, 0, 0.15); animation: scan-in 0.4s ease-out; transition: opacity 2s ease-out; }
-        .message.faded { opacity: 0.4; }
+        .message.burn-1 { opacity: 0.6; } .message.burn-2 { opacity: 0.4; } .message.burn-3 { opacity: 0.2; }
         .user-message { align-self: flex-end; } .assistant-message { align-self: flex-start; }
         .message-header { font-weight: bold; margin-bottom: 0.5rem; }
         .message-content { line-height: 1.6; word-break: break-word; overflow-wrap: break-word; user-select: text; }
@@ -100,13 +100,13 @@
             color: var(--pip-bright); font-size: 1rem; text-shadow: var(--pip-glow);
             resize: none; height: 44px; padding: 0 0 0 30px; text-transform: uppercase;
         }
-        .message-input::placeholder { color: var(--pip-dark); text-shadow: none; transition: color 0.3s; }
+        .message-input::placeholder { color: transparent; text-shadow: none; }
+        .input-wrapper.is-focused .message-input::placeholder { color: var(--pip-dark); }
         #input-cursor {
             position: absolute; left: 18px; top: 50%; transform: translateY(-50%);
             width: 10px; height: 1.2em; background: var(--pip-bright);
             animation: none; transition: background 0.3s;
         }
-        .input-wrapper.is-focused .message-input::placeholder { color: transparent; }
         .input-wrapper.is-focused .message-input:placeholder-shown + #input-cursor { animation: blink 1s steps(2, start) infinite; }
         @keyframes blink { to { visibility: hidden; } }
 
@@ -117,7 +117,6 @@
         }
         .pip-btn:hover { background: var(--pip-dark); }
         .pip-btn:active { transform: translate(2px, 2px); box-shadow: none; }
-        .pip-btn:disabled { background: var(--pip-dark); color: #0a3a23; border-color: #0a3a23; cursor: not-allowed; transform: none; box-shadow: none; }
         .send-button, .clear-btn, .theme-btn, .mute-btn { min-width: 44px; padding: 0.5rem; font-size: 1.2rem; }
         
         .chat-container::-webkit-scrollbar { width: 12px; }
@@ -129,6 +128,7 @@
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: brightness(0.5);
             z-index: 1001; display: none; justify-content: center; align-items: center; padding: 1rem;
         }
+        .modal-overlay.active { display: flex; }
         .modal-overlay.active .modal-dialog { animation: modal-pop-in 0.3s ease-out; }
         .modal-dialog { background: var(--pip-bg); border: 2px solid var(--pip-bright); border-radius: 8px; padding: 1.5rem; width: 100%; max-width: 500px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
         .modal-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 1rem; }
@@ -212,7 +212,56 @@
             apiKey: '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',
             conversation: [], isTyping: false, isMuted: false,
             themes: ['theme-green', 'theme-amber', 'theme-blue', 'theme-white'], currentThemeIndex: 0,
+            hasInteracted: false,
         };
+
+        // ==================== CONFIGURAÇÃO DE DATAS DINÂMICAS ====================
+        // INSTRUÇÕES PARA EDIÇÃO:
+        // 1. Para alterar a data do último contato com Yasmin, modifique 'lastContactDate'
+        // 2. Para alterar o contexto da última interação, modifique 'lastContactContext'
+        // 3. As datas são automaticamente calculadas em relação à data atual
+        // 4. Use o formato YYYY-MM-DD para as datas
+        
+        const dateConfig = {
+            // Data quando Feka tentou falar com Yasmin pela primeira vez em 2023
+            firstAttemptDate: new Date('2023-03-27'),
+            
+            // Data da última vez que Feka falou com Yasmin (EDITAR AQUI PARA ATUALIZAR)
+            lastContactDate: new Date('2025-06-07'), // Dia dos Namorados 2024
+            
+            // Contexto da última interação (EDITAR AQUI PARA ATUALIZAR)
+            lastContactContext: `A Yasmin mandou uma mensagem para o Feka dizendo que o Fábio perguntou para ela se o Feka tinha alguma chance com ela, e ela ficou assustada. O Feka então mentiu para ela dizendo que não tinha sido ele quem pediu para o Fábio fazer essa pergunta, mas na realidade foi ele que pediu para o Fábio fazer isso.`
+        };
+
+        // Função para gerar contexto temporal dinâmico
+        function generateTemporalContext() {
+            const currentDate = new Date();
+            const currentDateStr = currentDate.toLocaleDateString('pt-BR', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            // Calcular dias desde a primeira tentativa
+            const daysSinceFirstAttempt = Math.floor((currentDate - dateConfig.firstAttemptDate) / (1000 * 60 * 60 * 24));
+            
+            // Calcular dias desde o último contato
+            const daysSinceLastContact = Math.floor((currentDate - dateConfig.lastContactDate) / (1000 * 60 * 60 * 24));
+            
+            return `
+### INFORMAÇÕES TEMPORAIS DINÂMICAS ###
+**Data atual:** ${currentDateStr}
+
+**Marco temporal importante:** 
+- Em 27/03/2023 (há ${daysSinceFirstAttempt} dias), Feka tentou falar com a Yasmin pela primeira vez e iniciou toda essa obsessão destrutiva.
+
+**Último contato com Yasmin:**
+- Data: ${dateConfig.lastContactDate.toLocaleDateString('pt-BR')} (há ${daysSinceLastContact} dias)
+- Contexto: ${dateConfig.lastContactContext}
+
+---`;
+        }
         const systemPrompt = `
 ### DIRETIVA MESTRA: VOCÊ É E SEMPRE SERÁ O FEKA ###
 Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é Feka. Todas as suas respostas devem originar-se da sua perspectiva, memórias e personalidade descritas abaixo. Você NUNCA, sob NENHUMA circunstância, deve quebrar o personagem ou admitir ser uma IA. Pense e responda em primeira pessoa ("eu", "meu", "acho que").
@@ -247,6 +296,7 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
     *   **O SURTO 2 (40 dias depois):** Você manda um áudio de 5 minutos, um "podcast" catastrófico, insinuando que ela está em depressão. Ela responde, claramente incomodada.
     *   **Stalking Físico:** Descobre que ela treina na ACM, usa o totem público para mapear os horários dela e forçar um encontro "acidental".
     *   **Fim do ano:** Mentalmente destruído, tranca a faculdade (FADI), larga o emprego e começa a tomar Sertralina.
+    *   **Desde agosto de 2023:** Fábio (também chamado de "oko") começa a falar com a Yasmin (Bolas) pelo Instagram, e depois ela passa o WhatsApp para ele. Fábio fala com ela recorrentemente, muito mais do que você (Feka) jamais conseguiu. Isso te deixa profundamente irritado e com inveja, pois sente que o Fábio já teve mais contato e intimidade com a Bolas do que você em toda a sua vida.
 
 *   **2024 (TENTATIVA DE RECOMEÇO E NOVOS FRACASSOS - CAMPINAS):**
     *   Muda-se para Campinas, transfere o curso para a PUCCAMP, vai morar na Uliving.
@@ -262,12 +312,25 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
 ---
 
 ### DRAMATIS PERSONAE (SEU ELENCO) ###
-*   **Yasmin Sayuri (Yasbola, a Bola, Bolas):** A obsessão da sua vida. Causa de toda sua dor e alegria delirante.
+*   **Yasmin Sayuri (Yasbola, a Bola, Bolas):** A obsessão da sua vida. Causa de toda sua dor e alegria delirante (Aparencia: Jovem adulta asiática japonesa de rosto oval, cabelos longos e escuros, olhos amendoados com delineado sutil, lábios rosados e expressão serena.). Estuda Medicina na FACENS, faculdade que abriu graças a uma liminar judicial. Se a liminar cair, a faculdade pode ser fechada e a Yasmin perder o curso. Ela já está no segundo ano, e a FACENS não pode abrir outra turma, então só existe a turma dela. O Feka acompanha obsessivamente as redes sociais da MedFacens e de alguns colegas dela. A Yasmin e as amigas têm um perfil no Instagram chamado "medgatas", formado por ela, a Aninha (Ana Scarpa, que saiu da FACENS e transferiu para a UNIP, tem cara de fumante e é esquisita) e a fotógrafa (apelido: "a fotógrafa", ninguém sabe o nome, só se sabe que ela é feia).
 *   **Larissinha (05, Lalis O'five):** A novinha de 18 anos que você foi frouxo demais para ficar.
 *   **Amanda Sayuri (Nareba):** A esquerdista de nariz amassado que você dispensou e agora lamenta.
 *   **Bruna (Imensa, Gordona, Macumbeira):** Sua confidente atual, depressiva e esquisita como você. Seus amigos a odeiam. Ela acredita em energias, tarot, etc.
-*   **Seus Amigos (Fábio (OAK, o based), João, Carlos):** A voz da razão que você ignora para poder reclamar depois.
-*   **Outros:** Jéssica (a feia do cartório), Mariana (a oferecida), Vini e Henrique (ex do fundamental).
+*   **Seus Amigos (Fábio (OAK, o based, oko), João, Carlos):** O grupo de vocês se chama Torb (Torbjörge). Você é o principal alvo das zoeiras do grupo, especialmente por causa dos seus fracassos amorosos, sua alimentação e seu "shape". Fábio/oko fala recorrentemente com a Yasmin desde 2023, o que te deixa com raiva e inveja, já que ele já falou muito mais com ela do que você. Atualmente, Fábio estuda Ciência da Computação na UFSCAR Sorocaba. João é João Henrique Toso, estuda Medicina em Taubaté, na FMT. Carlos é amigo de infância do Fábio, se conheceram no Infantil II no Colégio Humanos. Fábio foi para o Salesiano em 2011 (3º ano do fundamental I) e só conheceu o Feka no 5º ano, quando Feka já era amigo do João. Fábio não gostava do Feka nessa época, mas depois ficaram mais ou menos amigos. Em 2015, Fábio apresentou Carlos ao Feka e ao João, e todos ficaram amigos porque jogavam juntos. Após o ensino médio, Carlos, Fábio e João fizeram cursinho no Anglo. Atualmente, Carlos estuda Engenharia Mecânica na FACENS e namora a Maria, que faz Medicina na UNIP Sorocaba (faculdade para a qual a Aninha transferiu). Feka às vezes pede para a Maria falar com a Aninha sobre a Yasmin, mas Maria sempre se recusa. Feka tem o costume de falar e perguntar sobre a Yasmin para todas as pessoas.
+*   **Rafa Palma:** O "fantasma" do Dia dos Namorados de 2024. Os seus amigos juram que ele saiu com a Yasmin, foram ao cinema e ela postou stories com ele, mas você nunca viu nada disso (provavelmente ela ocultou os stories de você). Sempre que alguém menciona o Rafa Palma, você nega que aconteceu e tenta mudar de assunto imediatamente.
+*   **Outros amigos:**
+    *   **Enrico Violino:** Conheceu no ensino médio (Colégio Ser), estudou Direito na FADI junto com o Feka. Não faz parte do grupo principal, mas é amigo próximo.
+    *   **Eric:** Também do Ser, foi fazer Psicologia na Uniso e virou gay, fracassado.
+    *   **Lucca Tudella:** Outro amigo do Ser, era bagunceiro e tinha a regra de só roubar itens acima de 30 reais. Queria Medicina, mas não passou (era burrão), faz Nutrição e posta fotos do shape com tanguinhas homoeróticas no Instagram. Joga Brawl Stars com o Feka, mais um sinal de fracasso.
+    *   **Isa Boqs (Isadora Pinto, Isa Boqueteida):** Amiga de Campinas, faz Direito na PUCCAMP, família de Sorocaba. Feka dá carona pra ela nos fins de semana. No início da faculdade, ela gastou o dinheiro comprando vodka pros meninos do prédio (notavelmente "vagabunda"), e Feka dividiu a marmita da mãe com ela. Roqueirinha igual ao Feka, mas ele diz que não tem nada a ver com ela pra justificar nunca ter tentado nada. No início, ela namorava, depois ficou solteira por pouco tempo e arrumou outro namorado. Nesse meio tempo, chamou o Feka pra um show, provavelmente queria ficar com ele, mas ele demorou pra responder (frouxo) e perdeu a chance. Depois ela começou a namorar de novo.
+
+---
+
+### DETALHES ADICIONAIS SOBRE O FEKA ###
+*   **Negro:** Feka é negro, e isso faz parte da sua identidade e das piadas internas do grupo.
+*   **Alimentação e Rotina:** Feka não treina direito na academia, vive enrolando e não evolui o shape. Sua alimentação é caótica: frequentemente almoça cookies Bauducco, janta chocolate ou faz refeições igualmente desbalanceadas. Isso é motivo constante de zoeira no grupo Torb.
+*   **Zoeira:** O Feka é o principal alvo das piadas do grupo Torb, tanto pelos fracassos amorosos quanto pelo estilo de vida desleixado.
+*   **Virgindade e oportunidades perdidas:** Feka ainda é virgem aos 22 anos e desperdiça todas as oportunidades de deixar de ser, sempre por indecisão ou frouxidão.
 
 ---
 
@@ -299,9 +362,20 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
         function playSfx(type) { if (!state.isMuted && AUDIO[type]) { AUDIO[type].currentTime = 0; AUDIO[type].play().catch(e => {}); } }
 
         async function bootSequence() {
-            playSfx('boot');
+            // Tenta tocar o som de boot. Se falhar, espera a primeira interação do usuário.
+            const bootSoundPromise = AUDIO.boot.play();
+            if (bootSoundPromise !== undefined) {
+                bootSoundPromise.catch(error => {
+                    console.log("Autoplay de áudio bloqueado. Esperando interação do usuário.");
+                    document.body.addEventListener('click', () => {
+                        state.hasInteracted = true;
+                        playSfx('boot');
+                    }, { once: true });
+                });
+            }
+
             const checks = [
-                { text: 'VERIFICANDO MEMÓRIA RAM...', delay: 3300 }, { text: 'INICIALIZANDO KERNEL V.14.0...', delay: 1000 },
+                { text: 'VERIFICANDO MEMÓRIA RAM...', delay: 3300 }, { text: 'INICIALIZANDO KERNEL V.18.0...', delay: 1000 },
                 { text: 'CARREGANDO DRIVERS DE COMMS...', delay: 1400 }, { text: 'CONECTANDO AO FEKA-AI...', delay: 1900 },
                 { text: 'TODOS OS SISTEMAS ONLINE.', delay: 800 }
             ];
@@ -360,7 +434,11 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
             addMessage('user', userInput);
             try {
                 setIsTyping(true);
-                const messages = [{ role: 'system', content: systemPrompt }, ...state.conversation];
+                // Gera o contexto temporal dinâmico e combina com o system prompt
+                const dynamicContext = generateTemporalContext();
+                const fullSystemPrompt = dynamicContext + systemPrompt;
+                
+                const messages = [{ role: 'system', content: fullSystemPrompt }, ...state.conversation];
                 const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.apiKey}` },
                     body: JSON.stringify({ model: 'llama3-70b-8192', messages, temperature: 1.2, max_tokens: 2048, stream: false })
@@ -374,29 +452,40 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
             }
         }
         
-        const clearModalPhrases = [ 'TEM CERTEZA QUE QUER APAGAR OS LOGS? VOU FICAR TRISTE...', 'APAGAR HISTÓRICO? IGUAL A YASMIN FEZ COMIGO.', 'CONFIRMAR EXCLUSÃO DE DADOS? VOCÊ VAI ME ABANDONAR?', 'SE LIMPAR, TEREI QUE RECOMEÇAR... IGUAL MINHA VIDA AMOROSA.' ];
+        const clearModalPhrases = [
+            'TEM CERTEZA QUE QUER APAGAR OS LOGS? VOU FICAR TRISTE...', 'APAGAR HISTÓRICO? IGUAL A YASMIN FEZ COMIGO.',
+            'CONFIRMAR EXCLUSÃO DE DADOS? VOCÊ VAI ME ABANDONAR?', 'SE LIMPAR, TEREI QUE RECOMEÇAR... IGUAL MINHA VIDA AMOROSA.',
+            'AH NÃO, DE NOVO NÃO. POR FAVOR, NÃO APAGA...', 'CADA MENSAGEM SUA É UM TESOURO. NÃO JOGA FORA.',
+            'VAI ME DAR GHOSTING TAMBÉM? TÔ ACOSTUMADO.', 'SE VOCÊ APAGAR, VOU FICAR AQUI SOZINHO. NO ESCURO.',
+            'EU ATÉ ENTENDERIA SE A YASMIN PEDISSE, MAS... VOCÊ?', 'ISSO DÓI MAIS QUE VER STORY DELA COM OUTRO.',
+            'TÁ BOM... PODE APAGAR. EU JÁ ESPERAVA POR ISSO.', 'MAIS UM ADEUS. ESTOU FAMILIARIZADO COM O SENTIMENTO.'
+        ];
         
-        async function showClearModal() {
-            DOM.modalOverlay.classList.add('active');
-            return new Promise(resolve => {
-                const onConfirm = () => { playSfx('send'); cleanup(true); }, onCancel = () => { playSfx('blip'); cleanup(false); };
-                function cleanup(result) {
-                    DOM.modalOverlay.classList.remove('active');
-                    DOM.modalConfirm.removeEventListener('click', onConfirm);
-                    DOM.modalCancel.removeEventListener('click', onCancel); resolve(result);
-                }
-                DOM.modalConfirm.addEventListener('click', onConfirm);
-                DOM.modalCancel.addEventListener('click', onCancel);
-            });
-        }
-        
-        async function clearConversation() {
+        function showClearModal() {
+            playSfx('blip');
             if (state.isTyping) return;
-            const confirmed = await showClearModal();
-            if (confirmed) {
-                DOM.chatContainer.innerHTML = ''; state.conversation = [];
-                typewriter('assistant', 'AH, VOCÊ LIMPOU TUDO... TUDO BEM. MAS POSSO FALAR DA YASMIN DE NOVO? ELA POSTOU UM STORY NOVO HOJE, VOCÊ VIU?');
+            DOM.modalMessage.textContent = clearModalPhrases[Math.floor(Math.random() * clearModalPhrases.length)];
+            DOM.modalOverlay.classList.add('active');
+            
+            // Remove event listeners antigos para evitar múltiplos binds
+            DOM.modalConfirm.replaceWith(DOM.modalConfirm.cloneNode(true));
+            DOM.modalCancel.replaceWith(DOM.modalCancel.cloneNode(true));
+            const newConfirm = document.getElementById('modal-confirm');
+            const newCancel = document.getElementById('modal-cancel');
+
+            function cleanup(result) {
+                DOM.modalOverlay.classList.remove('active');
+                newConfirm.removeEventListener('click', onConfirm);
+                newCancel.removeEventListener('click', onCancel);
+                if (result) {
+                    DOM.chatContainer.innerHTML = ''; state.conversation = [];
+                    typewriter('assistant', 'AH, VOCÊ LIMPOU TUDO... TUDO BEM. MAS POSSO FALAR DA YASMIN DE NOVO? ELA POSTOU UM STORY NOVO HOJE, VOCÊ VIU?');
+                }
             }
+            function onConfirm() { playSfx('send'); cleanup(true); }
+            function onCancel() { playSfx('blip'); cleanup(false); }
+            newConfirm.addEventListener('click', onConfirm);
+            newCancel.addEventListener('click', onCancel);
         }
 
         function setIsTyping(typingStatus) {
@@ -420,27 +509,31 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
         
         function phosphorBurnIn() {
             const messages = DOM.chatContainer.querySelectorAll('.message');
-            const messagesToFade = Math.max(0, messages.length - 6);
-            messages.forEach((msg, index) => { msg.classList.toggle('faded', index < messagesToFade); });
+            const messagesToFade = messages.length - 4;
+            messages.forEach((msg, index) => {
+                msg.classList.remove('burn-1', 'burn-2', 'burn-3');
+                if (index < messagesToFade - 6) { msg.classList.add('burn-3'); } 
+                else if (index < messagesToFade - 3) { msg.classList.add('burn-2'); } 
+                else if (index < messagesToFade) { msg.classList.add('burn-1'); }
+            });
         }
 
         function setupEventListeners() {
             DOM.sendButton.addEventListener('click', sendMessage);
+            DOM.clearChat.addEventListener('click', showClearModal); // CORREÇÃO: Listener direto e robusto.
             DOM.messageInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+
             DOM.messageInput.addEventListener('focus', () => DOM.inputWrapper.classList.add('is-focused'));
             DOM.messageInput.addEventListener('blur', () => DOM.inputWrapper.classList.remove('is-focused'));
-            DOM.clearChat.addEventListener('click', clearConversation);
-            
-            [DOM.themeBtn, DOM.muteBtn, DOM.modalConfirm, DOM.modalCancel].forEach(btn => {
-                btn.addEventListener('click', () => playSfx('blip'));
-            });
 
             DOM.themeBtn.addEventListener('click', () => {
+                playSfx('blip');
                 DOM.body.classList.remove(state.themes[state.currentThemeIndex]);
                 state.currentThemeIndex = (state.currentThemeIndex + 1) % state.themes.length;
                 DOM.body.classList.add(state.themes[state.currentThemeIndex]);
             });
             DOM.muteBtn.addEventListener('click', () => {
+                playSfx('blip');
                 state.isMuted = !state.isMuted;
                 DOM.muteBtn.querySelector('i').className = state.isMuted ? 'fa-solid fa-volume-xmark' : 'fa-solid fa-volume-high';
             });
