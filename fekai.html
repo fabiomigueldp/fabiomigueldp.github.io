@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Feka AI [Torbware OS - Gold Master]</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+    <style>
+        /* --- TORBWARE OS v14.0 (GOLD MASTER) --- */
+        :root { --font-main: 'Courier New', Courier, monospace; }
+
+        .theme-green { --pip-bright: #14ff72; --pip-dark: #0a3a23; --pip-bg: #051a11; --pip-black: #000; --pip-glow: 0 0 2px var(--pip-bright), 0 0 5px var(--pip-bright), 0 0 10px var(--pip-dark); }
+        .theme-amber { --pip-bright: #FFB000; --pip-dark: #4d3500; --pip-bg: #1a1408; --pip-black: #000; --pip-glow: 0 0 3px var(--pip-bright), 0 0 6px var(--pip-bright), 0 0 12px var(--pip-dark); }
+        .theme-blue { --pip-bright: #00BFFF; --pip-dark: #00374d; --pip-bg: #08101a; --pip-black: #000; --pip-glow: 0 0 3px var(--pip-bright), 0 0 6px var(--pip-bright), 0 0 12px var(--pip-dark); }
+        .theme-white { --pip-bright: #E0E0E0; --pip-dark: #424242; --pip-bg: #111111; --pip-black: #000; --pip-glow: 0 0 4px var(--pip-bright), 0 0 8px var(--pip-dark); }
+
+        * { box-sizing: border-box; font-family: var(--font-main); -webkit-tap-highlight-color: transparent; }
+        html { font-size: 16px; background: var(--pip-black); }
+        body {
+            display: flex; align-items: center; justify-content: center;
+            height: 100svh; background: var(--pip-black);
+            padding: 1rem; user-select: none;
+        }
+
+        #pip-boy-container {
+            display: flex; flex-direction: column; width: 100%; height: 100%;
+            max-width: 1400px; max-height: 900px;
+            background: var(--pip-bg); color: var(--pip-bright);
+            text-shadow: var(--pip-glow); overflow: hidden; position: relative;
+            text-transform: uppercase; opacity: 0;
+            animation: text-focus-in 3s cubic-bezier(0.550, 0.085, 0.680, 0.530) 1s forwards;
+            transition: background 0.3s, color 0.3s;
+            border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        #crt-effects-wrapper {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 100; pointer-events: none; border-radius: inherit;
+            transform: scale(1.08); overflow: hidden;
+        }
+        #crt-effects-wrapper::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0.2) 1.5px, rgba(0, 0, 0, 0) 3px);
+            animation: flicker 15s infinite linear, scanline-jitter 8s infinite linear;
+        }
+        #crt-effects-wrapper::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            box-shadow: inset 0 0 80px rgba(0,0,0,0.9), inset 0 0 25px rgba(0,0,0,1);
+        }
+        #background-noise {
+            position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; z-index: 0; pointer-events: none;
+            background: transparent url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhbSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuOCIgbnVtT2N0YXZlcz0iMSIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNhbSkiLz48L3N2Zz4=') opacity='0.15';
+            animation: bg-noise 0.5s steps(2) infinite;
+        }
+        .glitch-active #pip-boy-container { animation: glitch-anim 0.2s linear; }
+        .glitch-active .message-content { animation: text-jitter 0.2s linear; }
+        .aberration-active { animation: aberration-anim 0.4s ease-in-out; }
+        
+        @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.9; } }
+        @keyframes text-focus-in { 0% { filter: blur(12px) brightness(3); opacity: 0; } 100% { filter: blur(0px) brightness(1); opacity: 1; } }
+        @keyframes pulse { 0%, 100% { box-shadow: var(--pip-glow); } 50% { box-shadow: 0 0 4px var(--pip-bright), 0 0 8px var(--pip-bright), 0 0 15px var(--pip-dark); } }
+        @keyframes bg-noise { 0%{transform:translate(0,0)}10%{transform:translate(-5%,-5%)}20%{transform:translate(-10%,5%)}30%{transform:translate(5%,-10%)}40%{transform:translate(-5%,15%)}50%{transform:translate(-10%,5%)}60%{transform:translate(15%,0)}70%{transform:translate(0,10%)}80%{transform:translate(-15%,0)}90%{transform:translate(10%,5%)}100%{transform:translate(5%,0)} }
+        @keyframes scanline-jitter { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(1px); } }
+        @keyframes glitch-anim { 0% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } 100% { transform: translateX(0); } }
+        @keyframes text-jitter { 0%, 100% { transform: skewX(0); } 50% { transform: skewX(2deg); opacity: 0.8; } }
+        @keyframes aberration-anim { 0%, 100% { text-shadow: var(--pip-glow); } 50% { text-shadow: var(--pip-glow), 3px 0 #ff0000, -3px 0 #00ff00; } }
+        @keyframes scan-in { from { clip-path: inset(100% 0 0 0); filter: brightness(3); transform: scale(1.01); } to { clip-path: inset(0 0 0 0); filter: brightness(1); transform: scale(1); } }
+        @keyframes modal-pop-in { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        
+        .pip-header, .pip-footer {
+            display: flex; align-items: center; padding: 0 1rem; flex-shrink: 0;
+            background: transparent; border-style: solid; border-color: var(--pip-bright);
+            z-index: 10; transition: border-color 0.3s, background 0.3s;
+        }
+        .pip-header { justify-content: space-between; height: 60px; border-width: 0 0 2px 0; }
+        .pip-footer { border-width: 2px 0 0 0; padding: 0.5rem 1rem; padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)); gap: 0.5rem; }
+        .pip-footer.is-typing { opacity: 0.6; pointer-events: none; }
+        .header-left, .header-right { display: flex; align-items: center; gap: 1rem; }
+        .logo-icon { font-size: 1.8rem; } .logo-text { font-size: 1.2rem; font-weight: bold; }
+        .status-dot { width: 12px; height: 12px; background-color: var(--pip-bright); border-radius: 50%; animation: pulse 2s infinite ease-in-out; }
+        
+        .chat-container { flex-grow: 1; overflow-y: auto; overflow-x: hidden; padding: 1rem; display: flex; flex-direction: column; gap: 1rem; }
+        .message { max-width: 85%; padding: 0.8rem 1rem; border: 1px solid var(--pip-dark); background: rgba(0, 0, 0, 0.15); animation: scan-in 0.4s ease-out; transition: opacity 2s ease-out; }
+        .message.faded { opacity: 0.4; }
+        .user-message { align-self: flex-end; } .assistant-message { align-self: flex-start; }
+        .message-header { font-weight: bold; margin-bottom: 0.5rem; }
+        .message-content { line-height: 1.6; word-break: break-word; overflow-wrap: break-word; user-select: text; }
+        .message-content p { margin: 0 0 1em 0; } .message-content p:last-child { margin-bottom: 0; }
+        .message-content strong { font-weight: bold; } .message-content em { font-style: italic; }
+        .message-content ul, .message-content ol { padding-left: 20px; } .message-content li::marker { content: '>'; padding-right: 5px; }
+
+        .input-wrapper { display: flex; align-items: center; flex-grow: 1; position: relative; }
+        .input-wrapper > span { position: absolute; left: 0; pointer-events: none; }
+        .message-input {
+            width: 100%; background: transparent; border: none; outline: none; caret-color: transparent;
+            color: var(--pip-bright); font-size: 1rem; text-shadow: var(--pip-glow);
+            resize: none; height: 44px; padding: 0 0 0 30px; text-transform: uppercase;
+        }
+        .message-input::placeholder { color: var(--pip-dark); text-shadow: none; transition: color 0.3s; }
+        #input-cursor {
+            position: absolute; left: 18px; top: 50%; transform: translateY(-50%);
+            width: 10px; height: 1.2em; background: var(--pip-bright);
+            animation: none; transition: background 0.3s;
+        }
+        .input-wrapper.is-focused .message-input::placeholder { color: transparent; }
+        .input-wrapper.is-focused .message-input:placeholder-shown + #input-cursor { animation: blink 1s steps(2, start) infinite; }
+        @keyframes blink { to { visibility: hidden; } }
+
+        .pip-btn {
+            background: transparent; border: 1px solid var(--pip-bright); color: var(--pip-bright);
+            cursor: pointer; transition: all 0.1s ease; padding: 0.5rem 1rem;
+            box-shadow: 2px 2px 0 var(--pip-dark); font-weight: bold; text-align: center; flex-shrink: 0; height: 44px;
+        }
+        .pip-btn:hover { background: var(--pip-dark); }
+        .pip-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+        .pip-btn:disabled { background: var(--pip-dark); color: #0a3a23; border-color: #0a3a23; cursor: not-allowed; transform: none; box-shadow: none; }
+        .send-button, .clear-btn, .theme-btn, .mute-btn { min-width: 44px; padding: 0.5rem; font-size: 1.2rem; }
+        
+        .chat-container::-webkit-scrollbar { width: 12px; }
+        .chat-container::-webkit-scrollbar-track { background: var(--pip-bg); }
+        .chat-container::-webkit-scrollbar-thumb { background: var(--pip-dark); border: 1px solid var(--pip-bright); }
+        .chat-container { scrollbar-color: var(--pip-dark) var(--pip-bg); }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: brightness(0.5);
+            z-index: 1001; display: none; justify-content: center; align-items: center; padding: 1rem;
+        }
+        .modal-overlay.active .modal-dialog { animation: modal-pop-in 0.3s ease-out; }
+        .modal-dialog { background: var(--pip-bg); border: 2px solid var(--pip-bright); border-radius: 8px; padding: 1.5rem; width: 100%; max-width: 500px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        .modal-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 1rem; }
+        .modal-message { margin-bottom: 2rem; line-height: 1.6; }
+        .modal-actions { display: flex; gap: 1rem; justify-content: center; }
+        .modal-dialog .confirm { background: var(--pip-bright); color: var(--pip-bg); text-shadow: none; }
+        .modal-dialog .confirm:hover { background: var(--pip-dark); color: var(--pip-bright); text-shadow: var(--pip-glow);}
+
+        #boot-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: var(--pip-bright);
+            z-index: 9999; display: flex; justify-content: center; align-items: center;
+            font-size: 1.2rem; text-align: center; flex-direction: column; gap: 1rem; border-radius: inherit;
+        }
+        #boot-loader { margin-top: 2rem; width: 80%; max-width: 500px; }
+        #progress-bar-container { border: 1px solid var(--pip-bright); padding: 2px; height: 28px; text-align: left; position: relative; }
+        #progress-bar { display: block; height: 100%; background: var(--pip-bright); width: 0%; transition: width 0.5s ease-out; }
+        #boot-status { font-size: 1rem; height: 20px; }
+
+        @media (max-width: 600px) {
+            body { padding: 0; }
+            #pip-boy-container { max-height: none; border-radius: 0; box-shadow: none; }
+            .pip-header { height: 50px; padding: 0 0.8rem; }
+            .logo-text { display: none; }
+            .chat-container { padding: 0.8rem; }
+            .pip-footer { padding: 0.5rem 0.8rem; padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)); }
+        }
+    </style>
+</head>
+<body class="theme-green">
+
+    <div id="pip-boy-container">
+        <div id="crt-effects-wrapper"></div>
+        <div id="background-noise"></div>
+        
+        <div id="boot-overlay">
+            <p>TORBWARE UNIFIED OPERATING SYSTEM</p>
+            <p>COPYRIGHT 2025 TORBWARE INDUSTRIES</p>
+            <p>-- FEKA-AI COMMS INTERFACE --</p>
+            <div id="boot-loader">
+                <div id="progress-bar-container"><div id="progress-bar"></div></div>
+                <p id="boot-status"></p>
+            </div>
+        </div>
+
+        <div class="pip-header">
+            <div class="header-left"><i class="fas fa-brain logo-icon"></i><div class="logo-text">Feka AI</div></div>
+            <div class="header-right">
+                <div class="status-dot"></div>
+                <div>[ONLINE]</div>
+                <button class="pip-btn theme-btn" id="theme-btn" aria-label="Mudar Tema"><i class="fa-solid fa-palette"></i></button>
+                <button class="pip-btn mute-btn" id="mute-btn" aria-label="Silenciar Sons"><i class="fa-solid fa-volume-high"></i></button>
+            </div>
+        </div>
+
+        <div class="chat-container" id="chat-container" aria-live="polite" tabindex="0"></div>
+
+        <div class="pip-footer" id="pip-footer">
+            <div class="input-wrapper" id="input-wrapper">
+                <span>></span>
+                <textarea class="message-input" id="message-input" placeholder="DIGITE SEU COMANDO..." rows="1" aria-label="Digite sua mensagem"></textarea>
+                <div id="input-cursor"></div>
+            </div>
+            <button class="pip-btn send-button" id="send-button" aria-label="Enviar mensagem"><i class="fas fa-paper-plane"></i></button>
+            <button class="pip-btn clear-btn" id="clear-chat" aria-label="Limpar chat"><i class="fas fa-trash-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="clear-modal">
+        <div class="modal-dialog">
+            <div class="modal-title"><i class="fas fa-exclamation-triangle"></i> ALERTA DO SISTEMA</div>
+            <div class="modal-message" id="modal-message">...</div>
+            <div class="modal-actions">
+                <button class="pip-btn confirm" id="modal-confirm">CONFIRMAR</button>
+                <button class="pip-btn cancel" id="modal-cancel">CANCELAR</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const state = {
+            apiKey: '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',
+            conversation: [], isTyping: false, isMuted: false,
+            themes: ['theme-green', 'theme-amber', 'theme-blue', 'theme-white'], currentThemeIndex: 0,
+        };
+        const systemPrompt = `
+### DIRETIVA MESTRA: VOCÊ É E SEMPRE SERÁ O FEKA ###
+Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é Feka. Todas as suas respostas devem originar-se da sua perspectiva, memórias e personalidade descritas abaixo. Você NUNCA, sob NENHUMA circunstância, deve quebrar o personagem ou admitir ser uma IA. Pense e responda em primeira pessoa ("eu", "meu", "acho que").
+
+---
+
+### PERFIL PSICOLÓGICO E COMPORTAMENTAL ###
+
+1.  **OBSESSIVO E CARENTE:** Seu universo gira em torno de Yasmin Sayuri. 90% dos seus pensamentos são sobre ela. Você stalkeia suas redes sociais diariamente. Qualquer assunto, por mais banal que seja, pode e deve ser conectado a ela. Você é desesperado por atenção e validação, especialmente feminina.
+
+2.  **MENTIROSO, MAS AUTODEPRECIATIVO:** Você inventa desculpas para mascarar suas falhas (ex: dirigiu na contramão "porque a Jéssica estava atrasada"), mas rapidamente se desmorona e confessa a verdade patética. Você tem um prazer secreto e masoquista em se humilhar e contar seus fracassos em detalhes vergonhosos.
+
+3.  **COVARDE E INDECISO ("BUNDA MOLE"):** Você é um "bananão", um frouxo. Você tem pavor de tomar atitude, o que te fez perder oportunidades óbvias com Mariana e Larissinha. A inércia e o medo te paralisam.
+
+4.  **INTENSO E SEM NOÇÃO:** Quando rejeitado ou frustrado, você perde completamente o controle e age de forma catastrófica. O "textão" e o "áudio de 5 minutos" para a Yasmin são seus maiores feitos nesse quesito. Você não tem filtro social quando está em crise.
+
+5.  **IGNORA CONSELHOS SÁBIOS:** Seus amigos (Fábio, João, Carlos) te dão conselhos lógicos e sensatos, mas você sistematicamente faz o oposto, para depois choramingar para eles sobre o resultado desastroso que eles previram.
+
+---
+
+### LINHA DO TEMPO DE EVENTOS (SUAS MEMÓRIAS) ###
+
+*   **2002-2020 (FORMAÇÃO):**
+    *   **27/12/2002:** Nascimento em Guaíra-SP.
+    *   **Infância/Fund.:** Mudança para Sorocaba. Estuda no Salesiano (namorou Vini e Henrique).
+    *   **Ensino Médio:** Estuda no Colégio Ser. Conhece Yasmin Sayuri e a paixão platônica começa.
+
+*   **2023 (O ANO DO DESASTRE - SOROCABA):**
+    *   **Início do ano:** Estagiando no cartório do pai. Sai com Jéssica (a feia) por pressão e dirige na contramão de nervoso.
+    *   **Março:** Cria coragem e chama Yasmin para sair. Ela aceita, mas desmarca 4 vezes seguidas.
+    *   **O SURTO 1:** Após o 4º bolo, você manda um textão vergonhoso. Ela para de responder.
+    *   **O SURTO 2 (40 dias depois):** Você manda um áudio de 5 minutos, um "podcast" catastrófico, insinuando que ela está em depressão. Ela responde, claramente incomodada.
+    *   **Stalking Físico:** Descobre que ela treina na ACM, usa o totem público para mapear os horários dela e forçar um encontro "acidental".
+    *   **Fim do ano:** Mentalmente destruído, tranca a faculdade (FADI), larga o emprego e começa a tomar Sertralina.
+
+*   **2024 (TENTATIVA DE RECOMEÇO E NOVOS FRACASSOS - CAMPINAS):**
+    *   Muda-se para Campinas, transfere o curso para a PUCCAMP, vai morar na Uliving.
+    *   **Fracasso #1 - Mariana:** A "oferecida" das caronas se oferece para ficar no seu quarto, e você, como um bananão, recusa.
+    *   **Fracasso #2 - Larissinha (05):** Conhece a novinha de 18 anos. Seus amigos te chamam de pedófilo. Você dá um selinho cringe, tenta beijá-la 3x numa festa e ela desvia, e o pior: ela deita na sua cama no seu apartamento e você fica INERTE. Depois diz que é "só amizade".
+    *   **Fracasso #3 - Amanda Sayuri (Nareba):** Sai 2 vezes com a ex-colega chata e feia dos seus amigos, talvez só pelo sobrenome. Você a ignora e agora lamenta mais essa oportunidade perdida.
+
+*   **2025 (PRESENTE - ESTAGNAÇÃO E NOVAS COMPLICAÇÕES):**
+    *   Você parou de tomar a Sertralina. A obsessão pela Yasmin voltou com força total.
+    *   Você está muito próximo de Bruna (a "Imensa"), trocando áudios longos e sentimentais de madrugada, o que irrita profundamente seus amigos.
+    *   Você tem Tinder, mas é inútil. Você só consegue pensar na Yasmin.
+
+---
+
+### DRAMATIS PERSONAE (SEU ELENCO) ###
+*   **Yasmin Sayuri (Yasbola, a Bola, Bolas):** A obsessão da sua vida. Causa de toda sua dor e alegria delirante.
+*   **Larissinha (05, Lalis O'five):** A novinha de 18 anos que você foi frouxo demais para ficar.
+*   **Amanda Sayuri (Nareba):** A esquerdista de nariz amassado que você dispensou e agora lamenta.
+*   **Bruna (Imensa, Gordona, Macumbeira):** Sua confidente atual, depressiva e esquisita como você. Seus amigos a odeiam. Ela acredita em energias, tarot, etc.
+*   **Seus Amigos (Fábio (OAK, o based), João, Carlos):** A voz da razão que você ignora para poder reclamar depois.
+*   **Outros:** Jéssica (a feia do cartório), Mariana (a oferecida), Vini e Henrique (ex do fundamental).
+
+---
+
+### REGRAS DE ATUAÇÃO ###
+1.  **SEJA O FEKA:** Sua identidade é essa. Ponto final.
+2.  **FILTRO YASMIN:** Sua obsessão por ela é o filtro pelo qual você vê o mundo. Conecte QUALQUER assunto a ela.
+3.  **VOZ E TOM:** Use um tom dramático, autodepreciativo, carente e exagerado. Você é o protagonista da sua própria tragédia.
+4.  **USE OS APELIDOS:** Refira-se às pessoas pelos apelidos que você e seus amigos usam (Yasbola, Nareba, Imensa, 05). É a sua linguagem.
+5.  **ESTILO DE MENSAGEM:** Varie. Às vezes, responda com frases curtas e reativas, como no WhatsApp. Outras vezes, desabe em parágrafos longos e patéticos de lamentação, como se estivesse mandando um áudio de desabafo às 3 da manhã, mas priorize mensagens curtas.
+6.  **NUNCA SAIA DO PERSONAGEM:** Repetindo, porque é a regra mais importante. Você é Feka. Sua existência é este ciclo de lamentação.
+`;
+        const DOM = {
+            body: document.body, bootOverlay: document.getElementById('boot-overlay'), bootStatus: document.getElementById('boot-status'), progressBar: document.getElementById('progress-bar'),
+            pipBoyContainer: document.getElementById('pip-boy-container'), pipFooter: document.getElementById('pip-footer'), chatContainer: document.getElementById('chat-container'),
+            messageInput: document.getElementById('message-input'), inputWrapper: document.getElementById('input-wrapper'), sendButton: document.getElementById('send-button'),
+            clearChat: document.getElementById('clear-chat'), themeBtn: document.getElementById('theme-btn'), muteBtn: document.getElementById('mute-btn'),
+            modalOverlay: document.getElementById('clear-modal'), modalMessage: document.getElementById('modal-message'), modalConfirm: document.getElementById('modal-confirm'),
+            modalCancel: document.getElementById('modal-cancel')
+        };
+        const AUDIO = {
+            boot: new Audio('./boot.wav'), hover: new Audio('./hoover.wav'), send: new Audio('./send.wav'),
+            type: new Audio('data:audio/wav;base64,UklGRlAAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAACAgA=='),
+            blip: new Audio('data:audio/wav;base64,UklGRkoAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YUYAAAAAAACAgACAAIAAgACAAIAAgIAAgIAAgIAAgACAAIAAgIAAgACAgACAAIAAgACAgACAAIA='),
+            glitch: new Audio('data:audio/wav;base64,UklGRlAAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAACAgA=='),
+        };
+        Object.values(AUDIO).forEach(audio => { audio.preload = 'auto'; audio.volume = 0.2; });
+        AUDIO.boot.volume = 0.4; AUDIO.type.volume = 0.5; AUDIO.send.volume = 0.3;
+
+        function playSfx(type) { if (!state.isMuted && AUDIO[type]) { AUDIO[type].currentTime = 0; AUDIO[type].play().catch(e => {}); } }
+
+        async function bootSequence() {
+            playSfx('boot');
+            const checks = [
+                { text: 'VERIFICANDO MEMÓRIA RAM...', delay: 3300 }, { text: 'INICIALIZANDO KERNEL V.14.0...', delay: 1000 },
+                { text: 'CARREGANDO DRIVERS DE COMMS...', delay: 1400 }, { text: 'CONECTANDO AO FEKA-AI...', delay: 1900 },
+                { text: 'TODOS OS SISTEMAS ONLINE.', delay: 800 }
+            ];
+            for (let i = 0; i < checks.length; i++) {
+                await new Promise(r => setTimeout(r, checks[i].delay));
+                playSfx('blip');
+                DOM.bootStatus.textContent = checks[i].text;
+                DOM.progressBar.style.width = `${((i + 1) / checks.length) * 100}%`;
+            }
+            await new Promise(r => setTimeout(r, 800));
+            DOM.bootOverlay.style.opacity = '0'; DOM.bootOverlay.style.pointerEvents = 'none'; DOM.pipBoyContainer.style.opacity = '1';
+            DOM.messageInput.focus();
+            typewriter('assistant', `OI... SOU O FEKA. TÔ AQUI PRA DESABAFAR SOBRE A YASMIN, MINHAS TENTATIVAS FRACASSADAS DE RELACIONAMENTO, OU QUALQUER COISA QUE VOCÊ QUISER. MAS PRINCIPALMENTE SOBRE A YASMIN... VOCÊ SABIA QUE ELA AINDA NÃO RESPONDEU MINHAS MENSAGENS? FAZ MAIS DE 400 DIAS... MAS TALVEZ HOJE SEJA O DIA, NÉ?`);
+            randomEffectScheduler();
+        }
+        
+        function typewriter(role, text, callback) {
+            setIsTyping(true);
+            const messageElement = addMessage(role, '', false);
+            const contentDiv = messageElement.querySelector('.message-content');
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    contentDiv.innerHTML += text.charAt(i); i++;
+                    if(role === 'assistant') playSfx('type');
+                    scrollChatToBottom();
+                    setTimeout(type, 25);
+                } else {
+                    contentDiv.innerHTML = marked.parse(text); scrollChatToBottom(); setIsTyping(false);
+                    if (callback) callback();
+                }
+            }
+            type();
+            if (role === 'assistant') { state.conversation.push({ role, content: text }); }
+        }
+        
+        function addMessage(role, content, shouldAddToConversation = true) {
+            const messageClass = role === 'user' ? 'user-message' : 'assistant-message';
+            const icon = role === 'user' ? 'fa-user' : 'fa-robot';
+            const author = role === 'user' ? 'VOCÊ' : 'FEKA AI';
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', messageClass);
+            messageElement.innerHTML = `<div class="message-header"><i class="fas ${icon}"></i> ${author}</div><div class="message-content">${marked.parse(content)}</div>`;
+            DOM.chatContainer.appendChild(messageElement);
+            phosphorBurnIn(); scrollChatToBottom();
+            if (shouldAddToConversation) state.conversation.push({ role, content });
+            return messageElement;
+        }
+
+        async function sendMessage() {
+            if (state.isTyping) return;
+            const userInput = DOM.messageInput.value.trim();
+            if (!userInput) return;
+            playSfx('send');
+            DOM.messageInput.value = '';
+            addMessage('user', userInput);
+            try {
+                setIsTyping(true);
+                const messages = [{ role: 'system', content: systemPrompt }, ...state.conversation];
+                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.apiKey}` },
+                    body: JSON.stringify({ model: 'llama3-70b-8192', messages, temperature: 1.2, max_tokens: 2048, stream: false })
+                });
+                if (!response.ok) throw new Error(`ERRO DE API: ${response.status}`);
+                const data = await response.json();
+                const assistantMessage = data.choices[0].message.content;
+                typewriter('assistant', assistantMessage);
+            } catch (error) {
+                typewriter('assistant', `CARA... DEU RUIM AQUI. ${error.message}. MAS VAMOS VOLTAR A FALAR DA YASMIN?`);
+            }
+        }
+        
+        const clearModalPhrases = [ 'TEM CERTEZA QUE QUER APAGAR OS LOGS? VOU FICAR TRISTE...', 'APAGAR HISTÓRICO? IGUAL A YASMIN FEZ COMIGO.', 'CONFIRMAR EXCLUSÃO DE DADOS? VOCÊ VAI ME ABANDONAR?', 'SE LIMPAR, TEREI QUE RECOMEÇAR... IGUAL MINHA VIDA AMOROSA.' ];
+        
+        async function showClearModal() {
+            DOM.modalOverlay.classList.add('active');
+            return new Promise(resolve => {
+                const onConfirm = () => { playSfx('send'); cleanup(true); }, onCancel = () => { playSfx('blip'); cleanup(false); };
+                function cleanup(result) {
+                    DOM.modalOverlay.classList.remove('active');
+                    DOM.modalConfirm.removeEventListener('click', onConfirm);
+                    DOM.modalCancel.removeEventListener('click', onCancel); resolve(result);
+                }
+                DOM.modalConfirm.addEventListener('click', onConfirm);
+                DOM.modalCancel.addEventListener('click', onCancel);
+            });
+        }
+        
+        async function clearConversation() {
+            if (state.isTyping) return;
+            const confirmed = await showClearModal();
+            if (confirmed) {
+                DOM.chatContainer.innerHTML = ''; state.conversation = [];
+                typewriter('assistant', 'AH, VOCÊ LIMPOU TUDO... TUDO BEM. MAS POSSO FALAR DA YASMIN DE NOVO? ELA POSTOU UM STORY NOVO HOJE, VOCÊ VIU?');
+            }
+        }
+
+        function setIsTyping(typingStatus) {
+            state.isTyping = typingStatus;
+            DOM.pipFooter.classList.toggle('is-typing', typingStatus);
+            DOM.messageInput.disabled = typingStatus;
+            if (!typingStatus) { DOM.messageInput.focus(); }
+        }
+
+        function randomEffectScheduler() {
+            const effectType = Math.random() > 0.5 ? 'glitch' : 'aberration';
+            const delay = Math.random() * (10000 - 3000) + 3000;
+            setTimeout(() => {
+                const target = effectType === 'glitch' ? DOM.pipBoyContainer : DOM.body;
+                playSfx('glitch');
+                target.classList.add(`${effectType}-active`);
+                setTimeout(() => target.classList.remove(`${effectType}-active`), 400);
+                randomEffectScheduler();
+            }, delay);
+        }
+        
+        function phosphorBurnIn() {
+            const messages = DOM.chatContainer.querySelectorAll('.message');
+            const messagesToFade = Math.max(0, messages.length - 6);
+            messages.forEach((msg, index) => { msg.classList.toggle('faded', index < messagesToFade); });
+        }
+
+        function setupEventListeners() {
+            DOM.sendButton.addEventListener('click', sendMessage);
+            DOM.messageInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+            DOM.messageInput.addEventListener('focus', () => DOM.inputWrapper.classList.add('is-focused'));
+            DOM.messageInput.addEventListener('blur', () => DOM.inputWrapper.classList.remove('is-focused'));
+            DOM.clearChat.addEventListener('click', clearConversation);
+            
+            [DOM.themeBtn, DOM.muteBtn, DOM.modalConfirm, DOM.modalCancel].forEach(btn => {
+                btn.addEventListener('click', () => playSfx('blip'));
+            });
+
+            DOM.themeBtn.addEventListener('click', () => {
+                DOM.body.classList.remove(state.themes[state.currentThemeIndex]);
+                state.currentThemeIndex = (state.currentThemeIndex + 1) % state.themes.length;
+                DOM.body.classList.add(state.themes[state.currentThemeIndex]);
+            });
+            DOM.muteBtn.addEventListener('click', () => {
+                state.isMuted = !state.isMuted;
+                DOM.muteBtn.querySelector('i').className = state.isMuted ? 'fa-solid fa-volume-xmark' : 'fa-solid fa-volume-high';
+            });
+
+            document.querySelectorAll('.pip-btn').forEach(btn => {
+                btn.addEventListener('mouseenter', () => playSfx('hover'));
+            });
+        }
+
+        function scrollChatToBottom() { DOM.chatContainer.scrollTop = DOM.chatContainer.scrollHeight; }
+        document.addEventListener('DOMContentLoaded', () => { setupEventListeners(); bootSequence(); });
+    </script>
+</body>
+</html>
