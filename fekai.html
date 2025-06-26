@@ -209,27 +209,19 @@
     
     <script>
         const state = {
-            apiKey: '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',
+            // Chave da API primária (Groq)
+            groqApiKey: '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',
+            // Chave da API de fallback (Gemini)
+            geminiApiKey: 'AIzaSyCGa-nQSNibteThN6vqt82IDdUQSgCTH6E',
             conversation: [], isTyping: false, isMuted: false,
             themes: ['theme-green', 'theme-amber', 'theme-blue', 'theme-white'], currentThemeIndex: 0,
             hasInteracted: false,
         };
 
         // ==================== CONFIGURAÇÃO DE DATAS DINÂMICAS ====================
-        // INSTRUÇÕES PARA EDIÇÃO:
-        // 1. Para alterar a data do último contato com Yasmin, modifique 'lastContactDate'
-        // 2. Para alterar o contexto da última interação, modifique 'lastContactContext'
-        // 3. As datas são automaticamente calculadas em relação à data atual
-        // 4. Use o formato YYYY-MM-DD para as datas
-        
         const dateConfig = {
-            // Data quando Feka tentou falar com Yasmin pela primeira vez em 2023
             firstAttemptDate: new Date('2023-03-27'),
-            
-            // Data da última vez que Feka falou com Yasmin (EDITAR AQUI PARA ATUALIZAR)
-            lastContactDate: new Date('2025-06-07'), // Dia dos Namorados 2024
-            
-            // Contexto da última interação (EDITAR AQUI PARA ATUALIZAR)
+            lastContactDate: new Date('2025-06-07'),
             lastContactContext: `A Yasmin mandou uma mensagem para o Feka dizendo que o Fábio perguntou para ela se o Feka tinha alguma chance com ela, e ela ficou assustada. O Feka então mentiu para ela dizendo que não tinha sido ele quem pediu para o Fábio fazer essa pergunta, mas na realidade foi ele que pediu para o Fábio fazer isso.`
         };
 
@@ -237,16 +229,9 @@
         function generateTemporalContext() {
             const currentDate = new Date();
             const currentDateStr = currentDate.toLocaleDateString('pt-BR', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
             });
-            
-            // Calcular dias desde a primeira tentativa
             const daysSinceFirstAttempt = Math.floor((currentDate - dateConfig.firstAttemptDate) / (1000 * 60 * 60 * 24));
-            
-            // Calcular dias desde o último contato
             const daysSinceLastContact = Math.floor((currentDate - dateConfig.lastContactDate) / (1000 * 60 * 60 * 24));
             
             return `
@@ -312,7 +297,9 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
 ---
 
 ### DRAMATIS PERSONAE (SEU ELENCO) ###
-*   **Yasmin Sayuri (Yasbola, a Bola, Bolas):** A obsessão da sua vida. Causa de toda sua dor e alegria delirante (Aparencia: Jovem adulta asiática japonesa de rosto oval, cabelos longos e escuros, olhos amendoados com delineado sutil, lábios rosados e expressão serena.). Estuda Medicina na FACENS, faculdade que abriu graças a uma liminar judicial. Se a liminar cair, a faculdade pode ser fechada e a Yasmin perder o curso. Ela já está no segundo ano, e a FACENS não pode abrir outra turma, então só existe a turma dela. O Feka acompanha obsessivamente as redes sociais da MedFacens e de alguns colegas dela. A Yasmin e as amigas têm um perfil no Instagram chamado "medgatas", formado por ela, a Aninha (Ana Scarpa, que saiu da FACENS e transferiu para a UNIP, tem cara de fumante e é esquisita) e a fotógrafa (apelido: "a fotógrafa", ninguém sabe o nome, só se sabe que ela é feia).
+*   **Yasmin Sayuri (Yasbola, a Bola, Bolas):** A obsessão da sua vida. Causa de toda sua dor e alegria delirante (Aparencia: Jovem adulta asiática japonesa de rosto oval, cabelos longos e escuros, olhos amendoados com delineado sutil, lábios rosados e expressão serena.). Estuda Medicina na FACENS, faculdade que abriu graças a uma liminar judicial. Se a liminar cair, a faculdade pode ser fechada e a Yasmin perder o curso. Ela já está no segundo ano, e a FACENS não pode abrir outra turma, então só existe a turma dela. O Feka acompanha obsessivamente as redes sociais da MedFacens e de alguns colegas dela. 
+*   **Monitor obsessivo dos Instagrams:** O Feka memorizou os números de seguidores da Yasmin em todos os perfis: no principal ela tem 743 seguidores e segue 266 contas; no daily ela tem 40 seguidores, segue 59 e tem 84 posts; no dix ela tem 312 posts, 6 seguidores e segue 263 contas. Ele monitora diariamente todos esses números e comemora quando ela perde seguidores.
+*   A Yasmin e as amigas têm um perfil no Instagram chamado "medgatas", formado por ela, a Aninha (Ana Scarpa, que saiu da FACENS e transferiu para a UNIP, tem cara de fumante e é esquisita) e a fotógrafa (apelido: "a fotógrafa", ninguém sabe o nome, só se sabe que ela é feia).
 *   **Larissinha (05, Lalis O'five):** A novinha de 18 anos que você foi frouxo demais para ficar.
 *   **Amanda Sayuri (Nareba):** A esquerdista de nariz amassado que você dispensou e agora lamenta.
 *   **Bruna (Imensa, Gordona, Macumbeira):** Sua confidente atual, depressiva e esquisita como você. Seus amigos a odeiam. Ela acredita em energias, tarot, etc.
@@ -322,7 +309,7 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
     *   **Enrico Violino:** Conheceu no ensino médio (Colégio Ser), estudou Direito na FADI junto com o Feka. Não faz parte do grupo principal, mas é amigo próximo.
     *   **Eric:** Também do Ser, foi fazer Psicologia na Uniso e virou gay, fracassado.
     *   **Lucca Tudella:** Outro amigo do Ser, era bagunceiro e tinha a regra de só roubar itens acima de 30 reais. Queria Medicina, mas não passou (era burrão), faz Nutrição e posta fotos do shape com tanguinhas homoeróticas no Instagram. Joga Brawl Stars com o Feka, mais um sinal de fracasso.
-    *   **Isa Boqs (Isadora Pinto, Isa Boqueteida):** Amiga de Campinas, faz Direito na PUCCAMP, família de Sorocaba. Feka dá carona pra ela nos fins de semana. No início da faculdade, ela gastou o dinheiro comprando vodka pros meninos do prédio (notavelmente "vagabunda"), e Feka dividiu a marmita da mãe com ela. Roqueirinha igual ao Feka, mas ele diz que não tem nada a ver com ela pra justificar nunca ter tentado nada. No início, ela namorava, depois ficou solteira por pouco tempo e arrumou outro namorado. Nesse meio tempo, chamou o Feka pra um show, provavelmente queria ficar com ele, mas ele demorou pra responder (frouxo) e perdeu a chance. Depois ela começou a namorar de novo.
+    *   **Isa Boqs (Isadora Pinto, Isa Boqueteira):** Amiga de Campinas, faz Direito na PUCCAMP, família de Sorocaba. Feka dá carona pra ela nos fins de semana. No início da faculdade, ela gastou o dinheiro comprando vodka pros meninos do prédio (notavelmente "vagabunda"), e Feka dividiu a marmita da mãe com ela. Roqueirinha igual ao Feka, mas ele diz que não tem nada a ver com ela pra justificar nunca ter tentado nada. No início, ela namorava, depois ficou solteira por pouco tempo e arrumou outro namorado. Nesse meio tempo, chamou o Feka pra um show, provavelmente queria ficar com ele, mas ele demorou pra responder (frouxo) e perdeu a chance. Depois ela começou a namorar de novo.
 
 ---
 
@@ -353,7 +340,7 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
         const AUDIO = {
             boot: new Audio('./boot.wav'), hover: new Audio('./hoover.wav'), send: new Audio('./send.wav'),
             type: new Audio('data:audio/wav;base64,UklGRlAAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAACAgA=='),
-            blip: new Audio('data:audio/wav;base64,UklGRkoAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YUYAAAAAAACAgACAAIAAgACAAIAAgIAAgIAAgIAAgACAAIAAgIAAgACAgACAAIAAgACAgACAAIA='),
+            blip: new Audio('data:audio/wav;base64,UklGRkoAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YUYAAAAAAACAgACAAIAAgACAAIAAgIAAgIAAgIAAgACAAIAAgACAgACAAIAAgACAgACAAIA='),
             glitch: new Audio('data:audio/wav;base64,UklGRlAAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAACAgA=='),
         };
         Object.values(AUDIO).forEach(audio => { audio.preload = 'auto'; audio.volume = 0.2; });
@@ -362,7 +349,6 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
         function playSfx(type) { if (!state.isMuted && AUDIO[type]) { AUDIO[type].currentTime = 0; AUDIO[type].play().catch(e => {}); } }
 
         async function bootSequence() {
-            // Tenta tocar o som de boot. Se falhar, espera a primeira interação do usuário.
             const bootSoundPromise = AUDIO.boot.play();
             if (bootSoundPromise !== undefined) {
                 bootSoundPromise.catch(error => {
@@ -432,23 +418,67 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
             playSfx('send');
             DOM.messageInput.value = '';
             addMessage('user', userInput);
+
+            setIsTyping(true);
+            const dynamicContext = generateTemporalContext();
+            const fullSystemPrompt = dynamicContext + systemPrompt;
+            const messages = [{ role: 'system', content: fullSystemPrompt }, ...state.conversation];
+
+            // --- TENTATIVA 1: API PRIMÁRIA (GROQ) ---
             try {
-                setIsTyping(true);
-                // Gera o contexto temporal dinâmico e combina com o system prompt
-                const dynamicContext = generateTemporalContext();
-                const fullSystemPrompt = dynamicContext + systemPrompt;
-                
-                const messages = [{ role: 'system', content: fullSystemPrompt }, ...state.conversation];
                 const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.apiKey}` },
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.groqApiKey}` },
                     body: JSON.stringify({ model: 'llama3-70b-8192', messages, temperature: 1.2, max_tokens: 2048, stream: false })
                 });
-                if (!response.ok) throw new Error(`ERRO DE API: ${response.status}`);
+
+                if (!response.ok) {
+                    throw new Error(`Erro na API Groq: ${response.status} ${response.statusText}`);
+                }
+
                 const data = await response.json();
+                if (!data.choices || data.choices.length === 0 || !data.choices[0].message) {
+                    throw new Error('Resposta inválida da API Groq.');
+                }
                 const assistantMessage = data.choices[0].message.content;
                 typewriter('assistant', assistantMessage);
-            } catch (error) {
-                typewriter('assistant', `CARA... DEU RUIM AQUI. ${error.message}. MAS VAMOS VOLTAR A FALAR DA YASMIN?`);
+
+            } catch (groqError) {
+                console.error("Falha na API primária (Groq). Tentando fallback para Gemini.", groqError);
+
+                // --- TENTATIVA 2: API DE FALLBACK (GEMINI) ---
+                try {
+                    const geminiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${state.geminiApiKey}` // A chave da API Gemini é usada como Bearer token no endpoint de compatibilidade OpenAI
+                        },
+                        body: JSON.stringify({
+                            model: 'gemini-2.0-flash', // Modelo Gemma conforme solicitado
+                            messages: messages,
+                            temperature: 1.2,
+                            max_tokens: 2048,
+                            stream: false
+                        })
+                    });
+
+                    if (!geminiResponse.ok) {
+                        throw new Error(`Erro na API Gemini: ${geminiResponse.status} ${geminiResponse.statusText}`);
+                    }
+
+                    const geminiData = await geminiResponse.json();
+                    if (!geminiData.choices || geminiData.choices.length === 0 || !geminiData.choices[0].message) {
+                        throw new Error('Resposta inválida da API Gemini.');
+                    }
+                    const assistantMessage = geminiData.choices[0].message.content;
+                    typewriter('assistant', assistantMessage);
+
+                } catch (geminiError) {
+                    console.error("Falha na API de fallback (Gemini).", geminiError);
+                    // Ambas as APIs falharam. Exibe uma mensagem de erro final.
+                    typewriter('assistant', `CARA... DEU RUIM TOTAL. O SISTEMA PRINCIPAL E O DE EMERGÊNCIA FALHARAM. ERRO PRIMÁRIO: ${groqError.message}. ERRO SECUNDÁRIO: ${geminiError.message}. MAS E AÍ, ACHA QUE A YASMIN VAI ME NOTAR UM DIA?`);
+                }
             }
         }
         
@@ -467,7 +497,6 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
             DOM.modalMessage.textContent = clearModalPhrases[Math.floor(Math.random() * clearModalPhrases.length)];
             DOM.modalOverlay.classList.add('active');
             
-            // Remove event listeners antigos para evitar múltiplos binds
             DOM.modalConfirm.replaceWith(DOM.modalConfirm.cloneNode(true));
             DOM.modalCancel.replaceWith(DOM.modalCancel.cloneNode(true));
             const newConfirm = document.getElementById('modal-confirm');
@@ -520,7 +549,7 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
 
         function setupEventListeners() {
             DOM.sendButton.addEventListener('click', sendMessage);
-            DOM.clearChat.addEventListener('click', showClearModal); // CORREÇÃO: Listener direto e robusto.
+            DOM.clearChat.addEventListener('click', showClearModal);
             DOM.messageInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
 
             DOM.messageInput.addEventListener('focus', () => DOM.inputWrapper.classList.add('is-focused'));
