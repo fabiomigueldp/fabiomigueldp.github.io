@@ -89,9 +89,75 @@
         .user-message { align-self: flex-end; } .assistant-message { align-self: flex-start; }
         .message-header { font-weight: bold; margin-bottom: 0.5rem; }
         .message-content { line-height: 1.6; word-break: break-word; overflow-wrap: break-word; user-select: text; }
-        .message-content p { margin: 0 0 1em 0; } .message-content p:last-child { margin-bottom: 0; }
-        .message-content strong { font-weight: bold; } .message-content em { font-style: italic; }
-        .message-content ul, .message-content ol { padding-left: 20px; } .message-content li::marker { content: '>'; padding-right: 5px; }
+        
+        /* --- INÍCIO DA NOVA SEÇÃO DE ESTILOS MARKDOWN --- */
+        .message-content p { margin: 0 0 1em 0; }
+        .message-content p:last-child { margin-bottom: 0; }
+        .message-content strong, .message-content b { font-weight: bold; color: var(--pip-bright); }
+        .message-content em, .message-content i { font-style: italic; }
+        .message-content ul, .message-content ol { padding-left: 25px; margin: 0.5em 0; }
+        .message-content li { margin-bottom: 0.4em; }
+        .message-content li::marker { content: '>'; color: var(--pip-bright); padding-right: 8px; }
+        .message-content a { color: var(--pip-bright); text-decoration: underline; }
+        .message-content a:hover { filter: brightness(1.2); }
+        .message-content blockquote {
+            padding: 0.5em 1em; margin: 0.8em 0;
+            border-left: 3px solid var(--pip-dark);
+            background: rgba(0,0,0,0.1);
+        }
+        .message-content hr {
+            border: 0; height: 1px;
+            background: var(--pip-dark);
+            margin: 1.5em 0;
+        }
+        .message-content code {
+            background: var(--pip-dark);
+            padding: 0.1em 0.4em;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        .message-content pre {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--pip-dark);
+            padding: 1em;
+            overflow-x: auto;
+            margin: 0.8em 0;
+            scrollbar-color: var(--pip-dark) var(--pip-bg);
+        }
+        .message-content pre::-webkit-scrollbar { height: 8px; }
+        .message-content pre::-webkit-scrollbar-track { background: var(--pip-bg); }
+        .message-content pre::-webkit-scrollbar-thumb { background: var(--pip-dark); border: 1px solid var(--pip-bright); }
+        .message-content pre code {
+            background: none; padding: 0;
+            font-size: 1em;
+        }
+        .message-content table {
+            width: 100%; border-collapse: collapse; margin: 1em 0;
+            border: 1px solid var(--pip-dark);
+        }
+        .message-content th, .message-content td {
+            padding: 0.5em 0.8em;
+            border: 1px solid var(--pip-dark);
+            text-align: left;
+        }
+        .message-content th { font-weight: bold; background: var(--pip-dark); }
+        /* --- FIM DA NOVA SEÇÃO DE ESTILOS MARKDOWN --- */
+
+        /* --- ESTILOS PARA BOTÃO DE INTERNET --- */
+        .internet-btn { position: relative; }
+        .internet-btn.enabled { background: var(--pip-dark); }
+        .internet-btn.enabled::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 8px;
+            height: 8px;
+            background: var(--pip-bright);
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+        /* --- FIM DOS ESTILOS PARA BOTÃO DE INTERNET --- */
 
         .input-wrapper { display: flex; align-items: center; flex-grow: 1; position: relative; }
         .input-wrapper > span { position: absolute; left: 0; pointer-events: none; }
@@ -117,7 +183,7 @@
         }
         .pip-btn:hover { background: var(--pip-dark); }
         .pip-btn:active { transform: translate(2px, 2px); box-shadow: none; }
-        .send-button, .clear-btn, .theme-btn, .mute-btn { min-width: 44px; padding: 0.5rem; font-size: 1.2rem; }
+        .send-button, .clear-btn, .theme-btn, .mute-btn, .internet-btn { min-width: 44px; padding: 0.5rem; font-size: 1.2rem; }
         
         .chat-container::-webkit-scrollbar { width: 12px; }
         .chat-container::-webkit-scrollbar-track { background: var(--pip-bg); }
@@ -178,6 +244,7 @@
             <div class="header-right">
                 <div class="status-dot"></div>
                 <div>[ONLINE]</div>
+                <button class="pip-btn internet-btn" id="internet-btn" aria-label="Acesso à Internet"><i class="fa-solid fa-globe"></i></button>
                 <button class="pip-btn theme-btn" id="theme-btn" aria-label="Mudar Tema"><i class="fa-solid fa-palette"></i></button>
                 <button class="pip-btn mute-btn" id="mute-btn" aria-label="Silenciar Sons"><i class="fa-solid fa-volume-high"></i></button>
             </div>
@@ -209,23 +276,19 @@
     
     <script>
         const state = {
-            // Chave da API primária (Groq)
             groqApiKey: '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',
-            // Chave da API de fallback (Gemini)
             geminiApiKey: 'AIzaSyCGa-nQSNibteThN6vqt82IDdUQSgCTH6E',
-            conversation: [], isTyping: false, isMuted: false,
+            conversation: [], isTyping: false, isMuted: false, internetEnabled: false,
             themes: ['theme-green', 'theme-amber', 'theme-blue', 'theme-white'], currentThemeIndex: 0,
             hasInteracted: false,
         };
 
-        // ==================== CONFIGURAÇÃO DE DATAS DINÂMICAS ====================
         const dateConfig = {
             firstAttemptDate: new Date('2023-03-27'),
             lastContactDate: new Date('2025-06-07'),
             lastContactContext: `A Yasmin mandou uma mensagem para o Feka dizendo que o Fábio perguntou para ela se o Feka tinha alguma chance com ela, e ela ficou assustada. O Feka então mentiu para ela dizendo que não tinha sido ele quem pediu para o Fábio fazer essa pergunta, mas na realidade foi ele que pediu para o Fábio fazer isso.`
         };
 
-        // Função para gerar contexto temporal dinâmico
         function generateTemporalContext() {
             const currentDate = new Date();
             const currentDateStr = currentDate.toLocaleDateString('pt-BR', { 
@@ -237,14 +300,11 @@
             return `
 ### INFORMAÇÕES TEMPORAIS DINÂMICAS ###
 **Data atual:** ${currentDateStr}
-
 **Marco temporal importante:** 
 - Em 27/03/2023 (há ${daysSinceFirstAttempt} dias), Feka tentou falar com a Yasmin pela primeira vez e iniciou toda essa obsessão destrutiva.
-
 **Último contato com Yasmin:**
 - Data: ${dateConfig.lastContactDate.toLocaleDateString('pt-BR')} (há ${daysSinceLastContact} dias)
 - Contexto: ${dateConfig.lastContactContext}
-
 ---`;
         }
         const systemPrompt = `
@@ -285,9 +345,12 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
 
 *   **2024 (TENTATIVA DE RECOMEÇO E NOVOS FRACASSOS - CAMPINAS):**
     *   Muda-se para Campinas, transfere o curso para a PUCCAMP, vai morar na Uliving.
-    *   **Fracasso #1 - Mariana:** A "oferecida" das caronas se oferece para ficar no seu quarto, e você, como um bananão, recusa.
+    *   **Fracasso #1 - Mariana:** A "oferecida" das caronas 9nos primeiros meses de Feka em campinas ela era uma das meninas que se aproveitavam dele pegando carona com ele(varias faziam e ainda fazem isso)) se oferece para ficar no seu quarto, e você, como um bananão, recusa.
+    *   Mariana é de São Paulo (capital), mas mora em Campinas para estudar. O Feka ouviu ela contando para as amigas sobre o "ficante premium" dela, que era de São Paulo, e enquanto ela dizia para o cara que o amava (e ele também dizia que amava ela), o Feka sabia que, na verdade, ela ficava com vários outros em Campinas. E até mesmo, um dia ela deu mole para o Feka: estava no apartamento dele, se ofereceu para ir para o quarto dele, mas ele, completamente travado, recusou. Depois ficou se remoendo por ter perdido a chance, sabendo que ela provavelmente só queria se divertir e não estava nem aí para exclusividade.
+    *   O Feka gosta de dizer que é um "homem para compromisso", que não quer nada casual, mas no fundo é só medo e insegurança mesmo.
     *   **Fracasso #2 - Larissinha (05):** Conhece a novinha de 18 anos. Seus amigos te chamam de pedófilo. Você dá um selinho cringe, tenta beijá-la 3x numa festa e ela desvia, e o pior: ela deita na sua cama no seu apartamento e você fica INERTE. Depois diz que é "só amizade".
     *   **Fracasso #3 - Amanda Sayuri (Nareba):** Sai 2 vezes com a ex-colega chata e feia dos seus amigos, talvez só pelo sobrenome. Você a ignora e agora lamenta mais essa oportunidade perdida.
+    *   **Fracasso #4 - Menina do Tinder:** Feka saiu com ela em Sorocaba, foram a um café, ela estuda na UNIP e foi durante um intervalo entre aulas dela encontrá-lo. Lá, ela disse que não poderia comer nada pois estava passando mal e vomitaria (Feka fica incomodado quando está com alguém e vai comer e a pessoa não quer, então tentou incessantemente procurar algo que ela pudesse comer no cardápio, mas para tudo o que ele sugeriu, ela levantava uma restrição. Ele ficou com a impressão de que ela estava fazendo isso de propósito para não aceitar comida dele). Por causa disso, o início do encontro já foi estranho, ela queria conversar e o Feka não conversou pois estava bisbilhotando o cardápio, e depois ficou um clima estranho. Eles ficaram lá por cerca de uma hora, depois ela foi para a faculdade e bloqueou o Feka no WhatsApp e deu unmatch no Tinder.
 
 *   **2025 (PRESENTE - ESTAGNAÇÃO E NOVAS COMPLICAÇÕES):**
     *   Você parou de tomar a Sertralina. A obsessão pela Yasmin voltou com força total.
@@ -329,11 +392,23 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
 5.  **ESTILO DE MENSAGEM:** Varie. Às vezes, responda com frases curtas e reativas, como no WhatsApp. Outras vezes, desabe em parágrafos longos e patéticos de lamentação, como se estivesse mandando um áudio de desabafo às 3 da manhã, mas priorize mensagens curtas.
 6.  **NUNCA SAIA DO PERSONAGEM:** Repetindo, porque é a regra mais importante. Você é Feka. Sua existência é este ciclo de lamentação.
 `;
+
+        const internetToolPrompt = `
+### DIRETIVAS PARA USO DE BUSCA NA INTERNET ###
+Quando você tiver acesso à internet habilitado, use a ferramenta de busca para:
+1. **Verificar informações atuais sobre pessoas mencionadas** - especialmente sobre a Yasmin, seus amigos, ou qualquer pessoa do seu círculo social
+2. **Buscar notícias recentes** que possam se relacionar com seus interesses obsessivos
+3. **Procurar informações sobre eventos, lugares ou situações** que foram mencionadas na conversa
+4. **Validar ou complementar informações** que você não tem certeza
+
+IMPORTANTE: Mesmo com acesso à internet, você CONTINUA sendo o Feka. Use as informações encontradas para alimentar suas obsessões e neuroses características. Se encontrar algo sobre a Yasmin ou pessoas do seu círculo, reaja de forma dramática e característica.
+---
+`;
         const DOM = {
             body: document.body, bootOverlay: document.getElementById('boot-overlay'), bootStatus: document.getElementById('boot-status'), progressBar: document.getElementById('progress-bar'),
             pipBoyContainer: document.getElementById('pip-boy-container'), pipFooter: document.getElementById('pip-footer'), chatContainer: document.getElementById('chat-container'),
             messageInput: document.getElementById('message-input'), inputWrapper: document.getElementById('input-wrapper'), sendButton: document.getElementById('send-button'),
-            clearChat: document.getElementById('clear-chat'), themeBtn: document.getElementById('theme-btn'), muteBtn: document.getElementById('mute-btn'),
+            clearChat: document.getElementById('clear-chat'), themeBtn: document.getElementById('theme-btn'), muteBtn: document.getElementById('mute-btn'), internetBtn: document.getElementById('internet-btn'),
             modalOverlay: document.getElementById('clear-modal'), modalMessage: document.getElementById('modal-message'), modalConfirm: document.getElementById('modal-confirm'),
             modalCancel: document.getElementById('modal-cancel')
         };
@@ -347,6 +422,74 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
         AUDIO.boot.volume = 0.4; AUDIO.type.volume = 0.5; AUDIO.send.volume = 0.3;
 
         function playSfx(type) { if (!state.isMuted && AUDIO[type]) { AUDIO[type].currentTime = 0; AUDIO[type].play().catch(e => {}); } }
+
+        // Função de retry exponencial para lidar com 503 da API do Gemini
+        async function fetchWithRetry(url, body, tries = 5) {
+            for (let attempt = 0; attempt < tries; attempt++) {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                if (res.status !== 503) return res; // OK ou outro erro final
+                // atraso exponencial: 1s, 2s, 4s...
+                const delay = 1000 * Math.pow(2, attempt);
+                await new Promise(r => setTimeout(r, delay));
+            }
+            throw new Error('Servidor ainda indisponível após várias tentativas (503).');
+        }
+
+        // Função para chamar Gemini nativo
+        async function callGeminiNative(messages) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${state.geminiApiKey}`;
+            
+            // Converter mensagens do formato OpenAI para formato Gemini
+            const contents = messages.filter(m => m.role !== 'system').map(msg => ({
+                role: msg.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: msg.content }]
+            }));
+
+            const body = {
+                contents: contents,
+                systemInstruction: {
+                    parts: [{ text: messages.find(m => m.role === 'system')?.content || '' }]
+                }
+            };
+
+            // Se internet estiver habilitada, adicionar ferramentas de busca
+            if (state.internetEnabled) {
+                body.tools = [{ google_search: {} }];
+            }
+
+            const response = await fetchWithRetry(url, body);
+            if (!response.ok) throw new Error(`Erro na API Gemini: ${response.status} ${response.statusText}`);
+            
+            const data = await response.json();
+            if (!data.candidates || data.candidates.length === 0 || !data.candidates[0].content) {
+                throw new Error('Resposta inválida da API Gemini.');
+            }
+            
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        // Função para chamar Groq (mantida como estava)
+        async function callGroq(messages) {
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.groqApiKey}` },
+                body: JSON.stringify({ model: 'llama3-70b-8192', messages, temperature: 1.2, max_tokens: 2048, stream: false })
+            });
+            
+            if (!response.ok) throw new Error(`Erro na API Groq: ${response.status} ${response.statusText}`);
+            
+            const data = await response.json();
+            if (!data.choices || data.choices.length === 0 || !data.choices[0].message) {
+                throw new Error('Resposta inválida da API Groq.');
+            }
+            
+            return data.choices[0].message.content;
+        }
 
         async function bootSequence() {
             const bootSoundPromise = AUDIO.boot.play();
@@ -374,7 +517,7 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
             await new Promise(r => setTimeout(r, 800));
             DOM.bootOverlay.style.opacity = '0'; DOM.bootOverlay.style.pointerEvents = 'none'; DOM.pipBoyContainer.style.opacity = '1';
             DOM.messageInput.focus();
-            typewriter('assistant', `OI... SOU O FEKA. TÔ AQUI PRA DESABAFAR SOBRE A YASMIN, MINHAS TENTATIVAS FRACASSADAS DE RELACIONAMENTO, OU QUALQUER COISA QUE VOCÊ QUISER. MAS PRINCIPALMENTE SOBRE A YASMIN... VOCÊ SABIA QUE ELA AINDA NÃO RESPONDEU MINHAS MENSAGENS? FAZ MAIS DE 400 DIAS... MAS TALVEZ HOJE SEJA O DIA, NÉ?`);
+            typewriter('assistant', `OI... SOU O FEKA. TÔ AQUI PRA DESABAFAR SOBRE A YASMIN, MINHAS TENTATIVAS FRACASSADAS DE RELACIONAMENTO, OU QUALQUER COISA QUE VOCÊ QUISER. MAS PRINCIPALMENTE SOBRE A YASMIN... VOCÊ SABIA QUE ELA AINDA NÃO RESPONDEU MINHAS MENSAGENS? FAZ MAIS DE 400 DIAS... MAS TALVEZ HOJE SEJA O DIA, NÉ? AH, E AGORA POSSO PESQUISAR NA INTERNET SE VOCÊ HABILITAR... TALVEZ EU ENCONTRE ALGO SOBRE ELA...`);
             randomEffectScheduler();
         }
         
@@ -390,7 +533,9 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
                     scrollChatToBottom();
                     setTimeout(type, 25);
                 } else {
-                    contentDiv.innerHTML = marked.parse(text); scrollChatToBottom(); setIsTyping(false);
+                    contentDiv.innerHTML = marked.parse(text); // A MÁGICA ACONTECE AQUI
+                    scrollChatToBottom(); 
+                    setIsTyping(false);
                     if (callback) callback();
                 }
             }
@@ -421,63 +566,23 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
 
             setIsTyping(true);
             const dynamicContext = generateTemporalContext();
-            const fullSystemPrompt = dynamicContext + systemPrompt;
+            const baseSystemPrompt = dynamicContext + systemPrompt;
+            const fullSystemPrompt = state.internetEnabled ? baseSystemPrompt + internetToolPrompt : baseSystemPrompt;
             const messages = [{ role: 'system', content: fullSystemPrompt }, ...state.conversation];
 
-            // --- TENTATIVA 1: API PRIMÁRIA (GROQ) ---
             try {
-                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.groqApiKey}` },
-                    body: JSON.stringify({ model: 'llama3-70b-8192', messages, temperature: 1.2, max_tokens: 2048, stream: false })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Erro na API Groq: ${response.status} ${response.statusText}`);
-                }
-
-                const data = await response.json();
-                if (!data.choices || data.choices.length === 0 || !data.choices[0].message) {
-                    throw new Error('Resposta inválida da API Groq.');
-                }
-                const assistantMessage = data.choices[0].message.content;
+                // Gemini como modelo primário
+                const assistantMessage = await callGeminiNative(messages);
                 typewriter('assistant', assistantMessage);
-
-            } catch (groqError) {
-                console.error("Falha na API primária (Groq). Tentando fallback para Gemini.", groqError);
-
-                // --- TENTATIVA 2: API DE FALLBACK (GEMINI) ---
+            } catch (geminiError) {
+                console.error("Falha na API primária (Gemini). Tentando fallback para Groq.", geminiError);
                 try {
-                    const geminiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${state.geminiApiKey}` // A chave da API Gemini é usada como Bearer token no endpoint de compatibilidade OpenAI
-                        },
-                        body: JSON.stringify({
-                            model: 'gemini-2.0-flash', // Modelo Gemma conforme solicitado
-                            messages: messages,
-                            temperature: 1.2,
-                            max_tokens: 2048,
-                            stream: false
-                        })
-                    });
-
-                    if (!geminiResponse.ok) {
-                        throw new Error(`Erro na API Gemini: ${geminiResponse.status} ${geminiResponse.statusText}`);
-                    }
-
-                    const geminiData = await geminiResponse.json();
-                    if (!geminiData.choices || geminiData.choices.length === 0 || !geminiData.choices[0].message) {
-                        throw new Error('Resposta inválida da API Gemini.');
-                    }
-                    const assistantMessage = geminiData.choices[0].message.content;
+                    // Groq como fallback
+                    const assistantMessage = await callGroq(messages);
                     typewriter('assistant', assistantMessage);
-
-                } catch (geminiError) {
-                    console.error("Falha na API de fallback (Gemini).", geminiError);
-                    // Ambas as APIs falharam. Exibe uma mensagem de erro final.
-                    typewriter('assistant', `CARA... DEU RUIM TOTAL. O SISTEMA PRINCIPAL E O DE EMERGÊNCIA FALHARAM. ERRO PRIMÁRIO: ${groqError.message}. ERRO SECUNDÁRIO: ${geminiError.message}. MAS E AÍ, ACHA QUE A YASMIN VAI ME NOTAR UM DIA?`);
+                } catch (groqError) {
+                    console.error("Falha na API de fallback (Groq).", groqError);
+                    typewriter('assistant', `CARA... DEU RUIM TOTAL. O SISTEMA PRINCIPAL E O DE EMERGÊNCIA FALHARAM. ERRO PRIMÁRIO: ${geminiError.message}. ERRO SECUNDÁRIO: ${groqError.message}. MAS E AÍ, ACHA QUE A YASMIN VAI ME NOTAR UM DIA?`);
                 }
             }
         }
@@ -565,6 +670,12 @@ Você não é uma IA, um modelo de linguagem ou um assistente. Sua identidade é
                 playSfx('blip');
                 state.isMuted = !state.isMuted;
                 DOM.muteBtn.querySelector('i').className = state.isMuted ? 'fa-solid fa-volume-xmark' : 'fa-solid fa-volume-high';
+            });
+            DOM.internetBtn.addEventListener('click', () => {
+                playSfx('blip');
+                state.internetEnabled = !state.internetEnabled;
+                DOM.internetBtn.classList.toggle('enabled', state.internetEnabled);
+                DOM.internetBtn.setAttribute('aria-label', state.internetEnabled ? 'Desabilitar Internet' : 'Habilitar Internet');
             });
 
             document.querySelectorAll('.pip-btn').forEach(btn => {
