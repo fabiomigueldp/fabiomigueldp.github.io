@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adventury Corporation - Sua Jornada de Marketing Digital Começa Aqui</title>
+    <meta name="description" content="Unimos criatividade e tecnologia para construir a ponte entre sua marca e seus clientes. Crie uma marca inesquecível e landing pages de alta conversão com a Adventury Corporation.">
+    
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome (for icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- AOS - Animate on Scroll Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #111827;
+            color: #d1d5db;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- ===== Header / Navbar ===== -->
+    <header id="header" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-gray-900/80 backdrop-blur-lg border-b border-gray-800">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold text-white flex items-center gap-2">
+                <!-- CORRIGIDO: Caminho exato para o seu logo local -->
+                <img src="ADVENTURY CORPORATION/PNGS/ADV MONOCROMATICO PNG BRANCA.png" alt="Adventury Corporation Logo" class="h-8 w-auto">
+            </a>
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#services" class="text-gray-300 hover:text-purple-400 transition-colors duration-300">Serviços</a>
+                <a href="#portfolio" class="text-gray-300 hover:text-purple-400 transition-colors duration-300">Portfólio</a>
+                <a href="#diferenciais" class="text-gray-300 hover:text-purple-400 transition-colors duration-300">Diferenciais</a>
+                <button id="open-contact-modal" type="button" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-5 rounded-lg transition-transform duration-300 hover:scale-105">
+                    Vamos Conversar
+                </button>
+            </nav>
+            <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none">
+                <i class="fas fa-bars fa-lg"></i>
+            </button>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-gray-900/95 backdrop-blur-lg">
+            <a href="#services" class="block text-center py-3 px-4 text-sm text-gray-200 hover:bg-purple-600 transition-colors">Serviços</a>
+            <a href="#portfolio" class="block text-center py-3 px-4 text-sm text-gray-200 hover:bg-purple-600 transition-colors">Portfólio</a>
+            <a href="#diferenciais" class="block text-center py-3 px-4 text-sm text-gray-200 hover:bg-purple-600 transition-colors">Diferenciais</a>
+            <button id="open-contact-modal-mobile" type="button" class="block w-full text-center py-4 px-4 text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 transition-colors">Vamos Conversar</button>
+        </div>
+    </header>
+
+    <!-- ===== Modal de Contato ===== -->
+    <div id="contact-modal" class="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 backdrop-blur-sm hidden">
+        <div class="bg-gray-900 rounded-2xl shadow-2xl border border-purple-700 w-full max-w-md mx-4 relative animate-fadeInUp">
+            <button id="close-contact-modal" class="absolute top-4 right-4 text-gray-400 hover:text-purple-400 text-2xl focus:outline-none" aria-label="Fechar">
+                <i class="fas fa-times"></i>
+            </button>
+            <form id="contact-form" class="p-8 flex flex-col gap-6">
+                <h2 class="text-2xl font-bold text-white mb-2 text-center">Vamos Conversar</h2>
+                <p class="text-gray-400 text-center text-sm mb-2">Preencha o formulário e entraremos em contato com você.</p>
+                <div>
+                    <label for="name" class="block text-sm font-semibold text-gray-300 mb-1">Nome</label>
+                    <input type="text" id="name" name="name" required class="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-purple-500 focus:outline-none" placeholder="Seu nome">
+                </div>
+                <div>
+                    <label for="email" class="block text-sm font-semibold text-gray-300 mb-1">E-mail</label>
+                    <input type="email" id="email" name="email" required class="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-purple-500 focus:outline-none" placeholder="seu@email.com">
+                </div>
+                <div>
+                    <label for="message" class="block text-sm font-semibold text-gray-300 mb-1">Mensagem</label>
+                    <textarea id="message" name="message" rows="3" required class="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-purple-500 focus:outline-none" placeholder="Como podemos ajudar?"></textarea>
+                </div>
+                <button type="submit" class="bg-gradient-to-r from-purple-500 to-cyan-400 text-white font-bold py-3 rounded-lg shadow-lg hover:scale-105 transition-all duration-300">Enviar</button>
+                <div id="contact-success" class="hidden text-green-400 text-center font-semibold mt-2">Mensagem enviada! Entraremos em contato em breve.</div>
+            </form>
+        </div>
+    </div>
+
+    <main>
+        <!-- ===== Hero Section ===== -->
+        <section class="min-h-screen flex items-center justify-center text-center bg-grid-gray-800/20 relative overflow-hidden" 
+                 style="background-image: radial-gradient(circle at center, rgba(17, 24, 39, 0) 0%, #111827 80%);">
+            <div class="container mx-auto px-6 z-10">
+                <h1 class="text-5xl md:text-7xl lg:text-9xl font-black uppercase tracking-tighter" data-aos="fade-down">
+                    <span class="bg-gradient-to-r from-purple-500 to-cyan-400 bg-clip-text text-transparent">
+                        Adventury
+                    </span>
+                </h1>
+                <p class="mt-4 text-lg md:text-2xl text-gray-300 max-w-3xl mx-auto font-light" data-aos="fade-up" data-aos-delay="200">
+                    Construímos pontes entre sua marca e seus clientes. Sua jornada de marketing para o próximo nível começa aqui.
+                </p>
+                <a href="#contact" class="mt-10 inline-block bg-gradient-to-r from-purple-500 to-cyan-400 text-white font-bold py-4 px-10 rounded-lg text-lg shadow-lg shadow-purple-500/20 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/40 transition-all duration-300" data-aos="fade-up" data-aos-delay="400">
+                    Inicie sua Jornada <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+            <div class="absolute top-0 left-0 w-full h-full bg-cover bg-center opacity-5" style="background-image: url('https://www.transparenttextures.com/patterns/cubes.png');"></div>
+        </section>
+
+        <!-- ===== Services Section ===== -->
+        <section id="services" class="py-20 lg:py-32">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl lg:text-5xl font-bold text-white" data-aos="fade-up">Soluções que <span class="text-purple-400">Impulsionam</span></h2>
+                    <p class="mt-4 text-lg text-gray-400 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Do conceito à conversão, criamos experiências digitais memoráveis.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-gray-800/50 backdrop-blur-md rounded-lg p-8 border border-gray-700 hover:border-purple-500 transform hover:-translate-y-2 transition-all duration-300" data-aos="fade-up" data-aos-delay="200">
+                        <div class="text-purple-400 mb-4"><i class="fas fa-palette fa-3x"></i></div>
+                        <h3 class="text-2xl font-bold text-white mb-3">Marcas Inesquecíveis</h3>
+                        <p class="text-gray-400">Vamos além do logo. Criamos uma identidade visual completa e coesa que transmite profissionalismo e faz sua marca ser reconhecida em qualquer lugar.</p>
+                    </div>
+                    <div class="bg-gray-800/50 backdrop-blur-md rounded-lg p-8 border border-gray-700 hover:border-purple-500 transform hover:-translate-y-2 transition-all duration-300" data-aos="fade-up" data-aos-delay="300">
+                        <div class="text-purple-400 mb-4"><i class="fas fa-laptop-code fa-3x"></i></div>
+                        <h3 class="text-2xl font-bold text-white mb-3">Landing Pages de Alta Conversão</h3>
+                        <p class="text-gray-400">Transformamos visitantes em clientes com páginas 100% responsivas, otimizadas para o Google (SEO) e com um design focado na experiência do usuário (UX/UI).</p>
+                    </div>
+                    <div class="bg-gray-800/50 backdrop-blur-md rounded-lg p-8 border border-gray-700 hover:border-purple-500 transform hover:-translate-y-2 transition-all duration-300" data-aos="fade-up" data-aos-delay="400">
+                        <div class="text-purple-400 mb-4"><i class="fas fa-bullhorn fa-3x"></i></div>
+                        <h3 class="text-2xl font-bold text-white mb-3">Conteúdo que Engaja</h3>
+                        <p class="text-gray-400">Mantemos sua marca relevante nas redes sociais com campanhas, templates e peças gráficas que garantem uma comunicação profissional e alinhada à sua identidade.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== Diferenciais Section ===== -->
+        <section id="diferenciais" class="py-20 lg:py-32 bg-gray-900/50">
+            <div class="container mx-auto px-6">
+                <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+                    <div class="lg:w-1/2" data-aos="fade-right">
+                        <!-- CORRIGIDO: Caminho exato para o seu mockup local -->
+                        <img src="ADVENTURY CORPORATION/ADV-CORPORATION-BRANCO-PNGG.jpg" alt="Adventury Corporation brand mockup on paper" class="rounded-xl shadow-2xl shadow-black/50 w-full h-auto object-cover" loading="lazy">
+                    </div>
+                    <div class="lg:w-1/2" data-aos="fade-left" data-aos-delay="200">
+                        <h2 class="text-4xl lg:text-5xl font-bold text-white mb-6">Design e Tecnologia em Perfeita <span class="text-purple-400">Sintonia</span></h2>
+                        <p class="text-lg text-gray-400 mb-8">Nosso grande diferencial é a sinergia total entre as equipes de design e desenvolvimento. Isso garante um processo ágil e um resultado final impecável.</p>
+                        <ul class="space-y-4">
+                            <li class="flex items-start"><i class="fas fa-check-circle text-purple-400 mt-1 mr-4"></i><div><h4 class="font-semibold text-white">Escuta Ativa e Personalização</h4><p class="text-gray-400">Dedicamos tempo para uma imersão profunda no seu negócio, criando soluções sob medida.</p></div></li>
+                            <li class="flex items-start"><i class="fas fa-check-circle text-purple-400 mt-1 mr-4"></i><div><h4 class="font-semibold text-white">Comunicação Transparente</h4><p class="text-gray-400">Mantemos você informado a cada passo, construindo juntos uma história de sucesso.</p></div></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== Portfolio Section ===== -->
+        <section id="portfolio" class="py-20 lg:py-32">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl lg:text-5xl font-bold text-white" data-aos="fade-up">Dando Vida a <span class="text-purple-400">Marcas</span></h2>
+                    <p class="mt-4 text-lg text-gray-400 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Demonstramos nossa expertise através da nossa própria identidade. Veja como aplicamos nossa visão em diferentes formatos.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="group relative overflow-hidden rounded-lg shadow-lg" data-aos="zoom-in" data-aos-delay="100">
+                        <!-- CORRIGIDO: Caminho exato para o seu mockup local -->
+                        <img src="ADVENTURY CORPORATION/ADVENTURY-CORPORATION-3D.jpg" alt="Logo em relevo" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" loading="lazy">
+                        <div class="absolute inset-0 bg-black/60 group-hover:bg-black/20 transition-all duration-300 flex items-end p-4"><h3 class="text-white text-xl font-bold transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">Design em Relevo</h3></div>
+                    </div>
+                    <div class="group relative overflow-hidden rounded-lg shadow-lg" data-aos="zoom-in" data-aos-delay="200">
+                        <!-- CORRIGIDO: Caminho exato para o seu mockup local -->
+                        <img src="ADVENTURY CORPORATION/adventury-corporation-3DD-pngs.jpg" alt="Logo bordado ou em tecido" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" loading="lazy">
+                        <div class="absolute inset-0 bg-black/60 group-hover:bg-black/20 transition-all duration-300 flex items-end p-4"><h3 class="text-white text-xl font-bold transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">Aplicação Têxtil</h3></div>
+                    </div>
+                    <div class="group relative overflow-hidden rounded-lg shadow-lg" data-aos="zoom-in" data-aos-delay="300">
+                        <!-- CORRIGIDO: Caminho exato para o seu mockup local -->
+                        <img src="ADVENTURY CORPORATION/ADV-CORPORATION-BRANCO-PNGG.jpg" alt="Logo em papelaria" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" loading="lazy">
+                        <div class="absolute inset-0 bg-black/60 group-hover:bg-black/20 transition-all duration-300 flex items-end p-4"><h3 class="text-white text-xl font-bold transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">Material de Marca</h3></div>
+                    </div>
+                    <div class="group relative overflow-hidden rounded-lg shadow-lg" data-aos="zoom-in" data-aos-delay="400">
+                        <!-- CORRIGIDO: Caminho exato para o seu logo local -->
+<img src="ADVENTURY CORPORATION/PNGS/ADV MONOCROMATICO PNG BRANCA.png" alt="Logo principal" class="w-[200%] h-[200%] object-contain transform group-hover:scale-110 transition-transform duration-500 p-8 bg-gray-800 mx-auto" loading="lazy">
+                        <div class="absolute inset-0 bg-black/60 group-hover:bg-black/20 transition-all duration-300 flex items-end p-4"><h3 class="text-white text-xl font-bold transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">Identidade Central</h3></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== Final CTA Section with Parallax ===== -->
+        <section id="contact" class="py-24 text-center text-white relative" 
+                 style="background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=2070&auto=format&fit=crop'); background-size: cover; background-attachment: fixed; background-position: center;">
+            <div class="absolute inset-0 bg-purple-900/80 backdrop-brightness-50"></div>
+            <div class="container mx-auto px-6 relative z-10">
+                <h2 class="text-4xl md:text-5xl font-black" data-aos="fade-up">Pronto para Levar Sua Marca ao Próximo Nível?</h2>
+                <p class="mt-4 text-lg max-w-2xl mx-auto text-gray-200" data-aos="fade-up" data-aos-delay="200">
+                    Sua jornada para uma presença digital marcante começa com uma conversa. Estamos prontos para transformar seus desafios em oportunidades.
+                </p>
+                <button id="open-contact-modal-cta" type="button" class="mt-10 inline-block bg-white text-purple-700 font-bold py-4 px-10 rounded-lg text-lg shadow-lg hover:scale-105 hover:bg-gray-200 transition-all duration-300" data-aos="fade-up" data-aos-delay="400">
+                    Vamos Conversar <i class="fas fa-envelope ml-2"></i>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- ===== Footer ===== -->
+    <footer class="bg-gray-950 text-gray-400">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+                <div>
+                    <h4 class="text-xl font-bold text-white mb-4">Adventury Corp.</h4>
+                    <p class="text-sm">Sua jornada de marketing digital para o sucesso. Criatividade e tecnologia para impulsionar sua marca.</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-white mb-4">Navegação</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#services" class="hover:text-purple-400 transition-colors">Serviços</a></li>
+                        <li><a href="#portfolio" class="hover:text-purple-400 transition-colors">Portfólio</a></li>
+                        <li><a href="#diferenciais" class="hover:text-purple-400 transition-colors">Diferenciais</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-white mb-4">Conecte-se</h4>
+                    <div class="flex justify-center md:justify-start space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-purple-400 transition-colors" aria-label="Instagram"><i class="fab fa-instagram fa-lg"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-purple-400 transition-colors" aria-label="LinkedIn"><i class="fab fa-linkedin-in fa-lg"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-purple-400 transition-colors" aria-label="Behance"><i class="fab fa-behance fa-lg"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-12 border-t border-gray-800 pt-6 text-center text-sm">
+                <p>© <span id="current-year"></span> Adventury Corporation. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- AOS - Animate on Scroll JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <script>
+        AOS.init({ duration: 800, once: true, offset: 50 });
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuButton.addEventListener('click', () => { mobileMenu.classList.toggle('hidden'); });
+
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => { mobileMenu.classList.add('hidden'); });
+        });
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // Remove qualquer rolagem automática ao abrir a página
+        // Se houver hash na URL, o navegador pode rolar automaticamente
+        // Para evitar, remova o hash temporariamente e restaure depois
+        (function() {
+            if (window.location.hash) {
+                const hash = window.location.hash;
+                window.location.hash = '';
+                setTimeout(function() {
+                    window.location.hash = hash;
+                }, 0);
+            }
+        })();
+
+        // Modal de contato
+        const openModalBtns = [
+            document.getElementById('open-contact-modal'),
+            document.getElementById('open-contact-modal-mobile'),
+            document.getElementById('open-contact-modal-cta')
+        ];
+        const contactModal = document.getElementById('contact-modal');
+        const closeModalBtn = document.getElementById('close-contact-modal');
+        openModalBtns.forEach(btn => {
+            if (btn) btn.addEventListener('click', () => {
+                contactModal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            });
+        });
+        closeModalBtn.addEventListener('click', () => {
+            contactModal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        });
+        contactModal.addEventListener('click', (e) => {
+            if (e.target === contactModal) {
+                contactModal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+        });
+
+        // Formulário de contato (apenas simulação de envio)
+        const contactForm = document.getElementById('contact-form');
+        const contactSuccess = document.getElementById('contact-success');
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            contactSuccess.classList.remove('hidden');
+            setTimeout(() => {
+                contactSuccess.classList.add('hidden');
+                contactModal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+                contactForm.reset();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
