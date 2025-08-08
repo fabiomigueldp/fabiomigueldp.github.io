@@ -143,17 +143,62 @@
       background: rgba(12,18,32,.70);
       -webkit-backdrop-filter: blur(4px) saturate(1.05);
       backdrop-filter: blur(4px) saturate(1.05);
+      /* Fix para iOS Safari - garantir que o modal não seja cortado */
+      min-height: 100vh;
+      min-height: 100dvh; /* dynamic viewport height */
+      overscroll-behavior: contain;
     }
     .dark .modal-backdrop{ background: rgba(2,2,2,.72) }
     .modal-card{
       background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(255,255,255,.88));
       border:1px solid rgba(0,0,0,.10);
       box-shadow: 0 30px 90px rgba(0,0,0,.45);
+      /* Fix para altura em mobile - permitir scroll interno se necessário */
+      max-height: calc(100vh - 2rem);
+      max-height: calc(100dvh - 2rem); /* dynamic viewport height */
+      overflow-y: auto;
+      /* Smooth scrolling em iOS */
+      -webkit-overflow-scrolling: touch;
     }
     .dark .modal-card{
       background: linear-gradient(180deg, rgba(14,14,18,.85), rgba(12,12,16,.78));
       border-color: rgba(255,255,255,.16);
       box-shadow: 0 30px 90px rgba(0,0,0,.7);
+    }
+    
+    /* Estilos específicos para mobile em orientação portrait */
+    @media (max-width: 640px) and (orientation: portrait) {
+      .modal-backdrop {
+        align-items: flex-start;
+        padding-top: env(safe-area-inset-top, 1rem);
+        padding-bottom: env(safe-area-inset-bottom, 1rem);
+      }
+      .modal-card {
+        max-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2rem);
+        max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2rem);
+        margin-top: 1rem;
+        /* Garantir que o conteúdo interno seja scrollável */
+        display: flex;
+        flex-direction: column;
+      }
+      .modal-card form {
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+    
+    /* Fix específico para Safari iOS */
+    @supports (-webkit-touch-callout: none) {
+      .modal-backdrop {
+        /* Usar position fixed com altura fixa em Safari iOS */
+        height: 100vh;
+        height: 100dvh;
+      }
+      .modal-card {
+        max-height: calc(90vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+        max-height: calc(90dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+      }
     }
 
     /* ===== Planos: alinhamento absoluto ===== */
@@ -859,7 +904,7 @@
   <!-- MODAL CONTATO (novo) -->
   <div id="contactModal" class="fixed inset-0 z-[999] hidden items-center justify-center modal-backdrop p-4 sm:p-6" aria-hidden="true">
     <div role="dialog" aria-modal="true" aria-labelledby="contactTitle" aria-describedby="contactDesc" class="modal-card max-w-[min(92vw,580px)] w-full radius">
-      <div class="flex justify-between items-start p-6 border-b border-black/10 dark:border-white/10">
+      <div class="flex justify-between items-start p-6 border-b border-black/10 dark:border-white/10 flex-shrink-0">
         <div>
           <h3 id="contactTitle" class="font-bold text-xl text-gray-900 dark:text-white flex items-center gap-2">
             <svg class="h-5 w-5 text-brand-600"><use href="#i-message"/></svg>
@@ -870,84 +915,86 @@
         <button data-close-modal class="p-2 rounded hover:bg-black/5 dark:hover:bg-white/10 shrink-0" aria-label="Fechar modal" type="button"><svg class="h-5 w-5"><use href="#i-x"/></svg></button>
       </div>
 
-      <form id="contactForm" class="p-6 space-y-4" novalidate>
-        <div class="relative overflow-hidden rounded-xl border border-brand-500/20 dark:border-brand-500/30 bg-gradient-to-br from-brand-50 to-brand-100/90 dark:from-gray-800/60 dark:to-gray-900/80 p-5">
-          <!-- Elemento decorativo de fundo -->
-          <div class="absolute top-0 right-0 w-20 h-20 bg-brand-600/10 dark:bg-brand-500/15 rounded-full blur-2xl"></div>
-          <div class="absolute bottom-0 left-0 w-16 h-16 bg-accent-400/10 dark:bg-accent-400/15 rounded-full blur-xl"></div>
-          
-          <div class="relative z-10">
-            <div class="flex items-start gap-3 mb-3">
-              <div class="flex-shrink-0 w-8 h-8 bg-brand-600 dark:bg-brand-500 rounded-full flex items-center justify-center">
-                <svg class="h-4 w-4 text-white"><use href="#i-bolt"/></svg>
-              </div>
-              <div class="flex-1">
-                <h4 class="font-semibold text-brand-800 dark:text-brand-100 text-sm mb-1">Como funciona</h4>
-                <p id="contactDesc" class="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">
-                  Preencha os dados abaixo e nossa equipe entrará em contato em até <strong class="text-brand-700 dark:text-brand-100">1 dia útil</strong> para entender melhor seu projeto e apresentar a melhor solução para você!
-                </p>
+      <div class="flex-1 overflow-y-auto">
+        <form id="contactForm" class="p-6 space-y-4" novalidate>
+          <div class="relative overflow-hidden rounded-xl border border-brand-500/20 dark:border-brand-500/30 bg-gradient-to-br from-brand-50 to-brand-100/90 dark:from-gray-800/60 dark:to-gray-900/80 p-5">
+            <!-- Elemento decorativo de fundo -->
+            <div class="absolute top-0 right-0 w-20 h-20 bg-brand-600/10 dark:bg-brand-500/15 rounded-full blur-2xl"></div>
+            <div class="absolute bottom-0 left-0 w-16 h-16 bg-accent-400/10 dark:bg-accent-400/15 rounded-full blur-xl"></div>
+            
+            <div class="relative z-10">
+              <div class="flex items-start gap-3 mb-3">
+                <div class="flex-shrink-0 w-8 h-8 bg-brand-600 dark:bg-brand-500 rounded-full flex items-center justify-center">
+                  <svg class="h-4 w-4 text-white"><use href="#i-bolt"/></svg>
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-semibold text-brand-800 dark:text-brand-100 text-sm mb-1">Como funciona</h4>
+                  <p id="contactDesc" class="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">
+                    Preencha os dados abaixo e nossa equipe entrará em contato em até <strong class="text-brand-700 dark:text-brand-100">1 dia útil</strong> para entender melhor seu projeto e apresentar a melhor solução para você!
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div>
-          <label for="name" class="text-sm text-gray-700 dark:text-gray-300">Nome</label>
-          <input id="name" name="name" required autocomplete="name" class="mt-1 w-full rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/15 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600" placeholder="Seu nome" />
-          <p class="sr-only" id="nameErr">Informe seu nome.</p>
-        </div>
-
-        <div class="grid sm:grid-cols-2 gap-4">
           <div>
-            <label for="email" class="text-sm text-gray-700 dark:text-gray-300">E-mail</label>
-            <input id="email" name="email" type="email" inputmode="email" autocomplete="email" class="mt-1 w-full rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/15 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600" placeholder="seu@email.com" aria-describedby="emailHint" />
-            <p id="emailHint" class="hidden text-sm mt-1 text-rose-500">Informe um e-mail válido ou preencha o WhatsApp.</p>
+            <label for="name" class="text-sm text-gray-700 dark:text-gray-300">Nome</label>
+            <input id="name" name="name" required autocomplete="name" class="mt-1 w-full rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/15 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600" placeholder="Seu nome" />
+            <p class="sr-only" id="nameErr">Informe seu nome.</p>
           </div>
-          <div>
-            <label for="whats" class="text-sm text-gray-700 dark:text-gray-300">WhatsApp (com DDD)</label>
-            <input id="whats" name="whats" type="tel" inputmode="tel" autocomplete="tel" class="mt-1 w-full rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/15 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600" placeholder="(11) 9 9999-9999" aria-describedby="whatsHint" />
-            <p id="whatsHint" class="hidden text-sm mt-1 text-rose-500">Informe um WhatsApp válido ou preencha o e-mail.</p>
-          </div>
-        </div>
 
-        <div>
-          <label for="message" class="text-sm text-gray-700 dark:text-gray-300">Mensagem</label>
-          <textarea id="message" name="message" rows="3" required class="mt-1 w-full rounded-lg bg-black/5 dark:bg:white/5 dark:bg-white/5 border border-black/10 dark:border-white/15 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600" placeholder="Como podemos ajudar?"></textarea>
-          <p class="sr-only" id="msgErr">Conte-nos brevemente seu objetivo.</p>
-        </div>
-
-        <!-- honeypot -->
-        <input type="text" id="company" name="company" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
-
-        <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
-          <div class="text-xs text-muted">
-            <p class="flex items-center gap-1">
-              <svg class="h-3 w-3 text-green-500"><use href="#i-check"/></svg>
-              <strong>100% gratuito</strong> — sem compromisso
-            </p>
-            <p class="flex items-center gap-1 mt-1">
-              <svg class="h-3 w-3 text-blue-500"><use href="#i-message"/></svg>
-              Resposta em até <strong>1 dia útil</strong>
-            </p>
-          </div>
-          <button class="btn inline-flex items-center gap-2 justify-center bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-6 py-3 rounded-lg hover:opacity-95 active:scale-95 transition w-full sm:w-auto" type="submit">
-            <svg class="h-4 w-4"><use href="#i-paper-plane"/></svg>
-            Quero minha proposta!
-          </button>
-        </div>
-
-        <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border-l-4 border-green-500 hidden" id="successMessage">
-          <div class="flex items-start gap-2">
-            <svg class="h-5 w-5 text-green-500 mt-0.5"><use href="#i-check"/></svg>
+          <div class="grid sm:grid-cols-2 gap-4">
             <div>
-              <p class="text-green-800 dark:text-green-200 font-semibold text-sm">Mensagem enviada com sucesso! 🎉</p>
-              <p class="text-green-700 dark:text-green-300 text-xs mt-1">Nossa equipe analisará seu projeto e entrará em contato em até <strong>1 dia útil</strong>. Fique de olho no seu e-mail e WhatsApp!</p>
+              <label for="email" class="text-sm text-gray-700 dark:text-gray-300">E-mail</label>
+              <input id="email" name="email" type="email" inputmode="email" autocomplete="email" class="mt-1 w-full rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/15 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600" placeholder="seu@email.com" aria-describedby="emailHint" />
+              <p id="emailHint" class="hidden text-sm mt-1 text-rose-500">Informe um e-mail válido ou preencha o WhatsApp.</p>
+            </div>
+            <div>
+              <label for="whats" class="text-sm text-gray-700 dark:text-gray-300">WhatsApp (com DDD)</label>
+              <input id="whats" name="whats" type="tel" inputmode="tel" autocomplete="tel" class="mt-1 w-full rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/15 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600" placeholder="(11) 9 9999-9999" aria-describedby="whatsHint" />
+              <p id="whatsHint" class="hidden text-sm mt-1 text-rose-500">Informe um WhatsApp válido ou preencha o e-mail.</p>
             </div>
           </div>
-        </div>
 
-        <p id="formOk" class="hidden text-center text-emerald-500 font-semibold" role="status" aria-live="polite">Mensagem enviada! Retornaremos em breve.</p>
-      </form>
+          <div>
+            <label for="message" class="text-sm text-gray-700 dark:text-gray-300">Mensagem</label>
+            <textarea id="message" name="message" rows="3" required class="mt-1 w-full rounded-lg bg-black/5 dark:bg:white/5 dark:bg-white/5 border border-black/10 dark:border-white/15 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600" placeholder="Como podemos ajudar?"></textarea>
+            <p class="sr-only" id="msgErr">Conte-nos brevemente seu objetivo.</p>
+          </div>
+
+          <!-- honeypot -->
+          <input type="text" id="company" name="company" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+            <div class="text-xs text-muted">
+              <p class="flex items-center gap-1">
+                <svg class="h-3 w-3 text-green-500"><use href="#i-check"/></svg>
+                <strong>100% gratuito</strong> — sem compromisso
+              </p>
+              <p class="flex items-center gap-1 mt-1">
+                <svg class="h-3 w-3 text-blue-500"><use href="#i-message"/></svg>
+                Resposta em até <strong>1 dia útil</strong>
+              </p>
+            </div>
+            <button class="btn inline-flex items-center gap-2 justify-center bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-6 py-3 rounded-lg hover:opacity-95 active:scale-95 transition w-full sm:w-auto" type="submit">
+              <svg class="h-4 w-4"><use href="#i-paper-plane"/></svg>
+              Quero minha proposta!
+            </button>
+          </div>
+
+          <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border-l-4 border-green-500 hidden" id="successMessage">
+            <div class="flex items-start gap-2">
+              <svg class="h-5 w-5 text-green-500 mt-0.5"><use href="#i-check"/></svg>
+              <div>
+                <p class="text-green-800 dark:text-green-200 font-semibold text-sm">Mensagem enviada com sucesso! 🎉</p>
+                <p class="text-green-700 dark:text-green-300 text-xs mt-1">Nossa equipe analisará seu projeto e entrará em contato em até <strong>1 dia útil</strong>. Fique de olho no seu e-mail e WhatsApp!</p>
+              </div>
+            </div>
+          </div>
+
+          <p id="formOk" class="hidden text-center text-emerald-500 font-semibold" role="status" aria-live="polite">Mensagem enviada! Retornaremos em breve.</p>
+        </form>
+      </div>
     </div>
   </div>
 
