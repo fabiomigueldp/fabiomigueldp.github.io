@@ -7,13 +7,18 @@
   <meta name="description" content="Criamos marcas fortes e landing pages de alta conversão. UX impecável, performance real e conteúdo que vende." />
   <meta name="theme-color" content="#0b1220" id="meta-theme-color"/>
   <meta name="color-scheme" content="light dark" />
-  <link rel="canonical" href="https://YOUR_DOMAIN/" />
+  <link rel="canonical" href="https://SEU-DOMINIO.com/" />
 
   <!-- Performance -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preconnect" href="https://images.unsplash.com" />
-  <link rel="preload" as="image" href="ADVENTURY CORPORATION/PNGS/ADVENTURY CORPORATION SEM FUNDO BRANCO PNG.png" imagesrcset="ADVENTURY CORPORATION/PNGS/ADVENTURY CORPORATION SEM FUNDO BRANCO PNG.png 1200w" imagesizes="(min-width:1024px) 600px, 100vw" fetchpriority="high" />
+
+  <!-- LCP provável -->
+  <link rel="preload" as="image"
+        href="ADVENTURY CORPORATION/PNGS/ADVENTURY CORPORATION SEM FUNDO BRANCO PNG.png"
+        imagesrcset="ADVENTURY CORPORATION/PNGS/ADVENTURY CORPORATION SEM FUNDO BRANCO PNG.png 1x"
+        imagesizes="(min-width:1024px) 50vw, 100vw"
+        fetchpriority="high" />
 
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
@@ -34,33 +39,41 @@
     }
   </script>
 
-  <!-- Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-
   <style>
     :root{
       --bg:#ffffff; --fg:#0b1220; --muted:#4b5563; --card:rgba(0,0,0,.04);
       --ring:#7c3aed; --brand:#7c3aed; --accent:#22d3ee; --surface:rgba(17,24,39,.06);
       --radius:14px; --focus:2px solid var(--brand); --header-h:72px;
+      --overlayLight: linear-gradient(to bottom, rgba(0,0,0,.40), rgba(0,0,0,.62));
+      --overlayDark:  linear-gradient(to bottom, rgba(0,0,0,.55), rgba(0,0,0,.82));
+      --sbw:0px; /* largura da barra de rolagem (fallback) */
     }
     .dark:root{ --bg:#0b1220; --fg:#e5e7eb; --muted:#9ca3af; --card:rgba(255,255,255,.08); --surface:rgba(17,24,39,.32) }
 
-    html{ color-scheme:light dark; scroll-padding-top:calc(var(--header-h) + 8px) }
+    html{ color-scheme:light dark; scroll-padding-top:calc(var(--header-h) + 8px); /* evita pulo moderno */ scrollbar-gutter: stable both-edges; }
     body{ font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--fg); overflow-x:hidden; text-rendering:optimizeLegibility }
     main{ padding-top:calc(var(--header-h) + 8px) }
 
+    /* Compensação quando modal aberto (fallback p/ navegadores sem scrollbar-gutter) */
+    html.modal-open body{ padding-right: var(--sbw); }
+    html.modal-open #nav{ padding-right: var(--sbw); }
+    html.modal-open .sticky-cta{ right: calc(0px + var(--sbw)); }
+
     .text-muted{ color:var(--muted) }
-    .glass{ background:var(--card); -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px); border:1px solid rgba(0,0,0,.08) }
+    .glass{ background:var(--card); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border:1px solid rgba(0,0,0,.08) }
     .dark .glass{ border-color:rgba(255,255,255,.14) }
     .radius{ border-radius:var(--radius) }
 
-    .nav-bg{ backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); background:rgba(255,255,255,.72) }
+    .nav-bg{ backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); background:rgba(255,255,255,.72) }
     .dark .nav-bg{ background:rgba(0,0,0,.38) }
 
     .skip-link{ position:absolute; left:-999px; top:auto; width:1px; height:1px; overflow:hidden }
     .skip-link:focus{ position:fixed; left:1rem; top:1rem; padding:.6rem 1rem; background:#111827; color:#fff; z-index:1000; border-radius:999px; outline:none }
 
-    ::-webkit-scrollbar{ width:10px } ::-webkit-scrollbar-track{ background:#e5e7eb } ::-webkit-scrollbar-thumb{ background:#6d28d9; border-radius:10px } .dark ::-webkit-scrollbar-track{ background:#0f172a }
+    ::-webkit-scrollbar{ width:10px } 
+    ::-webkit-scrollbar-track{ background:#e5e7eb } 
+    ::-webkit-scrollbar-thumb{ background:#6d28d9; border-radius:10px } 
+    .dark ::-webkit-scrollbar-track{ background:#0f172a }
 
     .display{ font-weight:900; letter-spacing:-.02em; font-size:clamp(2.2rem,6vw + .5rem,4.8rem); line-height:1.02 }
     .kicker{ letter-spacing:.18em; text-transform:uppercase; font-weight:700; font-size:.82rem }
@@ -86,6 +99,75 @@
     .cv{ content-visibility:auto; contain-intrinsic-size:1px 1200px }
     section{ scroll-margin-top:calc(var(--header-h) + 8px) }
     :focus-visible{ outline:var(--focus); outline-offset:2px; border-radius:8px }
+
+    /* ===== CTA (#contato) com parallax ===== */
+    .cta-scene{ position:absolute; inset:0; overflow:hidden; z-index:1; }
+    .cta-layer{ position:absolute; inset:0; }
+    .cta-bg{
+      background-image:
+        url("https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&auto=format&fit=crop&w=1920");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+    /* iOS/mobile: desativa fixed para evitar jank */
+    @media (max-width: 1024px), (hover: none) {
+      .cta-bg{ background-attachment: scroll; }
+    }
+    @supports (-webkit-touch-callout: none){
+      .cta-bg{ background-attachment: scroll; }
+    }
+    .cta-vignette{ pointer-events:none; background: var(--overlayLight) }
+    .dark .cta-vignette{ background: var(--overlayDark) }
+
+    .cta-card{
+      backdrop-filter: blur(16px) saturate(1.1);
+      -webkit-backdrop-filter: blur(16px) saturate(1.1);
+      background: rgba(255,255,255,.88);
+      border:1px solid rgba(0,0,0,.12);
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+    .dark .cta-card{
+      background: rgba(0,0,0,.58);
+      border-color: rgba(255,255,255,.18);
+      box-shadow: 0 20px 60px rgba(0,0,0,.55);
+    }
+
+    .btn-primary{ background-image:linear-gradient(90deg,var(--brand),var(--accent)); color:#fff }
+    .btn-ghost{ background:transparent; border:1px solid rgba(0,0,0,.20); color:#111827; }
+    .dark .btn-ghost{ border-color:rgba(255,255,255,.25); color:#e5e7eb; }
+
+    /* ===== Modal redesenhado ===== */
+    .modal-backdrop{
+      background: rgba(12,18,32,.70);
+      -webkit-backdrop-filter: blur(4px) saturate(1.05);
+      backdrop-filter: blur(4px) saturate(1.05);
+    }
+    .dark .modal-backdrop{ background: rgba(2,2,2,.72) }
+    .modal-card{
+      background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(255,255,255,.88));
+      border:1px solid rgba(0,0,0,.10);
+      box-shadow: 0 30px 90px rgba(0,0,0,.45);
+    }
+    .dark .modal-card{
+      background: linear-gradient(180deg, rgba(14,14,18,.85), rgba(12,12,16,.78));
+      border-color: rgba(255,255,255,.16);
+      box-shadow: 0 30px 90px rgba(0,0,0,.7);
+    }
+
+    /* ===== Planos: alinhamento absoluto ===== */
+    .plan-card{ display:flex; flex-direction:column; }
+    .plan-features{ flex:1 1 auto; }
+    .plan-cta{ margin-top:auto; }
+
+    /* ===== Tabela mais legível ===== */
+    .table-wrap{ --row-radius:12px }
+    .table-wrap tbody tr{ overflow:hidden }
+    .table-wrap tbody tr:nth-child(odd){ background:rgba(0,0,0,.035) }
+    .dark .table-wrap tbody tr:nth-child(odd){ background:rgba(255,255,255,.06) }
+    .table-wrap thead th{ position:sticky; top:0; background:var(--bg); z-index:1 }
+
     @media (prefers-reduced-motion: reduce){
       .reveal{ transition:none; transform:none !important; opacity:1 !important }
       .parallax-layer{ transform:none !important }
@@ -94,12 +176,12 @@
     .no-js .reveal{ opacity:1; transform:none }
   </style>
 
-  <!-- OG -->
+  <!-- Open Graph / Twitter -->
   <meta property="og:title" content="Adventury Corporation — Design + Tecnologia que convertem" />
   <meta property="og:description" content="Marcas fortes e landing pages de alta conversão. UX impecável, performance real e conteúdo que vende." />
-  <meta property="og:image" content="https://YOUR_DOMAIN/ADVENTURY%20CORPORATION/LOGO-ADVENTURY-CORPORATION.jpg" />
+  <meta property="og:image" content="https://SEU-DOMINIO.com/ADVENTURY%20CORPORATION/LOGO-ADVENTURY-CORPORATION.jpg" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://YOUR_DOMAIN/" />
+  <meta property="og:url" content="https://SEU-DOMINIO.com/" />
   <meta property="og:site_name" content="Adventury Corporation" />
   <meta property="og:locale" content="pt_BR" />
   <meta name="twitter:card" content="summary_large_image" />
@@ -114,20 +196,81 @@
       if (saved === 'dark' || (!saved && prefersDark)) root.classList.add('dark');
     })();
   </script>
+
+  <!-- Consent Mode v2 + GA4 (placeholder) -->
+  <script>
+    (function(){
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ dataLayer.push(arguments); }
+      window.gtag = gtag;
+      gtag('consent', 'default', {
+        'ad_storage': 'denied',
+        'ad_user_data': 'denied',
+        'ad_personalization': 'denied',
+        'analytics_storage': 'denied',
+        'wait_for_update': 500
+      });
+      gtag('set', 'url_passthrough', true);
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXX', { 'anonymize_ip': true });
+    })();
+  </script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX"></script>
+
 </head>
 <body class="antialiased selection:bg-brand-600/30">
+  <!-- Sprite de ícones -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+    <symbol id="i-sun" viewBox="0 0 24 24"><path d="M12 4V2m0 20v-2M4 12H2m20 0h-2M5.6 5.6 4.2 4.2m15.6 15.6-1.4-1.4M18.4 5.6l1.4-1.4M4.2 19.8l1.4-1.4M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-paper-plane" viewBox="0 0 24 24"><path d="M22 2L11 13" fill="none" stroke="currentColor" stroke-width="2"/><path d="M22 2 15 22l-4-9-9-4 20-7Z" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20h1a3 3 0 0 0 0-6h-1a4 4 0 1 1 0-8h1" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="M16 18l6-6-6-6M8 6L2 12l6 6" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-bullhorn" viewBox="0 0 24 24"><path d="M3 11v2a4 4 0 0 0 4 4h2v-6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M14 12v8l7-5V5l-7 5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-envelope" viewBox="0 0 24 24"><path d="M4 6h16v12H4zM4 6l8 7 8-7" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V5a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-angles-down" viewBox="0 0 24 24"><path d="M6 8l6 6 6-6M6 2l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-route" viewBox="0 0 24 24"><path d="M4 4a2 2 0 1 0 0 4h12a4 4 0 1 1 0 8H8a2 2 0 1 0 0 4" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L3 14h7l-1 8 10-12h-7z" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-signal" viewBox="0 0 24 24"><path d="M2 20h2M6 20h2M10 20h2M14 20h2M18 20h2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M12 20a8 8 0 1 1 8-8M12 12l4-2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-flask" viewBox="0 0 24 24"><path d="M10 2h4M9 2v6l-6 10h18l-6-10V2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-handshake" viewBox="0 0 24 24"><path d="M4 12l6 6 4-4 6-6" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-sitemap" viewBox="0 0 24 24"><path d="M12 6v4M6 2h12v8H6zM4 18h6v4H4zM14 18h6v4h-6zM12 10v8" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-headset" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 16 0v6h-3v-4h3M4 18h3v-4H4" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-bars" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-instagram" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" ry="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.2"/></symbol>
+    <symbol id="i-linkedin" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 10v7M7 7v.01M12 17v-4a3 3 0 1 1 6 0v4" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-behance" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 8h4a2 2 0 0 1 0 4H7zm0 4h4a2 2 0 1 1 0 4H7zM14 10h6M14 16h6" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  </svg>
+
   <a href="#main" class="skip-link">Pular para o conteúdo principal</a>
   <div id="scrollbar" aria-hidden="true"></div>
 
+  <!-- CONSENT BANNER -->
+  <div id="consentBanner" class="fixed inset-x-0 bottom-0 z-[100] m-3 p-3 glass radius backdrop-blur text-sm hidden">
+    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center gap-3">
+      <p class="text-gray-800 dark:text-gray-100 text-center sm:text-left">Usamos cookies para métricas e melhorias. Você controla isso.</p>
+      <div class="flex gap-2 ml-auto">
+        <button id="btnReject" class="px-3 py-2 rounded-lg border border-black/15 dark:border-white/20">Recusar</button>
+        <button id="btnAccept" class="px-3 py-2 rounded-lg btn-primary">Aceitar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- NAV -->
-  <header id="nav" class="fixed top-0 left-0 right-0 z-50 nav-bg border-b border-black/10 dark:border-white/10">
+  <header id="nav" class="fixed top-0 left-0 right-0 z-50 nav-bg border-b border-black/10 dark:border-white/10" role="banner">
     <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
       <a href="#hero" class="flex items-center gap-3" aria-label="Adventury Corporation — Início">
         <img src="ADVENTURY CORPORATION/PNGS/ADV MONOCROMATICO PNG PRETA.png" alt="Logotipo Adventury (preta)" class="h-8 w-auto inline dark:hidden" width="160" height="32" fetchpriority="high" />
         <img src="ADVENTURY CORPORATION/PNGS/ADV MONOCROMATICO PNG BRANCA.png" alt="Logotipo Adventury (branca)" class="h-8 w-auto hidden dark:inline" width="160" height="32" fetchpriority="high" />
       </a>
 
-      <nav class="hidden md:flex items-center gap-6 text-sm" aria-label="Primária">
+      <nav class="hidden md:flex items-center gap-6 text-sm" aria-label="Primária" role="navigation">
         <a href="#servicos" class="navlink hover:text-brand-700 dark:hover:text-brand-100 text-gray-800 dark:text-gray-200 transition-colors font-semibold">Serviços</a>
         <a href="#portfolio" class="navlink hover:text-brand-700 dark:hover:text-brand-100 text-gray-800 dark:text-gray-200 transition-colors">Portfólio</a>
         <a href="#diferenciais" class="navlink hover:text-brand-700 dark:hover:text-brand-100 text-gray-800 dark:text-gray-200 transition-colors">Diferenciais</a>
@@ -135,18 +278,18 @@
         <a href="#faq" class="navlink hover:text-brand-700 dark:hover:text-brand-100 text-gray-800 dark:text-gray-200 transition-colors">FAQ</a>
         <a href="#contato" class="navlink hover:text-brand-700 dark:hover:text-brand-100 text-gray-800 dark:text-gray-200 transition-colors">Contato</a>
 
-        <button id="themeToggle" class="rounded-lg border border-black/10 dark:border-white/10 px-3 py-2 hover:bg-black/5 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-brand-600" aria-label="Alternar tema" aria-pressed="false">
-          <i class="fa-solid fa-sun inline dark:hidden"></i>
-          <i class="fa-solid fa-moon hidden dark:inline"></i>
+        <button id="themeToggle" class="rounded-lg border border-black/10 dark:border-white/10 px-3 py-2 hover:bg-black/5 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-brand-600" aria-label="Alternar tema" aria-pressed="false" type="button">
+          <svg class="inline dark:hidden h-4 w-4"><use href="#i-sun"/></svg>
+          <svg class="hidden dark:inline h-4 w-4"><use href="#i-moon"/></svg>
         </button>
 
-        <button data-open-modal class="btn cta-pulse inline-flex items-center gap-2 bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg hover:scale-[1.03] active:scale-100 transition">
-          Vamos conversar <i class="fa-solid fa-arrow-right"></i>
+        <button data-open-modal class="btn cta-pulse inline-flex items-center gap-2 bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg hover:scale-[1.03] active:scale-100 transition" type="button">
+          Vamos conversar <svg class="h-4 w-4"><use href="#i-arrow-right"/></svg>
         </button>
       </nav>
 
-      <button id="menuBtn" class="md:hidden text-gray-900 dark:text-white p-2 rounded hover:bg-black/5 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-brand-600" aria-controls="mobileMenu" aria-expanded="false" aria-label="Abrir menu">
-        <i class="fa-solid fa-bars"></i>
+      <button id="menuBtn" class="md:hidden text-gray-900 dark:text-white p-2 rounded hover:bg-black/5 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-brand-600" aria-controls="mobileMenu" aria-expanded="false" aria-label="Abrir menu" type="button">
+        <svg class="h-5 w-5"><use href="#i-bars"/></svg>
       </button>
     </div>
 
@@ -160,15 +303,15 @@
         <a href="#faq" class="py-2 text-gray-900 dark:text-gray-100">FAQ</a>
         <a href="#contato" class="py-2 text-gray-900 dark:text-gray-100">Contato</a>
         <div class="flex items-center gap-3 pt-2">
-          <button id="themeToggleMobile" class="w-full rounded-lg border border-black/10 dark:border-white/10 px-3 py-2 hover:bg-black/5 dark:hover:bg-white/10">Alternar tema</button>
-          <button data-open-modal class="w-full btn bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-3 py-2 rounded-lg">Falar com a Adventury</button>
+          <button id="themeToggleMobile" class="w-full rounded-lg border border-black/10 dark:border-white/10 px-3 py-2 hover:bg-black/5 dark:hover:bg-white/10" type="button">Alternar tema</button>
+          <button data-open-modal class="w-full btn bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-3 py-2 rounded-lg" type="button">Falar com a Adventury</button>
         </div>
       </div>
     </div>
   </header>
 
-  <main id="main" tabindex="-1">
-    <!-- HERO (sem content-visibility para evitar “pulo” no iOS) -->
+  <main id="main" tabindex="-1" role="main">
+    <!-- HERO -->
     <section id="hero" class="relative min-h-[94vh] grid place-items-center overflow-hidden">
       <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
         <div class="parallax-layer absolute -top-24 -left-24 h-[52vw] w-[52vw] max-h-[820px] max-w-[820px] rounded-full opacity-30" style="background:radial-gradient(closest-side,var(--brand),transparent 70%)"></div>
@@ -187,7 +330,7 @@
             <input id="leadEmail" type="email" inputmode="email" autocomplete="email" placeholder="Seu e-mail"
                    class="w-full rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/15 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-600" />
             <button type="button" data-open-modal class="btn inline-flex items-center justify-center gap-2 bg-white text-brand-700 dark:bg-brand-600 dark:text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-gray-100 dark:hover:bg-brand-700 active:scale-95 transition">
-              Começar agora <i class="fa-solid fa-paper-plane"></i>
+              Começar agora <svg class="h-4 w-4"><use href="#i-paper-plane"/></svg>
             </button>
           </form>
 
@@ -204,13 +347,13 @@
             <img src="ADVENTURY CORPORATION/PNGS/ADVENTURY CORPORATION SEM FUNDO BRANCO PNG.png" alt="Logo Adventury (fundo claro)" class="w-full h-auto object-contain block dark:hidden" width="1200" height="800" fetchpriority="high" decoding="async" />
           </div>
           <div class="hidden sm:block absolute -bottom-6 -left-6 w-48 glass radius p-3 rotate-[-4deg]">
-            <img src="ADVENTURY CORPORATION/ADVENTURY-CORPORATION-3D.jpg" alt="Aplicação 3D" class="rounded-lg" loading="lazy" decoding="async" width="400" height="300">
+            <img src="ADVENTURY CORPORATION/ADVENTURY-CORPORATION-3D.jpg" alt="Aplicação 3D" class="rounded-lg w-full h-auto" loading="lazy" decoding="async" width="400" height="300">
           </div>
         </div>
       </div>
 
-      <button aria-label="Role para ver mais" class="absolute bottom-4 left-1/2 -translate-x-1/2 text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition">
-        <i class="fa-solid fa-angles-down text-xl scroll-cue"></i>
+      <button aria-label="Role para ver mais" class="absolute bottom-4 left-1/2 -translate-x-1/2 text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition" type="button">
+        <svg class="text-xl h-6 w-6 scroll-cue"><use href="#i-angles-down"/></svg>
       </button>
     </section>
 
@@ -233,17 +376,17 @@
         </div>
         <div class="grid md:grid-cols-3 gap-8">
           <article class="glass radius p-8 reveal hover:-translate-y-1 transition">
-            <div class="text-brand-700 dark:text-brand-100 text-3xl mb-4"><i class="fa-solid fa-palette"></i></div>
+            <div class="text-brand-700 dark:text-brand-100 text-3xl mb-4" aria-hidden="true"><svg class="h-8 w-8"><use href="#i-palette"/></svg></div>
             <h3 class="text-xl font-bold text-gray-900 dark:text-white">Branding memorável</h3>
             <p class="mt-2 text-muted">Sistema visual completo, manual de marca e aplicações. Clareza, consistência e valor percebido.</p>
           </article>
           <article class="glass radius p-8 reveal hover:-translate-y-1 transition">
-            <div class="text-brand-700 dark:text-brand-100 text-3xl mb-4"><i class="fa-solid fa-laptop-code"></i></div>
+            <div class="text-brand-700 dark:text-brand-100 text-3xl mb-4" aria-hidden="true"><svg class="h-8 w-8"><use href="#i-code"/></svg></div>
             <h3 class="text-xl font-bold text-gray-900 dark:text-white">Landing pages que vendem</h3>
             <p class="mt-2 text-muted">UX centrada no usuário, copy orientada a ação, SEO técnico e Web Vitals em dia.</p>
           </article>
           <article class="glass radius p-8 reveal hover:-translate-y-1 transition">
-            <div class="text-brand-700 dark:text-brand-100 text-3xl mb-4"><i class="fa-solid fa-bullhorn"></i></div>
+            <div class="text-brand-700 dark:text-brand-100 text-3xl mb-4" aria-hidden="true"><svg class="h-8 w-8"><use href="#i-bullhorn"/></svg></div>
             <h3 class="text-xl font-bold text-gray-900 dark:text-white">Conteúdo que engaja</h3>
             <p class="mt-2 text-muted">Key visuals, kits para social e guidelines. Comunicação profissional e consistente.</p>
           </article>
@@ -252,22 +395,22 @@
     </section>
 
     <!-- DIFERENCIAIS -->
-    <section id="diferenciais" class="py-24 bg-black/[.04] dark:bg-white/5 cv">
+    <section id="diferenciais" class="py-24 bg-black/[.04] dark:bg:white/5 dark:bg-white/5 cv">
       <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
         <div class="reveal">
-          <img src="ADVENTURY CORPORATION/ADV-CORPORATION-BRANCO-PNGG.jpg" alt="Mockup de marca" class="rounded-2xl shadow-2xl" loading="lazy" decoding="async" width="1200" height="900">
+          <img src="ADVENTURY CORPORATION/ADV-CORPORATION-BRANCO-PNGG.jpg" alt="Mockup de marca" class="rounded-2xl shadow-2xl w-full h-auto" loading="lazy" decoding="async" width="1200" height="900">
         </div>
         <div class="reveal">
           <h2 class="text-3xl md:text-5xl font-black">Design &amp; Tecnologia em <span class="brand-gradient">Sintonia</span></h2>
           <p class="mt-4 text-gray-700 dark:text-gray-300">Time híbrido (design + dev) trabalhando junto do seu negócio. Agilidade, qualidade e resultado mensurável.</p>
           <ul class="mt-6 space-y-3 text-gray-700 dark:text-gray-300">
-            <li class="flex gap-3"><i class="fa-solid fa-check text-accent-400 mt-1"></i>Processo claro: diagnóstico, estratégia, sprint e validação.</li>
-            <li class="flex gap-3"><i class="fa-solid fa-check text-accent-400 mt-1"></i>Dados na prática: heatmaps, eventos e metas configuradas.</li>
-            <li class="flex gap-3"><i class="fa-solid fa-check text-accent-400 mt-1"></i>Boas práticas atuais: dark mode, acessibilidade e alta performance.</li>
+            <li class="flex gap-3"><svg class="h-5 w-5 text-accent-400 mt-1" aria-hidden="true"><use href="#i-check"/></svg>Processo claro: diagnóstico, estratégia, sprint e validação.</li>
+            <li class="flex gap-3"><svg class="h-5 w-5 text-accent-400 mt-1" aria-hidden="true"><use href="#i-check"/></svg>Dados na prática: heatmaps, eventos e metas configuradas.</li>
+            <li class="flex gap-3"><svg class="h-5 w-5 text-accent-400 mt-1" aria-hidden="true"><use href="#i-check"/></svg>Boas práticas atuais: dark mode, acessibilidade e alta performance.</li>
           </ul>
           <div class="mt-8">
-            <button data-open-modal class="btn inline-flex items-center gap-2 bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-6 py-3 rounded-lg hover:scale-[1.02] active:scale-100 transition">
-              Vamos conversar <i class="fa-solid fa-envelope"></i>
+            <button data-open-modal class="btn inline-flex items-center gap-2 bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-6 py-3 rounded-lg hover:scale-[1.02] active:scale-100 transition" type="button">
+              Vamos conversar <svg class="h-4 w-4"><use href="#i-envelope"/></svg>
             </button>
           </div>
         </div>
@@ -327,7 +470,7 @@
       </div>
     </section>
 
-    <!-- PLANOS / PREÇOS (refinado) -->
+    <!-- PLANOS / PREÇOS -->
     <section id="precos" class="py-24 bg-black/[.04] dark:bg-white/5 cv">
       <div class="max-w-7xl mx-auto px-6">
         <div class="text-center mb-14">
@@ -337,38 +480,37 @@
 
         <div class="grid md:grid-cols-3 gap-8 items-stretch">
           <!-- STARTER -->
-          <article class="relative glass radius p-8 flex flex-col reveal h-full">
+          <article class="relative glass radius p-8 plan-card reveal h-full">
             <div class="flex items-start justify-between gap-4">
               <div>
                 <div class="text-xs font-semibold px-2 py-1 rounded-full bg-black/5 dark:bg-white/10 w-fit">Ideal para: MVPs</div>
                 <h3 class="text-xl font-bold mt-3">Starter</h3>
-                <p class="text-muted mt-1">Valide sua oferta rápido e com base.</p>
+                <p class="text-muted mt-1">Valide sua oferta rápido, com base sólida.</p>
               </div>
-              <i class="fa-solid fa-rocket-launch text-2xl text-brand-600/90"></i>
+              <svg class="h-6 w-6 text-brand-600/90" aria-hidden="true"><use href="#i-bolt"/></svg>
             </div>
 
             <p class="mt-6 text-3xl font-black">R$ 3.900</p>
-            <ul class="mt-6 space-y-2 text-sm text-gray-700 dark:text-gray-300">
-              <li class="flex gap-2"><i class="fa-solid fa-check text-accent-400 mt-1"></i>Landing page 1 seção (dobradiça)</li>
-              <li class="flex gap-2"><i class="fa-solid fa-check text-accent-400 mt-1"></i>Copy + UI base (Figma)</li>
-              <li class="flex gap-2"><i class="fa-solid fa-check text-accent-400 mt-1"></i>Formulário e tracking de leads</li>
-              <li class="flex gap-2"><i class="fa-solid fa-check text-accent-400 mt-1"></i>Entrega em até 7 dias</li>
+            <ul class="mt-6 space-y-2 text-sm text-gray-700 dark:text-gray-300 plan-features">
+              <li class="flex gap-2"><svg class="h-5 w-5 text-accent-400 mt-1" aria-hidden="true"><use href="#i-check"/></svg>Landing page 1 seção (dobradiça)</li>
+              <li class="flex gap-2"><svg class="h-5 w-5 text-accent-400 mt-1" aria-hidden="true"><use href="#i-check"/></svg>Copy + UI base (Figma)</li>
+              <li class="flex gap-2"><svg class="h-5 w-5 text-accent-400 mt-1" aria-hidden="true"><use href="#i-check"/></svg>Formulário e tracking de leads</li>
+              <li class="flex gap-2"><svg class="h-5 w-5 text-accent-400 mt-1" aria-hidden="true"><use href="#i-check"/></svg>Entrega em até 7 dias</li>
             </ul>
 
             <div class="mt-8 pt-6 border-t border-black/10 dark:border-white/10 grid grid-cols-3 text-center text-xs text-muted">
-              <div><i class="fa-regular fa-clock block text-base mb-1"></i>Prazo rápido</div>
-              <div><i class="fa-regular fa-file-lines block text-base mb-1"></i>1 seção</div>
-              <div><i class="fa-solid fa-shield-heart block text-base mb-1"></i>7 dias de ajustes</div>
+              <div><svg class="h-4 w-4 block mx-auto mb-1" aria-hidden="true"><use href="#i-gauge"/></svg>Prazo rápido</div>
+              <div><svg class="h-4 w-4 block mx-auto mb-1" aria-hidden="true"><use href="#i-flask"/></svg>1 seção</div>
+              <div><svg class="h-4 w-4 block mx-auto mb-1" aria-hidden="true"><use href="#i-shield"/></svg>7 dias de ajustes</div>
             </div>
 
-            <button data-open-modal class="mt-6 btn w-full bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-6 py-3 rounded-lg">
+            <button data-open-modal class="plan-cta mt-6 btn w-full bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-6 py-3 rounded-lg" type="button">
               Começar
             </button>
           </article>
 
-          <!-- GROWTH (destaque) -->
-          <article class="relative glass radius p-8 flex flex-col reveal h-full ring-1 ring-brand-600/20 shadow-2xl">
-            <!-- badge absoluto: não desloca o título -->
+          <!-- GROWTH -->
+          <article class="relative glass radius p-8 plan-card reveal h-full ring-1 ring-brand-600/20 shadow-2xl">
             <span class="absolute top-4 right-4 text-xs font-semibold px-2 py-1 rounded-full bg-brand-600 text-white shadow">Mais escolhido</span>
 
             <div class="flex items-start justify-between gap-4 pt-4">
@@ -377,69 +519,193 @@
                 <h3 class="text-xl font-bold mt-3">Growth</h3>
                 <p class="text-muted mt-1">Converta melhor, ranqueie melhor, otimize sempre.</p>
               </div>
-              <i class="fa-solid fa-chart-line text-2xl text-brand-600/90"></i>
+              <svg class="h-6 w-6 text-brand-600/90" aria-hidden="true"><use href="#i-gauge"/></svg>
             </div>
 
             <p class="mt-6 text-3xl font-black">R$ 7.900</p>
-            <ul class="mt-6 space-y-2 text-sm text-gray-700 dark:text-gray-300">
-              <li class="flex gap-2"><i class="fa-solid fa-check text-accent-400 mt-1"></i>LP completa (até 6 seções)</li>
-              <li class="flex gap-2"><i class="fa-solid fa-check text-accent-400 mt-1"></i>SEO técnico + schema + Web Vitals</li>
-              <li class="flex gap-2"><i class="fa-solid fa-check text-accent-400 mt-1"></i>Testes A/B (2 variações)</li>
-              <li class="flex gap-2"><i class="fa-solid fa-check text-accent-400 mt-1"></i>Integração Analytics/Pixel</li>
-              <li class="flex gap-2"><i class="fa-solid fa-check text-accent-400 mt-1"></i>Entrega em 10–14 dias</li>
+            <ul class="mt-6 space-y-2 text-sm text-gray-700 dark:text-gray-300 plan-features">
+              <li class="flex gap-2"><svg class="h-5 w-5 text-accent-400 mt-1" aria-hidden="true"><use href="#i-check"/></svg>LP completa (até 6 seções)</li>
+              <li class="flex gap-2"><svg class="h-5 w-5 text-accent-400 mt-1" aria-hidden="true"><use href="#i-check"/></svg>SEO técnico + schema + Web Vitals</li>
+              <li class="flex gap-2"><svg class="h-5 w-5 text-accent-400 mt-1" aria-hidden="true"><use href="#i-check"/></svg>Testes A/B (2 variações)</li>
+              <li class="flex gap-2"><svg class="h-5 w-5 text-accent-400 mt-1" aria-hidden="true"><use href="#i-check"/></svg>Integração Analytics/Pixel</li>
+              <li class="flex gap-2"><svg class="h-5 w-5 text-accent-400 mt-1" aria-hidden="true"><use href="#i-check"/></svg>Entrega em 10–14 dias</li>
             </ul>
 
             <div class="mt-8 pt-6 border-t border-black/10 dark:border-white/10 grid grid-cols-3 text-center text-xs text-muted">
-              <div><i class="fa-solid fa-gauge-high block text-base mb-1"></i>Alta performance</div>
-              <div><i class="fa-regular fa-flask block text-base mb-1"></i>Testes incluídos</div>
-              <div><i class="fa-solid fa-handshake-angle block text-base mb-1"></i>Suporte 30 dias</div>
+              <div><svg class="h-4 w-4 block mx-auto mb-1" aria-hidden="true"><use href="#i-gauge"/></svg>Alta performance</div>
+              <div><svg class="h-4 w-4 block mx-auto mb-1" aria-hidden="true"><use href="#i-flask"/></svg>Testes incluídos</div>
+              <div><svg class="h-4 w-4 block mx-auto mb-1" aria-hidden="true"><use href="#i-handshake"/></svg>Suporte 30 dias</div>
             </div>
 
-            <button data-open-modal class="mt-6 btn w-full bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-6 py-3 rounded-lg">
+            <button data-open-modal class="plan-cta mt-6 btn w-full bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-6 py-3 rounded-lg" type="button">
               Falar com especialista
             </button>
           </article>
 
           <!-- ENTERPRISE -->
-          <article class="relative glass radius p-8 flex flex-col reveal h-full">
+          <article class="relative glass radius p-8 plan-card reveal h-full">
             <div class="flex items-start justify-between gap-4">
               <div>
                 <div class="text-xs font-semibold px-2 py-1 rounded-full bg-black/5 dark:bg-white/10 w-fit">Ideal para: operação</div>
                 <h3 class="text-xl font-bold mt-3">Enterprise</h3>
                 <p class="text-muted mt-1">Projeto sob medida com integrações e governança.</p>
               </div>
-              <i class="fa-solid fa-sitemap text-2xl text-brand-600/90"></i>
+              <svg class="h-6 w-6 text-brand-600/90" aria-hidden="true"><use href="#i-sitemap"/></svg>
             </div>
 
             <p class="mt-6 text-3xl font-black">Sob consulta</p>
-            <ul class="mt-6 space-y-2 text-sm text-gray-700 dark:text-gray-300">
-              <li class="flex gap-2"><i class="fa-solid fa-check text-accent-400 mt-1"></i>Jornadas multietapas / funis complexos</li>
-              <li class="flex gap-2"><i class="fa-solid fa-check text-accent-400 mt-1"></i>Design system proprietário</li>
-              <li class="flex gap-2"><i class="fa-solid fa-check text-accent-400 mt-1"></i>Integrações (CRM, pagamentos, APIs)</li>
-              <li class="flex gap-2"><i class="fa-solid fa-check text-accent-400 mt-1"></i>SLA, segurança e conformidade</li>
+            <ul class="mt-6 space-y-2 text-sm text-gray-700 dark:text-gray-300 plan-features">
+              <li class="flex gap-2"><svg class="h-5 w-5 text-accent-400 mt-1" aria-hidden="true"><use href="#i-check"/></svg>Jornadas multietapas / funis complexos</li>
+              <li class="flex gap-2"><svg class="h-5 w-5 text-accent-400 mt-1" aria-hidden="true"><use href="#i-check"/></svg>Design system proprietário</li>
+              <li class="flex gap-2"><svg class="h-5 w-5 text-accent-400 mt-1" aria-hidden="true"><use href="#i-check"/></svg>Integrações (CRM, pagamentos, APIs)</li>
+              <li class="flex gap-2"><svg class="h-5 w-5 text-accent-400 mt-1" aria-hidden="true"><use href="#i-check"/></svg>SLA, segurança e conformidade</li>
             </ul>
 
             <div class="mt-8 pt-6 border-t border-black/10 dark:border-white/10 grid grid-cols-3 text-center text-xs text-muted">
-              <div><i class="fa-solid fa-diagram-project block text-base mb-1"></i>Arquitetura</div>
-              <div><i class="fa-solid fa-shield-halved block text-base mb-1"></i>Conformidade</div>
-              <div><i class="fa-solid fa-headset block text-base mb-1"></i>Suporte dedicado</div>
+              <div><svg class="h-4 w-4 block mx-auto mb-1" aria-hidden="true"><use href="#i-sitemap"/></svg>Arquitetura</div>
+              <div><svg class="h-4 w-4 block mx-auto mb-1" aria-hidden="true"><use href="#i-shield"/></svg>Conformidade</div>
+              <div><svg class="h-4 w-4 block mx-auto mb-1" aria-hidden="true"><use href="#i-headset"/></svg>Suporte dedicado</div>
             </div>
 
-            <button data-open-modal class="mt-6 btn w-full bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-6 py-3 rounded-lg">
+            <button data-open-modal class="plan-cta mt-6 btn w-full bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-6 py-3 rounded-lg" type="button">
               Solicitar proposta
             </button>
           </article>
         </div>
 
-        <p class="text-center text-xs text-muted mt-6">Todos os planos incluem: entrega Figma e código-fonte, setup de analytics básico, e uma rodada de ajustes pós-go live.</p>
+        <!-- Tabela de comparação -->
+        <div class="mt-10 overflow-x-auto">
+          <div class="inline-block min-w-full align-middle">
+            <div class="overflow-hidden glass radius border border-black/10 dark:border-white/10">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50/50 dark:bg-gray-800/50">
+                  <tr>
+                    <th scope="col" class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                      Recursos inclusos
+                    </th>
+                    <th scope="col" class="px-6 py-4 text-center text-sm font-bold text-gray-900 dark:text-white">
+                      Starter
+                      <div class="text-xs font-normal text-gray-500 dark:text-gray-400 mt-1">Para validar</div>
+                    </th>
+                    <th scope="col" class="px-6 py-4 text-center text-sm font-bold text-brand-700 dark:text-brand-300 relative">
+                      <div class="flex flex-col items-center gap-1">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-brand-600 text-white mb-1">Popular</span>
+                        <span>Growth</span>
+                        <div class="text-xs font-normal text-gray-500 dark:text-gray-400">Mais escolhido</div>
+                      </div>
+                    </th>
+                    <th scope="col" class="px-6 py-4 text-center text-sm font-bold text-gray-900 dark:text-white">
+                      Enterprise
+                      <div class="text-xs font-normal text-gray-500 dark:text-gray-400 mt-1">Sob medida</div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white font-medium">
+                      Extensão da página
+                      <div class="text-xs text-gray-500 dark:text-gray-400">Quantas seções terá</div>
+                    </td>
+                    <td class="px-6 py-4 text-center text-sm text-gray-900 dark:text-white">
+                      <div class="font-semibold">Página essencial</div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">1 seção + formulário</div>
+                    </td>
+                    <td class="px-6 py-4 text-center text-sm text-brand-700 dark:text-brand-300 bg-brand-50/30 dark:bg-brand-900/20">
+                      <div class="font-semibold">Página completa</div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">Até 6 seções</div>
+                    </td>
+                    <td class="px-6 py-4 text-center text-sm text-gray-900 dark:text-white">
+                      <div class="font-semibold">Ilimitado</div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">Conforme necessidade</div>
+                    </td>
+                  </tr>
+                  
+                  <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white font-medium">
+                      Prazo de entrega
+                      <div class="text-xs text-gray-500 dark:text-gray-400">Quando fica pronto</div>
+                    </td>
+                    <td class="px-6 py-4 text-center text-sm">
+                      <div class="font-bold text-green-600">5–7 dias</div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">Entrega rápida</div>
+                    </td>
+                    <td class="px-6 py-4 text-center text-sm bg-brand-50/30 dark:bg-brand-900/20">
+                      <div class="font-bold text-brand-600">10–14 dias</div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">Desenvolvimento completo</div>
+                    </td>
+                    <td class="px-6 py-4 text-center text-sm">
+                      <div class="font-bold text-gray-700 dark:text-gray-300">Personalizado</div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">Conforme escopo</div>
+                    </td>
+                  </tr>
+                  
+                  <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white font-medium">
+                      SEO e otimização
+                      <div class="text-xs text-gray-500 dark:text-gray-400">Para Google e velocidade</div>
+                    </td>
+                    <td class="px-6 py-4 text-center text-sm">
+                      <div class="font-semibold text-yellow-600 dark:text-yellow-400">Básico</div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">Configuração inicial</div>
+                    </td>
+                    <td class="px-6 py-4 text-center text-sm bg-brand-50/30 dark:bg-brand-900/20">
+                      <div class="font-semibold text-green-600">Completo</div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">SEO técnico avançado</div>
+                    </td>
+                    <td class="px-6 py-4 text-center text-sm">
+                      <div class="font-semibold text-purple-600 dark:text-purple-400">Enterprise</div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">Auditoria e monitoramento</div>
+                    </td>
+                  </tr>
+                  
+                  <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white font-medium">
+                      Testes de performance
+                      <div class="text-xs text-gray-500 dark:text-gray-400">Para melhorar conversões</div>
+                    </td>
+                    <td class="px-6 py-4 text-center text-sm">
+                      <div class="text-gray-400 dark:text-gray-500">—</div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">Não incluído</div>
+                    </td>
+                    <td class="px-6 py-4 text-center text-sm bg-brand-50/30 dark:bg-brand-900/20">
+                      <div class="font-semibold text-brand-600">Testes A/B</div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">2 variações incluídas</div>
+                    </td>
+                    <td class="px-6 py-4 text-center text-sm">
+                      <div class="font-semibold text-blue-600 dark:text-blue-400">Otimização contínua</div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">Roadmap de melhorias</div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 p-4 glass radius border border-black/10 dark:border-white/10">
+          <div class="flex items-start gap-3">
+            <svg class="h-5 w-5 text-brand-600 mt-0.5"><use href="#i-check"/></svg>
+            <div>
+              <p class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Incluído em todos os planos:</p>
+              <div class="grid sm:grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-300">
+                <span>• Design profissional no Figma</span>
+                <span>• Código-fonte limpo e organizado</span>
+                <span>• Configuração do Google Analytics</span>
+                <span>• Formulário de contato funcional</span>
+                <span>• Ajustes pós-entrega inclusos</span>
+                <span>• Suporte técnico por WhatsApp</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- FAQ (expandida e melhor copy) -->
-    <section id="faq" class="py-24 cv">
+    <!-- FAQ -->
+    <section id="faq" class="py-24 cv" aria-labelledby="faqTitle">
       <div class="max-w-5xl mx-auto px-6">
         <div class="text-center mb-10">
-          <h2 class="text-3xl md:text-5xl font-black">Perguntas <span class="brand-gradient">Frequentes</span></h2>
+          <h2 id="faqTitle" class="text-3xl md:text-5xl font-black">Perguntas <span class="brand-gradient">Frequentes</span></h2>
           <p class="mt-3 text-muted">Respostas rápidas para você decidir com segurança.</p>
         </div>
         <div class="space-y-4">
@@ -469,48 +735,93 @@
           </details>
           <details class="glass radius p-5">
             <summary class="cursor-pointer font-semibold">Quais tecnologias vocês usam?</summary>
-            <p class="mt-2 text-muted">Stack moderna focada em performance: HTML/Tailwind, otimização de imagens (AVIF/WebP), e integrações necessárias (CMS/CRM) quando aplicável.</p>
+            <p class="mt-2 text-muted">Stack moderna focada em performance: HTML/Tailwind, otimização de imagens e integrações necessárias (CMS/CRM) quando aplicável.</p>
           </details>
           <details class="glass radius p-5">
-            <summary class="cursor-pointer font-semibold">Podem hospedar e manter?</summary>
-            <p class="mt-2 text-muted">Podemos orientar sua hospedagem ou indicar provedores. Manutenção contínua está disponível como add-on.</p>
+            <summary class="cursor-pointer font-semibold">Podem hospedar, comprar domínio e fornecer e-mail institucional?</summary>
+            <p class="mt-2 text-muted">Sim. Oferecemos como serviços adicionais: <strong>hospedagem</strong>, <strong>compra/gestão de domínios</strong>, <strong>e-mail institucional</strong> e <strong>gestão de compliance</strong> em conformidade com <strong>LGPD</strong> e <strong>GDPR</strong>. A contratação pode ser feita ao fechar qualquer pacote; a precificação é sob demanda conforme necessidade.</p>
+          </details>
+
+          <!-- GLOSSÁRIO DE TERMOS -->
+          <details class="glass radius p-5">
+            <summary class="cursor-pointer font-semibold">Glossário: o que significam os termos técnicos?</summary>
+            <div class="mt-3 space-y-2 text-muted">
+              <p><strong>Core Web Vitals</strong>: conjunto de métricas de experiência (carregamento, interatividade e estabilidade visual) usadas pelo Google.</p>
+              <p><strong>LCP</strong> (Largest Contentful Paint): tempo para o maior elemento visível aparecer.</p>
+              <p><strong>INP</strong> (Interaction to Next Paint): tempo de resposta às interações do usuário.</p>
+              <p><strong>CLS</strong> (Cumulative Layout Shift): quanto a página “salta” durante o carregamento.</p>
+              <p><strong>SEO técnico</strong>: configurações de código/servidor que ajudam buscadores a entender e ranquear o site.</p>
+              <p><strong>Schema</strong> (dados estruturados): marcações no código que descrevem o conteúdo para os buscadores.</p>
+              <p><strong>Testes A/B</strong>: comparação entre duas versões para descobrir qual converte mais.</p>
+              <p><strong>Analytics/Pixel</strong>: ferramentas para medir visitas, eventos e campanhas (ex.: Google Analytics, Meta Pixel).</p>
+              <p><strong>Heatmap</strong>: mapa de calor das áreas mais clicadas/visualizadas.</p>
+              <p><strong>CMS</strong>: sistema para editar conteúdo (ex.: WordPress, Headless CMS).</p>
+              <p><strong>CRM</strong>: gestão de relacionamento com clientes (ex.: RD, HubSpot).</p>
+              <p><strong>API</strong>: interface para integrar sistemas.</p>
+              <p><strong>SLA</strong>: acordo de nível de serviço (tempos/responsabilidades).</p>
+              <p><strong>Design system</strong>: biblioteca padronizada de componentes, cores e usos da marca.</p>
+              <p><strong>Roadmap</strong>: planejamento contínuo de melhorias e testes.</p>
+              <p><strong>LGPD/GDPR</strong>: leis de proteção de dados no Brasil e na UE.</p>
+            </div>
           </details>
         </div>
         <div class="text-center mt-8">
-          <button data-open-modal class="btn inline-flex items-center gap-2 bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-6 py-3 rounded-lg">
-            Ainda ficou com dúvidas? Fale com a gente <i class="fa-solid fa-message"></i>
+          <button data-open-modal class="btn inline-flex items-center gap-2 bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-6 py-3 rounded-lg" type="button">
+            Ainda ficou com dúvidas? Fale com a gente <svg class="h-4 w-4"><use href="#i-message"/></svg>
           </button>
         </div>
       </div>
     </section>
 
     <!-- CTA FINAL -->
-    <section id="contato" class="relative py-28 cv">
-      <div class="absolute inset-0 -z-10" aria-hidden="true">
-        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80" alt="" class="w-full h-full object-cover opacity-30" loading="lazy" decoding="async" width="1920" height="1080">
-        <div class="absolute inset-0 bg-gradient-to-b from-white/60 to-white/80 dark:from-black/60 dark:to-black/70"></div>
+    <section id="contato" class="relative py-28 cv overflow-hidden">
+      <div class="cta-scene" aria-hidden="true">
+        <div class="cta-layer cta-bg"></div>
+        <div class="cta-layer cta-vignette"></div>
       </div>
-      <div class="max-w-4xl mx-auto px-6 text-center">
-        <h2 class="text-3xl md:text-5xl font-black">Pronto para acelerar sua marca?</h2>
-        <p class="mt-3 text-gray-700 dark:text-gray-300">Mostramos um roadmap claro e começamos com um sprint de impacto.</p>
-        <div class="mt-8 flex justify-center">
-          <button data-open-modal class="btn inline-flex items-center gap-2 bg-white text-brand-700 font-semibold px-8 py-4 rounded-xl shadow hover:bg-gray-100 active:scale-95 transition dark:bg-brand-600 dark:text-white dark:hover:bg-brand-700">
-            Falar com especialista <i class="fa-solid fa-comments"></i>
-          </button>
+
+      <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+        <div class="cta-card radius p-8 md:p-10 reveal">
+          <p class="kicker text-gray-800 dark:text-white/90">Próximo passo</p>
+          <h2 class="text-3xl md:text-5xl font-black leading-tight text-gray-900 dark:text-white drop-shadow-sm dark:drop-shadow-lg">
+            Quando a experiência é premium,<br class="hidden sm:block"/> a conversão acompanha.
+          </h2>
+          <p class="mt-3 text-base md:text-lg text-gray-700 dark:text-white/90">
+            Vamos mapear oportunidades e desenhar um <strong>sprint de impacto</strong> — estética, velocidade e estratégia
+            alinhadas para transformar atenção em <strong>receita</strong>.
+          </p>
+
+          <div class="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs md:text-sm text-gray-600 dark:text-white/90">
+            <span class="glass px-3 py-1.5 radius inline-flex items-center gap-2"><svg class="h-4 w-4"><use href="#i-route"/></svg> Roadmap claro</span>
+            <span class="glass px-3 py-1.5 radius inline-flex items-center gap-2"><svg class="h-4 w-4"><use href="#i-bolt"/></svg> Entrega ágil</span>
+            <span class="glass px-3 py-1.5 radius inline-flex items-center gap-2"><svg class="h-4 w-4"><use href="#i-signal"/></svg> Métricas configuradas</span>
+          </div>
+
+          <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+            <button data-open-modal class="group inline-flex items-center justify-center gap-3 bg-gradient-to-r from-brand-600 to-accent-400 text-white font-bold px-8 py-4 rounded-xl shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 relative overflow-hidden" type="button">
+              <div class="absolute inset-0 bg-gradient-to-r from-brand-700 to-accent-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <svg class="h-5 w-5 relative z-10 group-hover:rotate-12 transition-transform duration-300"><use href="#i-route"/></svg>
+              <span class="relative z-10">Planejar meu projeto</span>
+              <svg class="h-4 w-4 relative z-10 group-hover:translate-x-1 transition-transform duration-300"><use href="#i-arrow-right"/></svg>
+            </button>
+            <a href="#portfolio" class="btn btn-ghost px-8 py-4 rounded-xl font-semibold hover:bg-black/10 dark:hover:bg-white/20 transition text-gray-800 dark:text-white border-gray-800/30 dark:border-white/30">
+              Ver cases <svg class="h-4 w-4 inline"><use href="#i-arrow-right"/></svg>
+            </a>
+          </div>
         </div>
       </div>
     </section>
   </main>
 
   <!-- FOOTER -->
-  <footer class="bg-white/80 dark:bg-black/60 border-t border-black/10 dark:border-white/10">
+  <footer class="bg-white/80 dark:bg-black/60 border-t border-black/10 dark:border-white/10" role="contentinfo">
     <div class="max-w-7xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-10">
       <div>
         <img src="ADVENTURY CORPORATION/PNGS/ADV MONOCROMATICO PNG PRETA.png" alt="Adventury (preta)" class="h-8 w-auto mb-3 block dark:hidden" width="160" height="32"/>
         <img src="ADVENTURY CORPORATION/PNGS/ADV MONOCROMATICO PNG BRANCA.png" alt="Adventury (branca)" class="h-8 w-auto mb-3 hidden dark:block" width="160" height="32"/>
         <p class="text-sm text-muted">Criatividade + tecnologia para construir pontes entre marcas e pessoas.</p>
       </div>
-      <nav aria-label="Rodapé">
+      <nav aria-label="Rodapé" role="navigation">
         <h4 class="font-semibold mb-3 text-gray-900 dark:text-white">Navegação</h4>
         <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
           <li><a href="#servicos" class="hover:text-black dark:hover:text-white">Serviços</a></li>
@@ -524,9 +835,9 @@
       <div>
         <h4 class="font-semibold mb-3 text-gray-900 dark:text-white">Conecte-se</h4>
         <div class="flex gap-4 text-lg text-gray-700 dark:text-gray-300">
-          <a href="#" aria-label="Instagram" class="hover:text-black dark:hover:text-white" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
-          <a href="#" aria-label="LinkedIn" class="hover:text-black dark:hover:text-white" rel="noopener noreferrer"><i class="fab fa-linkedin-in"></i></a>
-          <a href="#" aria-label="Behance" class="hover:text-black dark:hover:text-white" rel="noopener noreferrer"><i class="fab fa-behance"></i></a>
+          <a href="#" aria-label="Instagram" class="hover:text-black dark:hover:text-white" rel="noopener noreferrer"><svg class="h-5 w-5"><use href="#i-instagram"/></svg></a>
+          <a href="#" aria-label="LinkedIn" class="hover:text-black dark:hover:text-white" rel="noopener noreferrer"><svg class="h-5 w-5"><use href="#i-linkedin"/></svg></a>
+          <a href="#" aria-label="Behance" class="hover:text-black dark:hover:text-white" rel="noopener noreferrer"><svg class="h-5 w-5"><use href="#i-behance"/></svg></a>
         </div>
       </div>
     </div>
@@ -539,43 +850,143 @@
   <div id="stickyCta" class="sticky-cta md:hidden" aria-hidden="true">
     <div class="mx-4 mb-4 glass radius shadow-2xl flex items-center justify-between px-4 py-3">
       <span class="text-sm font-semibold text-gray-900 dark:text-white">Pronto para conversar?</span>
-      <button data-open-modal class="btn bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-4 py-2 rounded-lg">
+      <button data-open-modal class="btn bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-4 py-2 rounded-lg" type="button">
         Falar agora
       </button>
     </div>
   </div>
 
-  <!-- MODAL CONTATO -->
-  <div id="contactModal" class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/70 p-6" aria-hidden="true">
-    <div role="dialog" aria-modal="true" aria-labelledby="contactTitle" aria-describedby="contactDesc" class="max-w-md w-full glass radius border border-black/10 dark:border-white/10 shadow-2xl">
-      <div class="flex justify-between items-center p-5 border-b border-black/10 dark:border-white/10">
-        <h3 id="contactTitle" class="font-bold text-gray-900 dark:text-white">Vamos conversar</h3>
-        <button data-close-modal class="p-2 rounded hover:bg-black/5 dark:hover:bg-white/10" aria-label="Fechar modal"><i class="fa-solid fa-xmark"></i></button>
+  <!-- MODAL CONTATO (novo) -->
+  <div id="contactModal" class="fixed inset-0 z-[999] hidden items-center justify-center modal-backdrop p-4 sm:p-6" aria-hidden="true">
+    <div role="dialog" aria-modal="true" aria-labelledby="contactTitle" aria-describedby="contactDesc" class="modal-card max-w-[min(92vw,580px)] w-full radius">
+      <div class="flex justify-between items-start p-6 border-b border-black/10 dark:border-white/10">
+        <div>
+          <h3 id="contactTitle" class="font-bold text-xl text-gray-900 dark:text-white flex items-center gap-2">
+            <svg class="h-5 w-5 text-brand-600"><use href="#i-message"/></svg>
+            Vamos conversar! 👋
+          </h3>
+          <p class="text-sm text-muted mt-1">Queremos conhecer seu projeto e ajudar você a alcançar seus objetivos</p>
+        </div>
+        <button data-close-modal class="p-2 rounded hover:bg-black/5 dark:hover:bg-white/10 shrink-0" aria-label="Fechar modal" type="button"><svg class="h-5 w-5"><use href="#i-x"/></svg></button>
       </div>
+
       <form id="contactForm" class="p-6 space-y-4" novalidate>
-        <p id="contactDesc" class="sr-only">Formulário de contato</p>
+        <div class="relative overflow-hidden rounded-xl border border-brand-500/20 dark:border-brand-500/30 bg-gradient-to-br from-brand-50 to-brand-100/90 dark:from-gray-800/60 dark:to-gray-900/80 p-5">
+          <!-- Elemento decorativo de fundo -->
+          <div class="absolute top-0 right-0 w-20 h-20 bg-brand-600/10 dark:bg-brand-500/15 rounded-full blur-2xl"></div>
+          <div class="absolute bottom-0 left-0 w-16 h-16 bg-accent-400/10 dark:bg-accent-400/15 rounded-full blur-xl"></div>
+          
+          <div class="relative z-10">
+            <div class="flex items-start gap-3 mb-3">
+              <div class="flex-shrink-0 w-8 h-8 bg-brand-600 dark:bg-brand-500 rounded-full flex items-center justify-center">
+                <svg class="h-4 w-4 text-white"><use href="#i-bolt"/></svg>
+              </div>
+              <div class="flex-1">
+                <h4 class="font-semibold text-brand-800 dark:text-brand-100 text-sm mb-1">Como funciona</h4>
+                <p id="contactDesc" class="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">
+                  Preencha os dados abaixo e nossa equipe entrará em contato em até <strong class="text-brand-700 dark:text-brand-100">1 dia útil</strong> para entender melhor seu projeto e apresentar a melhor solução para você!
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div>
           <label for="name" class="text-sm text-gray-700 dark:text-gray-300">Nome</label>
           <input id="name" name="name" required autocomplete="name" class="mt-1 w-full rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/15 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600" placeholder="Seu nome" />
+          <p class="sr-only" id="nameErr">Informe seu nome.</p>
         </div>
-        <div>
-          <label for="email" class="text-sm text-gray-700 dark:text-gray-300">E-mail</label>
-          <input id="email" name="email" type="email" required autocomplete="email" class="mt-1 w-full rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/15 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600" placeholder="seu@email.com" aria-describedby="emailHint" />
-          <p id="emailHint" class="hidden text-sm mt-1 text-rose-500">Informe um e-mail válido.</p>
+
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label for="email" class="text-sm text-gray-700 dark:text-gray-300">E-mail</label>
+            <input id="email" name="email" type="email" inputmode="email" autocomplete="email" class="mt-1 w-full rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/15 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600" placeholder="seu@email.com" aria-describedby="emailHint" />
+            <p id="emailHint" class="hidden text-sm mt-1 text-rose-500">Informe um e-mail válido ou preencha o WhatsApp.</p>
+          </div>
+          <div>
+            <label for="whats" class="text-sm text-gray-700 dark:text-gray-300">WhatsApp (com DDD)</label>
+            <input id="whats" name="whats" type="tel" inputmode="tel" autocomplete="tel" class="mt-1 w-full rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/15 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600" placeholder="(11) 9 9999-9999" aria-describedby="whatsHint" />
+            <p id="whatsHint" class="hidden text-sm mt-1 text-rose-500">Informe um WhatsApp válido ou preencha o e-mail.</p>
+          </div>
         </div>
+
         <div>
           <label for="message" class="text-sm text-gray-700 dark:text-gray-300">Mensagem</label>
-          <textarea id="message" name="message" rows="3" required class="mt-1 w-full rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/15 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600" placeholder="Como podemos ajudar?"></textarea>
+          <textarea id="message" name="message" rows="3" required class="mt-1 w-full rounded-lg bg-black/5 dark:bg:white/5 dark:bg-white/5 border border-black/10 dark:border-white/15 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600" placeholder="Como podemos ajudar?"></textarea>
+          <p class="sr-only" id="msgErr">Conte-nos brevemente seu objetivo.</p>
         </div>
-        <button class="btn w-full inline-flex items-center gap-2 justify-center bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-6 py-3 rounded-lg hover:opacity-95 active:scale-95 transition">
-          Enviar <i class="fa-solid fa-paper-plane"></i>
-        </button>
+
+        <!-- honeypot -->
+        <input type="text" id="company" name="company" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+          <div class="text-xs text-muted">
+            <p class="flex items-center gap-1">
+              <svg class="h-3 w-3 text-green-500"><use href="#i-check"/></svg>
+              <strong>100% gratuito</strong> — sem compromisso
+            </p>
+            <p class="flex items-center gap-1 mt-1">
+              <svg class="h-3 w-3 text-blue-500"><use href="#i-message"/></svg>
+              Resposta em até <strong>1 dia útil</strong>
+            </p>
+          </div>
+          <button class="btn inline-flex items-center gap-2 justify-center bg-gradient-to-r from-brand-600 to-accent-400 text-white font-semibold px-6 py-3 rounded-lg hover:opacity-95 active:scale-95 transition w-full sm:w-auto" type="submit">
+            <svg class="h-4 w-4"><use href="#i-paper-plane"/></svg>
+            Quero minha proposta!
+          </button>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border-l-4 border-green-500 hidden" id="successMessage">
+          <div class="flex items-start gap-2">
+            <svg class="h-5 w-5 text-green-500 mt-0.5"><use href="#i-check"/></svg>
+            <div>
+              <p class="text-green-800 dark:text-green-200 font-semibold text-sm">Mensagem enviada com sucesso! 🎉</p>
+              <p class="text-green-700 dark:text-green-300 text-xs mt-1">Nossa equipe analisará seu projeto e entrará em contato em até <strong>1 dia útil</strong>. Fique de olho no seu e-mail e WhatsApp!</p>
+            </div>
+          </div>
+        </div>
+
         <p id="formOk" class="hidden text-center text-emerald-500 font-semibold" role="status" aria-live="polite">Mensagem enviada! Retornaremos em breve.</p>
       </form>
     </div>
   </div>
 
-  <script>
+  <!-- SCHEMAS JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"Organization",
+    "name":"Adventury Corporation",
+    "url":"https://SEU-DOMINIO.com/",
+    "logo":"https://SEU-DOMINIO.com/ADVENTURY%20CORPORATION/LOGO-ADVENTURY-CORPORATION.jpg",
+    "sameAs":[]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"FAQPage",
+    "mainEntity":[
+      {"@type":"Question","name":"Em quanto tempo entregam uma landing page?","acceptedAnswer":{"@type":"Answer","text":"Projetos Starter: 5–7 dias. Growth: 10–14 dias. Pode variar conforme materiais e aprovações."}},
+      {"@type":"Question","name":"Vocês otimizam Core Web Vitals?","acceptedAnswer":{"@type":"Answer","text":"Sim. Priorizamos LCP, INP e CLS; medimos antes e depois com práticas de performance."}},
+      {"@type":"Question","name":"Quem cuida do tráfego e das métricas?","acceptedAnswer":{"@type":"Answer","text":"Integramos GA4, Meta Pixel e eventos principais. Atuamos com seu time de mídia ou parceiros."}},
+      {"@type":"Question","name":"Vocês oferecem hospedagem, domínio e e-mail institucional?","acceptedAnswer":{"@type":"Answer","text":"Sim. Serviços adicionais: hospedagem, compra e gestão de domínios, e-mail institucional e compliance LGPD/GDPR. Preços sob demanda."}}
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"ItemList",
+    "itemListElement":[
+      {"@type":"Product","name":"Starter","position":1,"offers":{"@type":"Offer","priceCurrency":"BRL","price":"3900","availability":"https://schema.org/InStock"}},
+      {"@type":"Product","name":"Growth","position":2,"offers":{"@type":"Offer","priceCurrency":"BRL","price":"7900","availability":"https://schema.org/InStock"}},
+      {"@type":"Product","name":"Enterprise","position":3,"offers":{"@type":"Offer","priceCurrency":"BRL","price":"0","availability":"https://schema.org/PreOrder"}}
+    ]
+  }
+  </script>
+
+  <script defer>
     const $ = (sel, root=document) => root.querySelector(sel);
     const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
 
@@ -591,7 +1002,7 @@
       menuBtn.setAttribute('aria-expanded', String(!open));
       menuBtn.setAttribute('aria-label', !open ? 'Fechar menu' : 'Abrir menu');
       setHeaderOffset();
-    });
+    }, {passive:true});
     $$('#mobileMenu a').forEach(a => a.addEventListener('click', ()=> mobileMenu.classList.add('hidden')));
 
     // tema
@@ -615,8 +1026,26 @@
       const h = $('#nav')?.offsetHeight || 72;
       document.documentElement.style.setProperty('--header-h', h + 'px');
     }
-    window.addEventListener('load', setHeaderOffset);
-    window.addEventListener('resize', setHeaderOffset);
+    addEventListener('load', setHeaderOffset, {once:true});
+    addEventListener('resize', setHeaderOffset, {passive:true});
+
+    // ===== Scrollbar width fallback (evita pulo quando modal abre) =====
+    function getScrollbarWidth(){
+      // se o navegador já reserva a área (scrollbar-gutter), ainda calculamos para fallback
+      const sw = window.innerWidth - document.documentElement.clientWidth;
+      return Math.max(0, sw);
+    }
+    function lockScrollVisual(){
+      const sbw = getScrollbarWidth();
+      const root = document.documentElement;
+      root.style.setProperty('--sbw', sbw + 'px');
+      root.classList.add('modal-open');
+    }
+    function unlockScrollVisual(){
+      const root = document.documentElement;
+      root.classList.remove('modal-open');
+      root.style.removeProperty('--sbw');
+    }
 
     // modal
     const modal = $('#contactModal');
@@ -627,7 +1056,8 @@
 
     function openModal(){
       lastActive = document.activeElement;
-      modal.classList.remove('hidden'); modal.classList.add('flex'); document.body.classList.add('overflow-hidden');
+      lockScrollVisual();
+      modal.classList.remove('hidden'); modal.classList.add('flex');
       modal.setAttribute('aria-hidden', 'false');
       const first = modal.querySelector(selectors); first && first.focus();
       const f = $$(selectors, modal); const firstEl = f[0], lastEl = f[f.length-1];
@@ -635,11 +1065,14 @@
         if(e.shiftKey && document.activeElement===firstEl){ e.preventDefault(); lastEl.focus(); }
         else if(!e.shiftKey && document.activeElement===lastEl){ e.preventDefault(); firstEl.focus(); } }
       modal.addEventListener('keydown', trap); modal._trap = trap;
+      // Esconde sticky CTA quando modal aberto
+      $('#stickyCta')?.classList.remove('show');
     }
     function closeModal(){
-      modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.classList.remove('overflow-hidden');
+      modal.classList.add('hidden'); modal.classList.remove('flex');
       modal.setAttribute('aria-hidden', 'true');
       if(modal._trap){ modal.removeEventListener('keydown', modal._trap); modal._trap=null; }
+      unlockScrollVisual();
       lastActive && lastActive.focus();
     }
     openers.forEach(b => b.addEventListener('click', openModal));
@@ -647,43 +1080,100 @@
     modal.addEventListener('click', (e)=> { if(e.target === modal) closeModal(); });
     document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && modal.classList.contains('flex')) closeModal(); });
 
+    // máscara simples WhatsApp BR
+    const whats = $('#whats');
+    function formatBRPhone(v){
+      v = v.replace(/\D/g,'').slice(0,11);
+      if(v.length <= 2) return v;
+      if(v.length <= 6) return `(${v.slice(0,2)}) ${v.slice(2)}`;
+      if(v.length <= 10) return `(${v.slice(0,2)}) ${v.slice(2,6)}-${v.slice(6)}`;
+      return `(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`;
+    }
+    whats?.addEventListener('input', (e)=> { e.target.value = formatBRPhone(e.target.value); }, {passive:true});
+
     // formulário
     $('#contactForm').addEventListener('submit', (e)=>{
       e.preventDefault();
-      const email = $('#email'); const hint = $('#emailHint');
-      if(!email.checkValidity()){ hint.classList.remove('hidden'); email.focus(); email.setAttribute('aria-invalid','true'); return; }
-      email.removeAttribute('aria-invalid'); hint.classList.add('hidden');
-      const ok = $('#formOk'); ok.classList.remove('hidden'); ok.textContent = 'Mensagem enviada! Retornaremos em breve.';
-      setTimeout(()=>{ ok.classList.add('hidden'); closeModal(); e.target.reset(); }, 1800);
+      // honeypot
+      if($('#company')?.value){ return; }
+
+      const email = $('#email'); const emailHint = $('#emailHint');
+      const name = $('#name'); const msg = $('#message');
+      const whatsEl = $('#whats'); const whatsHint = $('#whatsHint');
+
+      let ok = true;
+
+      // nome
+      if(!name.value.trim()){ ok=false; name.setAttribute('aria-invalid','true'); $('#nameErr').classList.remove('sr-only'); }
+      else { name.removeAttribute('aria-invalid'); $('#nameErr').classList.add('sr-only'); }
+
+      // mensagem
+      if(!msg.value.trim()){ ok=false; msg.setAttribute('aria-invalid','true'); $('#msgErr').classList.remove('sr-only'); }
+      else { msg.removeAttribute('aria-invalid'); $('#msgErr').classList.add('sr-only'); }
+
+      // contato: e-mail OU WhatsApp obrigatórios
+      const emailValid = !!email.value && email.checkValidity();
+      const whatsDigits = whatsEl.value.replace(/\D/g,'');
+      const whatsValid = whatsDigits.length >= 10; // aceita 10 ou 11 dígitos
+
+      if(!emailValid && !whatsValid){
+        ok = false;
+        emailHint.classList.remove('hidden');
+        whatsHint.classList.remove('hidden');
+        if(!email.value){ email.setAttribute('aria-invalid','true'); }
+        if(!whatsValid){ whatsEl.setAttribute('aria-invalid','true'); }
+      } else {
+        emailHint.classList.add('hidden'); whatsHint.classList.add('hidden');
+        email.removeAttribute('aria-invalid'); whatsEl.removeAttribute('aria-invalid');
+      }
+
+      if(!ok) return;
+
+      // Mostrar mensagem de sucesso mais amigável
+      const successEl = $('#successMessage'); 
+      const okEl = $('#formOk');
+      successEl.classList.remove('hidden');
+      okEl.classList.remove('hidden'); 
+      okEl.textContent = 'Obrigado! Sua mensagem foi enviada com sucesso.';
+      
+      setTimeout(()=>{ 
+        successEl.classList.add('hidden');
+        okEl.classList.add('hidden'); 
+        closeModal(); 
+        e.target.reset(); 
+      }, 3000);
+
+      // evento GA4
+      window.gtag && gtag('event','form_submit',{form:'contato_modal'});
     });
 
     // reveal + counters
-    const obs = new IntersectionObserver((entries)=>{
-      entries.forEach(entry=>{
-        if(entry.isIntersecting){
-          entry.target.classList.add('in');
-          const n = entry.target.querySelector('[data-count]');
-          if(n && !n.dataset.done){
-            n.dataset.done = '1';
-            const target = +n.dataset.count; let cur = 0;
-            const step = Math.max(1, Math.round(target/60));
-            const tick = ()=>{ cur = Math.min(target, cur + step); n.textContent = cur.toLocaleString('pt-BR'); if(cur < target) requestAnimationFrame(tick); }
-            requestAnimationFrame(tick);
-          }
-          obs.unobserve(entry.target);
+    const obs = new IntersectionObserver((entries,observer)=>{
+      for(const entry of entries){
+        if(!entry.isIntersecting) continue;
+        entry.target.classList.add('in');
+        const n = entry.target.querySelector?.('[data-count]');
+        if(n && !n.dataset.done){
+          n.dataset.done = '1';
+          const target = +n.dataset.count; let cur = 0;
+          const step = Math.max(1, Math.round(target/60));
+          const tick = ()=>{ cur = Math.min(target, cur + step); n.textContent = cur.toLocaleString('pt-BR'); if(cur < target) requestAnimationFrame(tick); }
+          requestAnimationFrame(tick);
         }
-      });
+        observer.unobserve(entry.target);
+      }
     }, { threshold: 0.12 });
     $$('.reveal').forEach(el=> obs.observe(el));
 
-    // parallax
-    const layers = $$('.parallax-layer'); let sx=0, sy=0, oy=0;
+    // parallax (hero blobs) – throttled
+    const layers = $$('.parallax-layer'); let sx=0, sy=0, oy=0, rafId=null;
+    function applyParallax(){ layers.forEach((el, i)=>{ const k=(i+1)*6; el.style.transform=`translate3d(${sx*k}px, ${sy*k + oy*k}px, 0)`; }); rafId=null; }
+    function schedule(){ if(rafId==null) rafId=requestAnimationFrame(applyParallax); }
     document.addEventListener('mousemove', e=>{
       const cx = innerWidth/2, cy = innerHeight/2;
-      sx = (e.clientX - cx)/cx; sy = (e.clientY - cy)/cy; applyParallax();
+      sx = (e.clientX - cx)/cx; sy = (e.clientY - cy)/cy; schedule();
     }, {passive:true});
-    addEventListener('scroll', ()=>{ oy = scrollY/500; applyParallax(); }, {passive:true});
-    function applyParallax(){ layers.forEach((el, i)=>{ const k=(i+1)*6; el.style.transform=`translate3d(${sx*k}px, ${sy*k + oy*k}px, 0)`; }); }
+    addEventListener('scroll', ()=>{ oy = scrollY/500; schedule(); }, {passive:true});
 
     // progress bar
     function setScrollBar(){
@@ -695,10 +1185,10 @@
 
     // sticky CTA
     const sticky = $('#stickyCta');
-    addEventListener('scroll', ()=>{ sticky.classList.toggle('show', scrollY > 600); }, {passive:true});
+    addEventListener('scroll', ()=>{ sticky.classList.toggle('show', scrollY > 600 && !$('#contactModal')?.classList.contains('flex')); }, {passive:true});
 
     // scrollspy
-    const sectionEls = ['#servicos','#portfolio','#diferenciais','#precos','#faq','#contato'].map(id => $(id));
+    const sectionEls = ['#servicos','#portfolio','#diferenciais','#precos','#faq','#contato'].map(id => $(id)).filter(Boolean);
     const links = $$('.navlink');
     const spy = new IntersectionObserver((entries)=>{
       entries.forEach(entry=>{
@@ -709,15 +1199,37 @@
         }
       });
     }, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
-    sectionEls.forEach(s => s && spy.observe(s));
+    sectionEls.forEach(s => spy.observe(s));
 
-    // garantir que a página abre no topo no primeiro load (mobile)
-    window.addEventListener('load', () => {
+    // garantir topo no primeiro load
+    addEventListener('load', () => {
       try{
         const navType = performance.getEntriesByType('navigation')[0]?.type || 'navigate';
         if (navType === 'navigate' && !location.hash) requestAnimationFrame(()=> { window.scrollTo(0, 0); });
       }catch(_){}
-    });
+    }, {once:true});
+
+    // Consent banner
+    const consentKey='consentAccepted';
+    function showConsent(){
+      if(localStorage.getItem(consentKey)) return;
+      $('#consentBanner').classList.remove('hidden');
+    }
+    function updateConsent(accept){
+      $('#consentBanner').classList.add('hidden');
+      localStorage.setItem(consentKey, accept?'1':'0');
+      if(window.gtag){
+        gtag('consent','update',{
+          'ad_storage': accept?'granted':'denied',
+          'ad_user_data': accept?'granted':'denied',
+          'ad_personalization': accept?'granted':'denied',
+          'analytics_storage': accept?'granted':'denied'
+        });
+      }
+    }
+    $('#btnAccept')?.addEventListener('click', ()=>updateConsent(true));
+    $('#btnReject')?.addEventListener('click', ()=>updateConsent(false));
+    showConsent();
   </script>
 </body>
 </html>
