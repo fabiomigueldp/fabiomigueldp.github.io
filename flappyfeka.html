@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#69c1ff" />
+  <title>Flappy Nigga</title>
+  <style>
+    /* ===== Reset & Mobile Hardening ===== */
+    html, body { margin: 0; padding: 0; height: 100%; }
+    body {
+      background: #86c9ff; /* fallback while canvas boots */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-family: system-ui, -apple-system, "Helvetica Neue", Arial, Inter, Segoe UI, Roboto, sans-serif;
+      overscroll-behavior: none;
+      -webkit-user-select: none; user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: rgba(0,0,0,0);
+      touch-action: manipulation; /* prevents double-tap zoom on iOS 17 */
+      position: fixed; /* helps prevent elastic scrolling/bounce */
+      inset: 0;
+    }
+    /* dvh works best on iOS 17; we also JS-fallback to innerHeight */
+    #wrap {
+      width: 100vw;
+      height: 100dvh;
+      position: relative;
+      overflow: hidden;
+    }
+    canvas { display: block; width: 100%; height: 100%; }
+
+    /* UI Layer */
+    .ui {
+      position: absolute; inset: 0;
+      pointer-events: none; /* let taps hit canvas */
+    }
+
+    .hud {
+      position: absolute; top: calc(env(safe-area-inset-top) + 10px); left: 0; right: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px;
+      pointer-events: auto; /* buttons need events */
+    }
+
+    .btn {
+      appearance: none; border: 0; outline: 0; cursor: pointer;
+      background: rgba(255,255,255,0.85);
+      padding: 10px 12px; border-radius: 16px;
+      font-weight: 700; font-size: 14px; letter-spacing: 0.3px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      transition: transform .06s ease;
+      touch-action: manipulation;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .score {
+      position: absolute; top: calc(env(safe-area-inset-top) + 10px); left: 50%; transform: translateX(-50%);
+      display: inline-flex; gap: 8px; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.4);
+      padding: 6px 12px; border-radius: 14px;
+      font-weight: 900; font-size: 18px; line-height: 1;
+      color: #0d2a4a; text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      pointer-events: none;
+    }
+
+    .overlay {
+      position: absolute; inset: 0;
+      display: grid; place-items: center; text-align: center;
+      padding: 20px; color: #0d2a4a; font-weight: 700;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.0), rgba(255,255,255,0.25) 40%, rgba(255,255,255,0.4));
+      pointer-events: auto; /* tap to start/retry */
+    }
+    .card {
+      max-width: 520px; width: min(92vw, 520px);
+      background: rgba(255,255,255,0.92);
+      border-radius: 24px; padding: 22px 18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .title { font-size: 34px; line-height: 1.1; margin: 0 0 8px; letter-spacing: 0.4px; }
+    .subtitle { font-weight: 600; opacity: 0.8; margin: 0 0 12px; }
+    .meta { font-size: 13px; opacity: 0.7; margin-top: 6px; }
+
+    .footer {
+      position: absolute; bottom: calc(env(safe-area-inset-bottom) + 10px); left: 0; right: 0;
+      display: flex; justify-content: center; gap: 10px;
+      pointer-events: auto;
+    }
+
+    .hidden { display: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .btn, .card { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="wrap">
+    <canvas id="game" aria-label="Flappy Nigga - jogo" role="img"></canvas>
+
+    <div class="ui" aria-hidden="true">
+      <div class="hud">
+        <button id="btnPause" class="btn" aria-label="Pausar">⏸️</button>
+        <button id="btnSound" class="btn" aria-label="Som">🔊</button>
+      </div>
+      <div id="scoreBox" class="score">0</div>
+
+      <div id="startOverlay" class="overlay">
+        <div class="card">
+          <h1 class="title">👦🏽 Flappy Nigga</h1>
+          <p class="subtitle">Toque em qualquer lugar para voar. Desvie dos canos e marque pontos!</p>
+          <div style="display:flex; gap:8px; justify-content:center; margin-top:8px">
+            <span class="btn" style="pointer-events:auto" id="btnStart">Começar</span>
+            <span class="btn" style="pointer-events:auto" id="btnHow">Como jogar</span>
+          </div>
+          <p class="meta">Desenvolvido pela Torbware 🎮</p>
+        </div>
+      </div>
+
+      <div id="howOverlay" class="overlay hidden">
+        <div class="card" style="text-align:left">
+          <h2 class="title" style="font-size:26px">Controles & Dicas</h2>
+          <ul style="margin:0 0 8px 18px; padding:0; line-height:1.5">
+            <li>Toque em qualquer lugar para dar impulso (flap).</li>
+            <li>Toque e segure para um <b>duplo impulso</b> suave (ajuda em passagens apertadas).</li>
+            <li>Evite o chão e os canos. Passe pelo meio para ganhar pontos.</li>
+            <li>Pause com ⏸️. Ative/desative som com 🔊.</li>
+          </ul>
+          <div style="display:flex; gap:8px; justify-content:center; margin-top:8px">
+            <span class="btn" id="btnBack">Voltar</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="gameOverOverlay" class="overlay hidden">
+        <div class="card">
+          <h2 class="title">Fim de jogo</h2>
+          <p id="resultText" class="subtitle">Score: 0 • Recorde: 0</p>
+          <div style="display:flex; gap:8px; justify-content:center; margin-top:8px">
+            <span class="btn" id="btnRetry">Jogar de novo</span>
+            <span class="btn" id="btnShare">Compartilhar</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <button id="btnFull" class="btn" aria-label="Tela cheia">⤢ Tela cheia</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Mobile viewport fallback for legacy Safari behavior =====
+    (function fixVh() {
+      const set = () => {
+        const h = window.innerHeight; // reliable on iOS 15+
+        document.getElementById('wrap').style.height = h + 'px';
+      };
+      set();
+      window.addEventListener('resize', set, { passive: true });
+    })();
+
+    // ===== Utilities =====
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+    // Random helper with seed for consistent feel
+    function RNG(seed = Math.floor(Math.random() * 1e9)) {
+      let s = seed >>> 0;
+      return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+    }
+
+    // ===== Audio (WebAudio, synthesized – no assets) =====
+    const AudioFX = (() => {
+      let ctx = null;
+      let enabled = true;
+      let unlocked = false;
+      const resume = async () => {
+        if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
+        if (ctx.state === 'suspended') await ctx.resume();
+        unlocked = true;
+      };
+      const setEnabled = (v) => { enabled = v; };
+      const isEnabled = () => enabled;
+      const tone = (type, freq, dur, gain = 0.08) => {
+        if (!enabled || !ctx) return;
+        const now = ctx.currentTime;
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = type; o.frequency.setValueAtTime(freq, now);
+        g.gain.setValueAtTime(gain, now);
+        g.gain.exponentialRampToValueAtTime(1e-4, now + dur);
+        o.connect(g).connect(ctx.destination);
+        o.start(now); o.stop(now + dur);
+      };
+      const noise = (dur = 0.06, gain = 0.05) => {
+        if (!enabled || !ctx) return;
+        const bufferSize = Math.floor((ctx.sampleRate || 44100) * dur);
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+        const src = ctx.createBufferSource();
+        const g = ctx.createGain();
+        g.gain.value = gain;
+        src.buffer = buffer; src.connect(g).connect(ctx.destination); src.start();
+      };
+      return {
+        resume,
+        setEnabled,
+        isEnabled,
+        flap() { tone('sine', 650, 0.06, 0.07); tone('triangle', 980, 0.05, 0.05); },
+        score() { tone('square', 880, 0.05, 0.06); tone('square', 1175, 0.05, 0.05); },
+        hit() { noise(0.08, 0.07); tone('sawtooth', 220, 0.18, 0.06); },
+        toggle(v) { enabled = v !== undefined ? v : !enabled; },
+      };
+    })();
+
+    // ===== Game State =====
+    const canvas = document.getElementById('game');
+    const ctx2d = canvas.getContext('2d', { alpha: false, desynchronized: true });
+
+    const UI = {
+      scoreBox: document.getElementById('scoreBox'),
+      start: document.getElementById('startOverlay'),
+      how: document.getElementById('howOverlay'),
+      over: document.getElementById('gameOverOverlay'),
+      result: document.getElementById('resultText'),
+      btnStart: document.getElementById('btnStart'),
+      btnHow: document.getElementById('btnHow'),
+      btnBack: document.getElementById('btnBack'),
+      btnRetry: document.getElementById('btnRetry'),
+      btnShare: document.getElementById('btnShare'),
+      btnPause: document.getElementById('btnPause'),
+      btnSound: document.getElementById('btnSound'),
+      btnFull: document.getElementById('btnFull'),
+    };
+
+    const G = {
+      running: false,
+      paused: false,
+      gameOver: false,
+      startedOnce: false,
+      score: 0,
+      best: parseInt(localStorage.getItem('flappy_nigga_best') || '0') || 0,
+      time: 0,
+      dpr: 1,
+      rng: RNG(),
+      prefersReduced: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+      orientation: () => (window.innerWidth > window.innerHeight ? 'landscape' : 'portrait'),
+      safeTapBufferMs: 100, // accept taps slightly before frame
+    };
+
+    // Resize & DPR management
+    function resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2); // cap DPR for perf on hi-end phones
+      G.dpr = dpr;
+      const w = canvas.clientWidth | 0;
+      const h = canvas.clientHeight | 0;
+      canvas.width = Math.max(1, Math.floor(w * dpr));
+      canvas.height = Math.max(1, Math.floor(h * dpr));
+      ctx2d.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+    window.addEventListener('resize', resize, { passive: true });
+
+    // ===== Input (touch-first + pointer/keyboard fallback) =====
+    let input = {
+      pressed: false,
+      justPressed: false,
+      lastDownAt: 0,
+      lastUpAt: 0,
+    };
+    let bufferedFlap = false;
+
+    function queueFlap() {
+      const now = performance.now();
+      bufferedFlap = true;
+      input.justPressed = true;
+      input.lastDownAt = now;
+      if (!G.startedOnce) startGame();
+      if (!AudioFX.isEnabled()) return; // will be handled if enabled later
+      AudioFX.resume().catch(()=>{});
+    }
+
+    function endPress() { input.pressed = false; input.lastUpAt = performance.now(); }
+
+    // Touch events tuned for iOS Safari
+    const el = document.getElementById('wrap');
+    el.addEventListener('touchstart', (e) => { 
+      // Ignore touches on buttons and UI elements
+      if (e.target.closest('.btn') || e.target.closest('.card')) return;
+      e.preventDefault(); input.pressed = true; queueFlap(); 
+    }, { passive: false });
+    el.addEventListener('touchend', (e) => { 
+      // Ignore touches on buttons and UI elements
+      if (e.target.closest('.btn') || e.target.closest('.card')) return;
+      e.preventDefault(); endPress(); 
+    }, { passive: false });
+    el.addEventListener('mousedown', (e) => { e.preventDefault(); input.pressed = true; queueFlap(); });
+    el.addEventListener('mouseup', (e) => { e.preventDefault(); endPress(); });
+    el.addEventListener('pointerdown', (e) => { if (e.pointerType === 'touch') return; input.pressed = true; queueFlap(); });
+    el.addEventListener('pointerup', (e) => { if (e.pointerType === 'touch') return; endPress(); });
+    window.addEventListener('keydown', (e) => { if (e.code === 'Space' || e.code === 'ArrowUp') queueFlap(); if (e.code === 'KeyP') togglePause(); });
+
+    // Prevent context menu / long-press lookup
+    window.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    // ===== World & Entities =====
+    const World = {
+      gravity: 2200, // px/s^2
+      scroll: 210, // base px/s, increases with score
+      groundHeight: 96, // CSS px
+      pipeGap: 210,
+      pipeSpacing: 330,
+      lastPipeX: 0,
+      pipes: [],
+      clouds: [],
+      particles: [],
+      dayPhase: 0, // 0..1 for day/night gradient
+    };
+
+    function resetWorld() {
+      World.pipes.length = 0;
+      World.clouds.length = 0;
+      World.particles.length = 0;
+      World.lastPipeX = 0;
+      World.dayPhase = 0;
+      // seed a few clouds
+      for (let i = 0; i < 6; i++) {
+        World.clouds.push(makeCloud(canvas.clientWidth * Math.random()));
+      }
+    }
+
+    // Nigga (our bird)
+    const Nigga = {
+      x: 96,
+      y: 0,
+      vy: 0,
+      r: 24, // collision radius (ajustado para a cabeça)
+      alive: true,
+      wing: 0,
+      wingTimer: 0,
+      angle: 0,
+    };
+
+    function resetNigga() {
+      Nigga.y = canvas.clientHeight * 0.44;
+      Nigga.vy = 0;
+      Nigga.alive = true;
+      Nigga.wing = 0; Nigga.wingTimer = 0; Nigga.angle = 0;
+    }
+
+    function flapImpulse(mult = 1) {
+      // Slightly stronger if falling fast, for precise control
+      const base = -630 * mult;
+      const extra = clamp(-Nigga.vy * 0.18, 0, 240);
+      Nigga.vy = base - extra;
+      Nigga.angle = -0.45; // lean up
+      AudioFX.flap();
+      // small burst particles
+      spawnFeathers(Nigga.x + 6, Nigga.y + 6, -World.scroll * 0.2, -40);
+    }
+
+    // Clouds & Background
+    function makeCloud(x) {
+      const y = 40 + Math.random() * (canvas.clientHeight * 0.5);
+      const s = 0.4 + Math.random() * 1.2; // scale
+      const speed = 12 + Math.random() * 16; // px/s
+      return { x, y, s, speed };
+    }
+
+    // Pipes
+    function spawnPipePair(offsetX = 0) {
+      const h = canvas.clientHeight - World.groundHeight;
+      const minGapTop = 64;
+      const maxGapBottom = h - 80;
+      // dynamic gap and center
+      const difficulty = clamp(G.score * 0.02, 0, 0.38);
+      const gap = clamp(World.pipeGap * (1 - difficulty), 160, 240);
+      const center = clamp( minGapTop + gap/2 + G.rng()*(maxGapBottom - minGapTop - gap), minGapTop + gap/2, maxGapBottom - gap/2 );
+      const x = canvas.clientWidth + (offsetX || 0);
+      const w = 88;
+      World.pipes.push({ x, w, gap, center, passed: false });
+    }
+
+    // Particles (feathers & sparkles)
+    function spawnFeathers(x, y, vxBase, vyBase) {
+      if (G.prefersReduced) return;
+      for (let i = 0; i < 8; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const s = 40 + Math.random() * 80;
+        World.particles.push({
+          x, y,
+          vx: vxBase + Math.cos(a) * s * 0.2,
+          vy: vyBase + Math.sin(a) * s * 0.2,
+          life: 0.5 + Math.random() * 0.5,
+          t: 0,
+          kind: 'feather'
+        });
+      }
+    }
+
+    // ===== Rendering Helpers =====
+    function drawBackground(dt) {
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      World.dayPhase = (World.dayPhase + dt * 0.015) % 1; // slow shift
+      const day = World.dayPhase;
+      // Sky gradient day->evening cycle
+      const skyTop = lerpColor([104,193,255], [34,34,68], day < 0.5 ? day*2 : (1-(day-0.5)*2));
+      const skyBot = lerpColor([174,220,255], [58,58,112], day < 0.5 ? day*2 : (1-(day-0.5)*2));
+      const g = ctx2d.createLinearGradient(0,0,0,h);
+      g.addColorStop(0, `rgb(${skyTop.join(',')})`);
+      g.addColorStop(1, `rgb(${skyBot.join(',')})`);
+      ctx2d.fillStyle = g; ctx2d.fillRect(0,0,w,h);
+
+      // Distant mountains (parallax)
+      const baseY = h - World.groundHeight - 60;
+      const scroll = (G.time * 0.02) % w;
+      ctx2d.save();
+      ctx2d.translate(-scroll, 0);
+      for (let i = -1; i <= 2; i++) {
+        drawMountainStrip(i * w, baseY, h);
+      }
+      ctx2d.restore();
+
+      // Clouds
+      ctx2d.globalAlpha = 0.9;
+      World.clouds.forEach(c => {
+        c.x -= c.speed * dt;
+        if (c.x < -220) { c.x = w + 120; c.y = 40 + Math.random()*(h*0.5); }
+        drawCloud(c.x, c.y, c.s);
+      });
+      ctx2d.globalAlpha = 1;
+    }
+
+    function drawMountainStrip(x, baseY, h) {
+      ctx2d.fillStyle = '#5aa1d8';
+      ctx2d.beginPath();
+      ctx2d.moveTo(x, h);
+      for (let i = 0; i <= 10; i++) {
+        const px = x + i * (canvas.clientWidth/10);
+        const py = baseY - Math.sin((i + G.time*0.02) * 0.6) * 8 - (i%2)*12;
+        ctx2d.lineTo(px, py);
+      }
+      ctx2d.lineTo(x + canvas.clientWidth, h);
+      ctx2d.closePath();
+      ctx2d.fill();
+    }
+
+    function drawCloud(x, y, s) {
+      ctx2d.save();
+      ctx2d.translate(x, y); ctx2d.scale(s, s);
+      ctx2d.fillStyle = 'rgba(255,255,255,0.9)';
+      roundedBlob(-40, -10, 36, 26, 16);
+      roundedBlob(0, 0, 54, 34, 18);
+      roundedBlob(40, -14, 28, 22, 12);
+      ctx2d.restore();
+    }
+
+    function roundedBlob(cx, cy, w, h, r) {
+      ctx2d.beginPath();
+      ctx2d.moveTo(cx - w/2 + r, cy - h/2);
+      ctx2d.arcTo(cx + w/2, cy - h/2, cx + w/2, cy + h/2, r);
+      ctx2d.arcTo(cx + w/2, cy + h/2, cx - w/2, cy + h/2, r);
+      ctx2d.arcTo(cx - w/2, cy + h/2, cx - w/2, cy - h/2, r);
+      ctx2d.arcTo(cx - w/2, cy - h/2, cx + w/2, cy - h/2, r);
+      ctx2d.closePath(); ctx2d.fill();
+    }
+
+    function drawGround(dt) {
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      const y = h - World.groundHeight;
+      // dirt
+      const grd = ctx2d.createLinearGradient(0, y, 0, h);
+      grd.addColorStop(0, '#77b65e');
+      grd.addColorStop(1, '#4c732f');
+      ctx2d.fillStyle = grd;
+      ctx2d.fillRect(0, y, w, h - y);
+      // pattern (scrolling)
+      const t = (G.time * (World.scroll*0.5)) % 48;
+      ctx2d.fillStyle = 'rgba(0,0,0,0.08)';
+      for (let x = -t; x < w + 48; x += 48) {
+        ctx2d.fillRect(x, y + 20, 24, 6);
+        ctx2d.fillRect(x + 12, y + 44, 20, 6);
+      }
+    }
+
+    function drawPipes(dt) {
+      const w = canvas.clientWidth;
+      const speed = World.scroll;
+      const toRemove = [];
+      World.pipes.forEach((p, i) => {
+        p.x -= speed * dt;
+        if (p.x + p.w < -4) toRemove.push(i);
+        drawPipe(p.x | 0, p.w, p.center, p.gap);
+        // scoring: when center passes Nigga.x
+        if (!p.passed && p.x + p.w < Nigga.x) {
+          p.passed = true; G.score++; UI.scoreBox.textContent = G.score; AudioFX.score();
+        }
+      });
+      for (let i = toRemove.length - 1; i >= 0; i--) World.pipes.splice(toRemove[i], 1);
+
+      // pipe spawning
+      const last = World.pipes[World.pipes.length - 1];
+      if (!last || (last && (canvas.clientWidth - (last.x + last.w)) >= World.pipeSpacing)) {
+        spawnPipePair(0);
+      }
+    }
+
+    function drawPipe(x, w, center, gap) {
+      const h = canvas.clientHeight - World.groundHeight;
+      const topH = center - gap/2;
+      const botY = center + gap/2;
+      const botH = h - botY;
+
+      // pipe body gradient
+      const gTop = ctx2d.createLinearGradient(x, 0, x + w, 0);
+      gTop.addColorStop(0, '#1f8a3a');
+      gTop.addColorStop(0.5, '#3bcf63');
+      gTop.addColorStop(1, '#1a6e2f');
+
+      const gSh = ctx2d.createLinearGradient(0, 0, 0, h);
+      gSh.addColorStop(0, 'rgba(0,0,0,0.15)');
+      gSh.addColorStop(1, 'rgba(0,0,0,0.0)');
+
+      // Top pipe
+      ctx2d.fillStyle = gTop;
+      ctx2d.fillRect(x, 0, w, topH);
+      // lip
+      ctx2d.fillStyle = '#148032';
+      ctx2d.fillRect(x - 2, topH - 20, w + 4, 20);
+      ctx2d.fillStyle = '#48e07f';
+      ctx2d.fillRect(x, topH - 20, w, 8);
+      // bolts
+      pipeBolts(x, topH - 12, w);
+      // shadow
+      ctx2d.fillStyle = gSh; ctx2d.fillRect(x, 0, 10, topH);
+
+      // Bottom pipe
+      ctx2d.fillStyle = gTop;
+      ctx2d.fillRect(x, botY, w, botH);
+      ctx2d.fillStyle = '#148032';
+      ctx2d.fillRect(x - 2, botY, w + 4, 20);
+      ctx2d.fillStyle = '#48e07f';
+      ctx2d.fillRect(x, botY + 12, w, 8);
+      pipeBolts(x, botY + 8, w);
+      ctx2d.fillStyle = gSh; ctx2d.fillRect(x, botY, 10, botH);
+
+      // gloss
+      ctx2d.fillStyle = 'rgba(255,255,255,0.18)';
+      ctx2d.fillRect(x + 6, (topH > 0 ? 0 : botY), 6, (topH > 0 ? topH : botH));
+    }
+
+    function pipeBolts(x, y, w) {
+      ctx2d.fillStyle = 'rgba(0,0,0,0.2)';
+      for (let i = 10; i < w - 8; i += 18) ctx2d.fillRect(x + i, y, 4, 4);
+    }
+
+    function drawNigga(dt) {
+      // atualiza o estado visual da cabeça usando a velocidade vertical do pássaro
+      NiggaHead.update(dt, 0, Nigga.vy);
+
+      // a cabeça é o personagem — posicione no mesmo x/y do Nigga:
+      // scale ~0.95 deixa o tamanho compatível com o raio de colisão padrão
+      NiggaHead.draw(ctx2d, Nigga.x, Nigga.y, Nigga.angle, 0.95);
+    }
+
+    function drawParticles(dt) {
+      if (!World.particles.length) return;
+      ctx2d.save();
+      for (let i = World.particles.length - 1; i >= 0; i--) {
+        const p = World.particles[i];
+        p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += World.gravity * 0.4 * dt;
+        const life = p.t / p.life;
+        if (life >= 1) { World.particles.splice(i,1); continue; }
+        ctx2d.globalAlpha = 1 - life;
+        if (p.kind === 'feather') {
+          ctx2d.fillStyle = 'rgba(255,255,255,0.9)';
+          ctx2d.beginPath();
+          ctx2d.ellipse(p.x, p.y, 3, 1.6, p.t * 8, 0, Math.PI*2);
+          ctx2d.fill();
+        }
+      }
+      ctx2d.globalAlpha = 1;
+      ctx2d.restore();
+    }
+
+    // ===== Math helpers =====
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function lerpColor(c1, c2, t) { return [0,1,2].map(i => Math.round(lerp(c1[i], c2[i], t))); }
+
+    // ===== Collisions =====
+    function circleRectCollision(cx, cy, r, rx, ry, rw, rh) {
+      const testX = clamp(cx, rx, rx + rw);
+      const testY = clamp(cy, ry, ry + rh);
+      const dx = cx - testX;
+      const dy = cy - testY;
+      return (dx*dx + dy*dy) <= r*r;
+    }
+
+    function checkCollisions() {
+      const h = canvas.clientHeight;
+      // ground collision
+      if (Nigga.y + Nigga.r > h - World.groundHeight) return true;
+      // pipes
+      for (const p of World.pipes) {
+        const topH = p.center - p.gap/2;
+        const botY = p.center + p.gap/2;
+        if (circleRectCollision(Nigga.x, Nigga.y, Nigga.r, p.x, 0, p.w, topH)) return true;
+        if (circleRectCollision(Nigga.x, Nigga.y, Nigga.r, p.x, botY, p.w, h - World.groundHeight - botY)) return true;
+      }
+      return false;
+    }
+
+    /* ========================================================================
+       NIGGA HEAD RENDERER (Canvas 2D) — versão ajustada
+       - pele mais escura/quente
+       - olhos mais "asiáticos" (almendrados, levemente inclinados)
+       - sombra da cabeça desligada por padrão (evita duplicidade)
+       API:
+         NiggaHead.update(dt, vx, vy)
+         NiggaHead.draw(ctx, x, y, angle, scale)
+       ======================================================================== */
+    const NiggaHead = (() => {
+      // ---- Config rápida (mude aqui se quiser sombra própria do personagem)
+      const NiggaConfig = { shadow: false, shadowStrength: 0.22 };
+
+      // ---- Paleta (tom de pele asiático escuro) ----------------------------
+      const skinLight = '#A88660'; // highlights
+      const skinMid   = '#8A6D4B'; // base
+      const skinDark  = '#6F5536'; // sombras
+      const lipBase   = '#9B5B50';
+      const hairDark  = '#222222';
+      const hairHi    = 'rgba(255,255,255,.10)';
+      const browCol   = '#1a1a1a';
+      const eyeWhite  = '#fff';
+      const irisCol   = '#2c2b2b'; // marrom quase preto
+
+      // ---- Estado interno ---------------------------------------------------
+      const S = {
+        blink: 0, blinkTimer: 0, nextBlink: 1.1 + Math.random()*2.0,
+        bob: 0, dimplePulse: 0, tilt: 0,
+      };
+
+      // ---- Utils ------------------------------------------------------------
+      const TAU = Math.PI * 2;
+      const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+      function arcOval(ctx, cx, cy, rx, ry) {
+        ctx.save(); ctx.translate(cx, cy); ctx.scale(rx, ry);
+        ctx.beginPath(); ctx.arc(0, 0, 1, 0, TAU); ctx.restore();
+      }
+      function roundPath(ctx, pts, r) {
+        ctx.beginPath();
+        const n = pts.length;
+        for (let i = 0; i < n; i++) {
+          const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n];
+          const v1x = p1.x - p0.x, v1y = p1.y - p0.y;
+          const v2x = p2.x - p1.x, v2y = p2.y - p1.y;
+          const l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
+          const r1 = Math.min(r, l1/2), r2 = Math.min(r, l2/2);
+          const a = { x: p1.x - v1x/l1*r1, y: p1.y - v1y/l1*r1 };
+          const b = { x: p1.x + v2x/l2*r2, y: p1.y + v2y/l2*r2 };
+          if (i === 0) ctx.moveTo(a.x, a.y); else ctx.lineTo(a.x, a.y);
+          ctx.quadraticCurveTo(p1.x, p1.y, b.x, b.y);
+        }
+        ctx.closePath();
+      }
+
+      // ---- Cabelo -----------------------------------------------------------
+      function drawHair(ctx) {
+        ctx.save();
+        ctx.fillStyle = hairDark;
+        ctx.beginPath();
+        ctx.moveTo(-44, -44);
+        ctx.bezierCurveTo(-60, -56, -20, -82, 20, -76);
+        ctx.bezierCurveTo(58, -70, 70, -44, 60, -22);
+        ctx.bezierCurveTo(55,  -6, 44,  -2, 36,   2);
+        ctx.bezierCurveTo(26,  10, 22,  18, 14,  24);
+        ctx.bezierCurveTo( 6,  26, -4,  18,-10,  20);
+        ctx.bezierCurveTo(-24, 22, -34, 10,-40,   2);
+        ctx.bezierCurveTo(-48, -8, -46,-28,-44, -44);
+        ctx.closePath(); ctx.fill();
+
+        const g = ctx.createLinearGradient(-22,-72, 28,-12);
+        g.addColorStop(0, hairHi); g.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.moveTo(-18,-58);
+        ctx.bezierCurveTo(12,-72, 48,-60, 40,-34);
+        ctx.bezierCurveTo(28,-22,  6,-22, -4,-30);
+        ctx.bezierCurveTo(-12,-38,-16,-46,-18,-58);
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+
+      // ---- Rosto ------------------------------------------------------------
+      function drawFaceBase(ctx) {
+        ctx.save();
+        roundPath(ctx, [
+          {x:-34, y:-28}, {x:36, y:-26},
+          {x:44, y:  6},  {x:24, y: 34},
+          {x: 0,  y: 48}, {x:-22, y: 36},
+          {x:-42, y:  8}
+        ], 18);
+        const g = ctx.createLinearGradient(-18,-40, 36,50);
+        g.addColorStop(0, skinLight);
+        g.addColorStop(0.55, skinMid);
+        g.addColorStop(1, skinDark);
+        ctx.fillStyle = g; ctx.fill();
+
+        // orelha discreta
+        ctx.globalAlpha = 0.9; ctx.fillStyle = skinMid;
+        arcOval(ctx,-40,-4,8,12); ctx.fill(); ctx.globalAlpha = 1;
+        ctx.restore();
+      }
+
+      // ---- Olhos (almendrados com leve inclinação) --------------------------
+      function drawEye(ctx, ex, ey, open=1, tilt=0.08) {
+        ctx.save();
+        ctx.translate(ex, ey);
+        ctx.rotate(tilt);
+
+        const w = 18;
+        const h = 6 * open;     // mais baixo que antes (era 8)
+        const innerFold = 1.4;  // controla dobra interna
+
+        // forma do olho (pálpebras)
+        ctx.fillStyle = eyeWhite;
+        ctx.beginPath();
+        ctx.moveTo(-w*0.60, -h*0.55);
+        ctx.quadraticCurveTo(0, -h*0.95,  w*0.62, -h*0.40);   // pálpebra superior mais reta
+        ctx.quadraticCurveTo(0,  h*0.95,  -w*0.58,  h*0.45);  // pálpebra inferior
+        ctx.closePath();
+        ctx.fill();
+
+        // Íris + pupila (um pouco coberta pela pálpebra superior)
+        arcOval(ctx, 2.5, 0.4, 4.8, 4.2*open);
+        ctx.fillStyle = irisCol; ctx.fill();
+        arcOval(ctx, 3.3, 0.3, 2.2, 2.2*open);
+        ctx.fillStyle = '#111'; ctx.fill();
+
+        // brilho
+        arcOval(ctx, 4.2, -1.2, 0.9, 0.9*open);
+        ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.fill();
+
+        // dobra da pálpebra (fold) bem sutil
+        ctx.strokeStyle = 'rgba(60,40,30,0.35)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(-w*0.48, -h - innerFold*0.6);
+        ctx.quadraticCurveTo(0, -h - innerFold, w*0.50, -h - innerFold*0.5);
+        ctx.stroke();
+
+        // canto interno (epicanto discreto)
+        ctx.fillStyle = 'rgba(0,0,0,0.08)';
+        ctx.beginPath();
+        ctx.moveTo(-w*0.60, 0);
+        ctx.quadraticCurveTo(-w*0.48, -h*0.55, -w*0.35, -h*0.10);
+        ctx.quadraticCurveTo(-w*0.40,  h*0.40, -w*0.60,  0);
+        ctx.closePath(); ctx.fill();
+
+        // linha superior
+        ctx.strokeStyle = 'rgba(20,20,20,0.85)';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(-w*0.60, -h*0.55);
+        ctx.quadraticCurveTo(0, -h*1.02, w*0.62, -h*0.40);
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      function drawBrows(ctx) {
+        ctx.save();
+        ctx.strokeStyle = browCol;
+        ctx.lineCap = 'round';
+        ctx.lineWidth = 3.2;
+        // mais retas e espessas
+        ctx.beginPath(); ctx.moveTo(-22, -7); ctx.lineTo( -2, -10); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo( 10, -9); ctx.lineTo( 26, -7);  ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawNose(ctx) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(70,50,38,0.38)'; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.moveTo(6, 6); ctx.quadraticCurveTo(0, 14, 2, 18); ctx.stroke();
+        ctx.fillStyle = 'rgba(50,35,26,0.28)'; arcOval(ctx, 4, 18, 5.4, 2.2); ctx.fill();
+        ctx.restore();
+      }
+
+      function drawMouth(ctx, t=0) {
+        ctx.save();
+        const smirk = 1 + Math.sin(t*2.2)*0.08;
+        ctx.strokeStyle = lipBase; ctx.lineWidth = 2.2; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(-6, 26); ctx.quadraticCurveTo(6, 30, 20, 26*smirk); ctx.stroke();
+        ctx.strokeStyle = 'rgba(150,85,75,0.35)'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(-2, 29); ctx.quadraticCurveTo(8, 32, 16, 29); ctx.stroke();
+        // covinha
+        ctx.fillStyle = 'rgba(100,60,55,0.22)'; arcOval(ctx, 22, 26, 1.8, 1.8); ctx.fill();
+        ctx.restore();
+      }
+
+      function drawCheeks(ctx) {
+        ctx.save();
+        const g = ctx.createRadialGradient(-18, 18, 2, -18, 18, 18);
+        g.addColorStop(0,'rgba(230,120,95,0.12)'); g.addColorStop(1,'rgba(230,120,95,0)');
+        ctx.fillStyle = g; arcOval(ctx, -18, 18, 16, 10); ctx.fill();
+        const g2 = ctx.createRadialGradient(18, 18, 2, 18, 18, 18);
+        g2.addColorStop(0,'rgba(230,120,95,0.10)'); g2.addColorStop(1,'rgba(230,120,95,0)');
+        ctx.fillStyle = g2; arcOval(ctx, 18, 18, 16, 10); ctx.fill();
+        ctx.restore();
+      }
+
+      function drawOutline(ctx) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+        ctx.lineWidth = 1.2;
+        roundPath(ctx, [
+          {x:-34, y:-28}, {x:36, y:-26},
+          {x:44, y:  6},  {x:24, y: 34},
+          {x: 0,  y: 48}, {x:-22, y: 36},
+          {x:-42, y:  8}
+        ], 18);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // ---- API --------------------------------------------------------------
+      function update(dt, vx=0, vy=0) {
+        S.blinkTimer += dt;
+        if (S.blinkTimer >= S.nextBlink) {
+          S.blinkTimer = 0;
+          S.nextBlink = 1.2 + Math.random()*2.2;
+          S.blink = 1;
+        }
+        S.blink = Math.max(0, S.blink - dt*3.2);
+        S.bob += dt; S.dimplePulse += dt*0.6;
+        const targetTilt = clamp(vy/900, -0.2, 0.55);
+        S.tilt += (targetTilt - S.tilt) * Math.min(1, dt*10);
+      }
+
+      function draw(ctx, x, y, angle=0, scale=1) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle + S.tilt*0.35);
+        ctx.scale(scale, scale);
+        ctx.translate(0, Math.sin(S.bob*4)*0.6);
+
+        // SOMBRA SOB A CABEÇA (desligada por padrão pra não "duplicar")
+        if (NiggaConfig.shadow) {
+          const sh = ctx.createRadialGradient(0, 58, 2, 0, 58, 22);
+          sh.addColorStop(0, `rgba(0,0,0,${NiggaConfig.shadowStrength})`);
+          sh.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = sh; arcOval(ctx, 0, 58, 24, 9); ctx.fill();
+        }
+
+        drawHair(ctx);
+        drawFaceBase(ctx);
+        drawCheeks(ctx);
+        drawBrows(ctx);
+
+        // olhos com leve inclinação: esquerdo abre menos e inclina -tilt
+        const open = 1 - S.blink;
+        drawEye(ctx, -8, 2, open*0.92, -0.08);
+        drawEye(ctx,  12, 2, open*0.95,  0.08);
+
+        drawNose(ctx);
+        drawMouth(ctx, S.dimplePulse);
+        drawOutline(ctx);
+        ctx.restore();
+      }
+
+      return { update, draw, config: (o)=>Object.assign(NiggaConfig,o) };
+    })();
+
+    // ===== Game Loop =====
+    let last = performance.now();
+    function loop(now) {
+      const dt = Math.min(0.033, (now - last) / 1000);
+      last = now; G.time += dt;
+
+      if (!G.running) { requestAnimationFrame(loop); return; }
+      if (G.paused) {
+        drawBackground(dt*0.25); drawPipes(0); drawGround(0); drawNigga(0); drawParticles(0); requestAnimationFrame(loop); return;
+      }
+
+      // Difficulty curve
+      World.scroll = 210 + Math.min(G.score * 3.5, 140);
+
+      // process input buffer
+      if (bufferedFlap) {
+        flapImpulse(1);
+        bufferedFlap = false; input.justPressed = false; input.pressed = false;
+      } else if (input.pressed) {
+        // short hold gives gentle double impulse
+        const held = now - input.lastDownAt;
+        if (held > 180 && held < 280) { flapImpulse(0.62); input.pressed = false; }
+      }
+
+      // physics
+      Nigga.vy += World.gravity * dt;
+      Nigga.vy = clamp(Nigga.vy, -900, 900);
+      Nigga.y += Nigga.vy * dt;
+      // rotate based on velocity
+      const targetAngle = Nigga.vy < 0 ? -0.6 : Math.min(1.1, Nigga.vy / 900);
+      Nigga.angle = Nigga.angle + (targetAngle - Nigga.angle) * 0.1;
+
+      // clear & draw
+      drawBackground(dt);
+      drawPipes(dt);
+      drawGround(dt);
+      drawParticles(dt);
+      drawNigga(dt);
+
+      // spawn initial pipes if none
+      if (World.pipes.length === 0) spawnPipePair(0);
+
+      // check collisions
+      if (checkCollisions()) {
+        // game over sequence
+        AudioFX.hit();
+        G.gameOver = true; G.running = false;
+        G.best = Math.max(G.best, G.score);
+        localStorage.setItem('flappy_nigga_best', String(G.best));
+        UI.result.textContent = `Score: ${G.score} • Recorde: ${G.best}`;
+        UI.over.classList.remove('hidden');
+      }
+
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+
+    // ===== Game Flow =====
+    function startGame() {
+      G.running = true; G.paused = false; G.gameOver = false; G.startedOnce = true; G.score = 0; UI.scoreBox.textContent = '0';
+      resetWorld(); resetNigga();
+      UI.start.classList.add('hidden'); UI.over.classList.add('hidden'); UI.how.classList.add('hidden');
+    }
+
+    function togglePause() {
+      if (!G.startedOnce || G.gameOver) return;
+      G.paused = !G.paused;
+      UI.btnPause.textContent = G.paused ? '▶️' : '⏸️';
+    }
+
+    // ===== UI Events =====
+    UI.btnStart.addEventListener('click', startGame);
+    UI.btnStart.addEventListener('touchend', (e) => { e.preventDefault(); e.stopPropagation(); startGame(); });
+    
+    UI.btnHow.addEventListener('click', () => { UI.how.classList.remove('hidden'); });
+    UI.btnHow.addEventListener('touchend', (e) => { e.preventDefault(); e.stopPropagation(); UI.how.classList.remove('hidden'); });
+    
+    UI.btnBack.addEventListener('click', () => { UI.how.classList.add('hidden'); });
+    UI.btnBack.addEventListener('touchend', (e) => { e.preventDefault(); e.stopPropagation(); UI.how.classList.add('hidden'); });
+    
+    UI.btnRetry.addEventListener('click', startGame);
+    UI.btnRetry.addEventListener('touchend', (e) => { e.preventDefault(); e.stopPropagation(); startGame(); });
+    
+    UI.btnPause.addEventListener('click', togglePause);
+    UI.btnSound.addEventListener('click', () => {
+      AudioFX.toggle();
+      if (AudioFX.isEnabled()) AudioFX.resume();
+      UI.btnSound.textContent = AudioFX.isEnabled() ? '🔊' : '🔇';
+    });
+    UI.btnSound.addEventListener('touchend', (e) => { 
+      e.preventDefault(); e.stopPropagation(); 
+      AudioFX.toggle();
+      if (AudioFX.isEnabled()) AudioFX.resume();
+      UI.btnSound.textContent = AudioFX.isEnabled() ? '🔊' : '🔇';
+    });
+    
+    UI.btnFull.addEventListener('click', async () => {
+      const el = document.documentElement;
+      try {
+        if (!document.fullscreenElement && el.requestFullscreen) await el.requestFullscreen({ navigationUI: 'hide' });
+        else if (document.exitFullscreen) await document.exitFullscreen();
+      } catch (e) { /* ignore */ }
+    });
+    UI.btnFull.addEventListener('touchend', async (e) => { 
+      e.preventDefault(); e.stopPropagation(); 
+      const el = document.documentElement;
+      try {
+        if (!document.fullscreenElement && el.requestFullscreen) await el.requestFullscreen({ navigationUI: 'hide' });
+        else if (document.exitFullscreen) await document.exitFullscreen();
+      } catch (e) { /* ignore */ }
+    });
+    
+    UI.btnShare.addEventListener('click', async () => {
+      const text = `Acabei de marcar ${G.score} em Flappy Nigga! 🐤`;
+      try {
+        if (navigator.share) await navigator.share({ title: 'Flappy Nigga', text, url: location.href });
+        else {
+          await navigator.clipboard.writeText(text + ' ' + location.href);
+          UI.btnShare.textContent = 'Copiado!'; setTimeout(()=> UI.btnShare.textContent = 'Compartilhar', 1200);
+        }
+      } catch(_){}
+    });
+    UI.btnShare.addEventListener('touchend', async (e) => { 
+      e.preventDefault(); e.stopPropagation(); 
+      const text = `Acabei de marcar ${G.score} em Flappy Nigga! 🐤`;
+      try {
+        if (navigator.share) await navigator.share({ title: 'Flappy Nigga', text, url: location.href });
+        else {
+          await navigator.clipboard.writeText(text + ' ' + location.href);
+          UI.btnShare.textContent = 'Copiado!'; setTimeout(()=> UI.btnShare.textContent = 'Compartilhar', 1200);
+        }
+      } catch(_){}
+    });
+
+    // Orientation hint (soft)
+    function checkOrientation() {
+      const landscape = G.orientation() === 'landscape';
+      document.body.style.filter = landscape ? 'saturate(0.6)' : 'none';
+    }
+    window.addEventListener('orientationchange', checkOrientation);
+    window.addEventListener('resize', checkOrientation);
+    checkOrientation();
+
+    // Kick off background ambience even before start (no audio until interaction)
+    resetWorld(); resetNigga();
+    drawBackground(0); drawGround(0); drawNigga(0);
+
+  </script>
+</body>
+</html>
