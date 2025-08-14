@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Yasmin — a página que eu, Feka, fiz chorando às 3 da manhã</title>
+  <meta name="description" content="Página interativa feita pelo Feka para (tentar) organizar a vida amorosa com a Yasmin. Tem painel, galeria, linha do tempo, mural, e vergonha alheia automatizada." />
+  <meta property="og:title" content="Yasmin — por Feka" />
+  <meta property="og:description" content="Alta interatividade, zero dignidade." />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#111827" />
+  <style>
+    :root{
+      --bg: #0b0f17;       /* base escuro */
+      --muted: #111827;    /* cards dark */
+      --text: #e5e7eb;     /* texto */
+      --sub: #9ca3af;      /* subtítulo */
+      --brand: #f59e0b;    /* destaque dourado */
+      --accent: #8b5cf6;   /* roxo carente */
+      --danger: #ef4444;   /* vergonha */
+      --ok: #10b981;       /* sucesso improvável */
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+      --glass: rgba(255,255,255,.04);
+    }
+    [data-theme="light"]{
+      --bg:#f8fafc; --muted:#fff; --text:#0b0f17; --sub:#475569; --brand:#b45309; --accent:#6d28d9; --glass:rgba(17,24,39,.06);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:radial-gradient(1000px 500px at 10% -10%, #1f2937 0%, transparent 60%), radial-gradient(800px 400px at 110% 10%, #111827 0%, transparent 60%), var(--bg);
+      color:var(--text); font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      letter-spacing:.2px;
+    }
+    a{color:var(--accent); text-decoration:none}
+    .container{width:min(1100px, 92vw); margin-inline:auto}
+    .nav{position:sticky; top:0; z-index:30; backdrop-filter:saturate(1.2) blur(8px); background:linear-gradient(180deg, rgba(0,0,0,.5), transparent);}
+    .nav-inner{display:flex; align-items:center; gap:12px; justify-content:space-between; padding:12px 0}
+    .brand{display:flex; gap:10px; align-items:center}
+    .brand .logo{width:36px; height:36px; border-radius:12px; background:linear-gradient(135deg, var(--accent), var(--brand)); box-shadow:var(--shadow)}
+    .brand h1{font-size:18px; margin:0}
+    .nav a.btn, button.btn{background:var(--glass); color:var(--text); padding:10px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.08); box-shadow:var(--shadow); cursor:pointer}
+    .nav a.btn:hover, button.btn:hover{transform:translateY(-1px)}
+    .nav .links{display:flex; gap:10px; flex-wrap:wrap}
+    .hero{padding:48px 0 28px}
+    .hero-grid{display:grid; grid-template-columns:1.2fr .8fr; gap:22px; align-items:stretch}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:var(--radius); box-shadow:var(--shadow)}
+    .card.pad{padding:22px}
+    .chip{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background:rgba(139,92,246,.15); color:#e9d5ff; border:1px solid rgba(139,92,246,.3)}
+    .title{font-size:34px; margin:10px 0 8px}
+    .sub{color:var(--sub)}
+    .grid{display:grid; gap:16px}
+    .grid.cols-3{grid-template-columns:repeat(3, 1fr)}
+    .grid.cols-2{grid-template-columns:repeat(2, 1fr)}
+    @media (max-width:900px){.hero-grid{grid-template-columns:1fr}.grid.cols-3{grid-template-columns:1fr}.grid.cols-2{grid-template-columns:1fr}}
+    .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background:rgba(0,0,0,.4); padding:2px 6px; border-radius:6px; border:1px solid rgba(255,255,255,.1)}
+    .tag{background:rgba(245,158,11,.15); color:#fde68a; border:1px solid rgba(245,158,11,.3); border-radius:999px; padding:4px 10px; font-size:12px}
+    .ghost{opacity:.7}
+    .toolbar{display:flex; gap:10px; flex-wrap:wrap}
+    .meter{height:10px; background:rgba(255,255,255,.1); border-radius:999px; overflow:hidden}
+    .meter > i{display:block; height:100%; background: linear-gradient(90deg, var(--danger), var(--brand), var(--ok)); width:10%}
+    .pill{border-radius:999px; padding:3px 10px; border:1px dashed rgba(255,255,255,.15)}
+    .mini{font-size:12px; color:var(--sub)}
+    /* Sections */
+    section{scroll-margin-top:90px}
+    h2{font-size:22px; margin:0 0 10px}
+    .section-head{display:flex; align-items:center; justify-content:space-between; gap:12px}
+    .section-head .actions{display:flex; gap:8px}
+    /* Gallery */
+    .gallery{display:grid; grid-template-columns:repeat(6, 1fr); gap:8px}
+    @media (max-width:900px){.gallery{grid-template-columns:repeat(3, 1fr)}}
+    .gallery .slot{aspect-ratio:1/1; border-radius:14px; background:rgba(255,255,255,.04); border:1px dashed rgba(255,255,255,.18); display:grid; place-items:center; position:relative; overflow:hidden}
+    .slot img{width:100%; height:100%; object-fit:cover}
+    .slot input{display:none}
+    .slot .hint{position:absolute; inset:auto 6px 6px 6px; text-align:center; font-size:12px; color:var(--sub)}
+    .slot .remove{position:absolute; top:8px; right:8px; background:rgba(0,0,0,.5); border:none; color:white; padding:6px 8px; border-radius:8px; cursor:pointer}
+    /* Modal/Lightbox */
+    .modal{position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.65); z-index:60}
+    .modal.open{display:grid}
+    .lightbox{max-width:min(92vw, 1000px); max-height:86vh}
+    .lightbox img{width:100%; height:100%; object-fit:contain; border-radius:14px}
+    /* Message Lab */
+    textarea{width:100%; min-height:120px; padding:14px; background:rgba(255,255,255,.06); color:var(--text); border-radius:14px; border:1px solid rgba(255,255,255,.12); resize:vertical}
+    .range{width:100%}
+    .badge{display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.18)}
+    .danger{color:#fecaca; border-color: rgba(239,68,68,.5); background: rgba(239,68,68,.12)}
+    .ok{color:#d1fae5; border-color: rgba(16,185,129,.4); background: rgba(16,185,129,.12)}
+    /* Board */
+    .board{display:grid; grid-template-columns:repeat(3, 1fr); gap:12px}
+    @media (max-width:900px){.board{grid-template-columns:1fr}}
+    .note{padding:14px; border-radius:14px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12)}
+    .note .meta{display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:12px; color:var(--sub)}
+    .note .text{white-space:pre-wrap}
+    /* Timeline */
+    .timeline{display:flex; gap:12px; overflow:auto; padding-bottom:6px}
+    .tl-item{min-width:220px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:12px}
+    .tl-item .date{font-size:12px; color:var(--sub)}
+    /* Stats chart */
+    canvas{max-width:100%; border-radius:14px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12)}
+    /* Command Palette */
+    .palette{position:fixed; inset:0; display:none; place-items:start center; padding-top:12vh; background:rgba(0,0,0,.55); z-index:80}
+    .palette.open{display:grid}
+    .palette .box{width:min(720px, 92vw); background:var(--muted); border:1px solid rgba(255,255,255,.12); border-radius:16px; box-shadow:var(--shadow)}
+    .palette input{width:100%; border:none; outline:none; padding:14px 16px; font-size:16px; color:var(--text); background:transparent}
+    .palette ul{margin:0; padding:8px; max-height:45vh; overflow:auto; list-style:none}
+    .palette li{padding:10px 12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center}
+    .palette li:hover{background:rgba(255,255,255,.06); cursor:pointer}
+    /* Footer */
+    footer{padding:40px 0; color:var(--sub)}
+  </style>
+</head>
+<body>
+  <a class="kbd" href="#conteudo" style="position:absolute; left:-9999px; top:-9999px">Pular para o conteúdo</a>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <div class="brand" aria-label="Identidade">
+        <div class="logo" aria-hidden="true"></div>
+        <h1>Yasmin • por <span style="color:var(--brand)">Feka</span></h1>
+      </div>
+      <div class="links" role="navigation" aria-label="Atalhos">
+        <a class="btn" href="#sobre">Sobre</a>
+        <a class="btn" href="#linha">Linha do Tempo</a>
+        <a class="btn" href="#galeria">Galeria</a>
+        <a class="btn" href="#lab">Laboratório</a>
+        <a class="btn" href="#painel">Painel</a>
+        <a class="btn" href="#mural">Mural</a>
+        <a class="btn" href="#stats">Estatísticas</a>
+        <button id="toggleTheme" class="btn" aria-pressed="false" title="Alternar tema (L/D)">🌗 Tema</button>
+        <button id="openPalette" class="btn" title="Comandos (Ctrl/⌘+K)"><span class="kbd">Ctrl</span>+<span class="kbd">K</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero container">
+    <div class="hero-grid">
+      <div class="card pad">
+        <span class="chip">Confissão pública do Feka</span>
+        <h2 class="title">Eu fiz este site pra Yasmin… e pra curar (mentira) meu vício nela</h2>
+        <p class="sub">Sim, eu, o bananão oficial do Torb, criei um hub com tudo: metas, galeria, testes de vergonha e até um medidor de chance dela responder “kkk”. Se nada der certo, pelo menos ficou bonito.</p>
+        <div class="toolbar" style="margin-top:12px">
+          <button class="btn" id="btnLike">💛 Curtir (<span id="likeCount">0</span>)</button>
+          <button class="btn" id="btnNotify">🔔 Lembrar de não mandar textão</button>
+          <button class="btn" id="btnPrint">🖨️ Imprimir/Salvar PDF</button>
+          <span class="pill">Estado: <b id="estado">Carente</b></span>
+        </div>
+        <div style="margin-top:14px">
+          <div class="mini">Índice de vergonha hoje</div>
+          <div class="meter" aria-label="Vergonha"><i id="meter"></i></div>
+        </div>
+      </div>
+      <div class="card pad" aria-live="polite">
+        <h2>Contagens dramáticas</h2>
+        <div class="grid cols-2">
+          <div>
+            <div class="mini">Dias desde o último stalk</div>
+            <div style="font-size:36px" id="diasSemStalk">0</div>
+            <div class="toolbar">
+              <button class="btn" id="regStalk">Registrei recaída 😭</button>
+              <button class="btn" id="resetStalk">Zerar</button>
+            </div>
+          </div>
+          <div>
+            <div class="mini">Contagem até o “grande dia”</div>
+            <input type="date" id="bigDay" />
+            <div style="font-size:36px" id="countdown">—</div>
+          </div>
+        </div>
+        <div class="grid cols-2" style="margin-top:10px">
+          <div>
+            <div class="mini">Objetivo do mês</div>
+            <input id="objetivoMes" placeholder="Ex.: conversar 10min sem travar" style="width:100%; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06); color:var(--text)" />
+          </div>
+          <div>
+            <div class="mini">Nível de coragem</div>
+            <input type="range" min="0" max="100" value="10" class="range" id="coragem" />
+            <div class="badge" id="coragemBadge">10% • mosca morta</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="conteudo" class="container">
+    <!-- SOBRE -->
+    <section id="sobre" class="card pad" aria-labelledby="sobre-title">
+      <div class="section-head">
+        <h2 id="sobre-title">Sobre a Yasmin (e meu colapso emocional)</h2>
+        <div class="actions">
+          <span class="tag">feito com vergonha</span>
+          <span class="tag">versão 1.0</span>
+        </div>
+      </div>
+      <div class="grid cols-3">
+        <div>
+          <h3 style="margin:0">Por quê tudo gira nela?</h3>
+          <p>Porque sou eu, oras. Eu transformo até lista de compras em metáfora pra Yasmin. Se tem tomate, eu penso na bochecha dela. Patético? Sim. Poético? Também.
+          </p>
+        </div>
+        <div>
+          <h3 style="margin:0">Coisas que ela curte</h3>
+          <ul>
+            <li>Filmes de conforto (eu finjo que não chorei)</li>
+            <li>Café decente (eu tomo solúvel e apanho)</li>
+            <li>Gatinhos (eu viro um)</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="margin:0">Minhas promessas públicas</h3>
+          <ol>
+            <li>Parar de mandar áudio de 6 minutos às 02:47.</li>
+            <li>Comer algo além de cookies no almoço.</li>
+            <li>Chegar no assunto sem rodeios. Talvez.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- LINHA DO TEMPO -->
+    <section id="linha" class="card pad" aria-labelledby="linha-title">
+      <div class="section-head">
+        <h2 id="linha-title">Linha do tempo da minha novela</h2>
+        <div class="actions">
+          <button class="btn" id="addTL">Adicionar marco</button>
+        </div>
+      </div>
+      <div class="timeline" id="timeline"></div>
+    </section>
+
+    <!-- GALERIA -->
+    <section id="galeria" class="card pad" aria-labelledby="galeria-title">
+      <div class="section-head">
+        <h2 id="galeria-title">Galeria (arraste fotos aqui)</h2>
+        <div class="actions">
+          <button class="btn" id="clearGallery">Limpar</button>
+        </div>
+      </div>
+      <div class="gallery" id="gallery" aria-live="polite"></div>
+      <div class="mini">Dica: clique em um quadrado para escolher uma imagem, ou apenas solte arquivos aqui. As imagens ficam só no seu navegador (LocalStorage).</div>
+    </section>
+
+    <!-- LABORATÓRIO DE MENSAGENS -->
+    <section id="lab" class="card pad" aria-labelledby="lab-title">
+      <div class="section-head">
+        <h2 id="lab-title">Laboratório de Mensagens (simulações antes do vexame real)</h2>
+        <div class="actions">
+          <button class="btn" id="autosample">Gerar rascunho aleatório</button>
+        </div>
+      </div>
+      <div class="grid cols-2">
+        <div>
+          <label for="msg" class="mini">Texto</label>
+          <textarea id="msg" placeholder="ex.: oi yas, cê tá ocupada? queria te mostrar um meme... e talvez meu coração 🫠"></textarea>
+          <div class="toolbar">
+            <button class="btn" id="analisar">Analisar vergonha</button>
+            <button class="btn" id="salvarRascunho">Salvar rascunho</button>
+            <button class="btn" id="limparMsg">Limpar</button>
+          </div>
+        </div>
+        <div>
+          <div class="grid">
+            <div class="note">
+              <div class="meta"><b>Leiturinha da vergonha</b><span id="score" class="badge danger">Risco: —</span></div>
+              <div id="diagnostico" class="text sub">Escreva algo e clique em analisar.</div>
+            </div>
+            <div class="note">
+              <div class="meta"><b>Templates do Feka</b><span class="mini">clique para usar</span></div>
+              <div class="grid">
+                <button class="btn" data-template="Oi, vi tal coisa e lembrei de você. Tudo bem?">Template 1 • casual</button>
+                <button class="btn" data-template="Você topa um café rápido essa semana? Prometo zero textão.">Template 2 • direto</button>
+                <button class="btn" data-template="Isso pode soar bobo, mas gosto de falar com você. Se quiser, a gente se vê.">Template 3 • sincero</button>
+              </div>
+            </div>
+            <div class="note">
+              <div class="meta"><b>Polêmica</b><span class="mini">enquete salva no navegador</span></div>
+              <div class="text">
+                <p>Devo mandar mensagem hoje?</p>
+                <div class="toolbar">
+                  <button class="btn" data-poll="sim">Sim</button>
+                  <button class="btn" data-poll="nao">Não</button>
+                </div>
+                <div class="mini">Placar: <b id="pollSim">0</b> x <b id="pollNao">0</b></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAINEL DO FEKA -->
+    <section id="painel" class="card pad" aria-labelledby="painel-title">
+      <div class="section-head">
+        <h2 id="painel-title">Painel de Controle do Feka</h2>
+        <div class="actions">
+          <button class="btn" id="addTarefa">+ Tarefa</button>
+          <button class="btn" id="exportar">Exportar dados</button>
+          <label class="btn" for="importar">Importar</label>
+          <input id="importar" type="file" accept="application/json" style="display:none" />
+        </div>
+      </div>
+      <div class="grid cols-3">
+        <div class="note">
+          <div class="meta"><b>Missões</b><span class="mini">to‑do com honra</span></div>
+          <ul id="todo" class="text"></ul>
+        </div>
+        <div class="note">
+          <div class="meta"><b>Humor do dia</b><span class="mini">arraste</span></div>
+          <input id="humor" type="range" min="0" max="100" value="40" class="range" />
+          <div class="badge" id="humorBadge">40% • drama controlado</div>
+        </div>
+        <div class="note">
+          <div class="meta"><b>Som de coragem</b><span class="mini">Web Audio</span></div>
+          <div class="toolbar">
+            <button class="btn" id="beep">Tocar beep da ousadia</button>
+            <button class="btn" id="stopBeep">Parar</button>
+          </div>
+          <div class="mini">Use antes de falar com a Yasmin. Cientificamente duvidoso, mas divertido.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MURAL -->
+    <section id="mural" class="card pad" aria-labelledby="mural-title">
+      <div class="section-head">
+        <h2 id="mural-title">Mural de recados (pra mim mesmo)</h2>
+        <div class="actions">
+          <button class="btn" id="addNota">+ Nota</button>
+        </div>
+      </div>
+      <div class="board" id="board"></div>
+    </section>
+
+    <!-- STATS -->
+    <section id="stats" class="card pad" aria-labelledby="stats-title">
+      <div class="section-head">
+        <h2 id="stats-title">Estatísticas da vergonha crônica</h2>
+        <div class="actions">
+          <button class="btn" id="recalc">Recalcular</button>
+        </div>
+      </div>
+      <canvas id="grafico" height="260" aria-label="Gráfico de vergonha ao longo do tempo"></canvas>
+      <div class="mini">Leitura: quanto maior a linha, maior a chance de eu fazer algo que vou me arrepender às 03:12.</div>
+    </section>
+  </main>
+
+  <footer class="container">
+    <div class="grid cols-3">
+      <div>Feito com <span aria-label="amor" role="img">💛</span> e um pouco de vergonha por <b>Feka</b>.</div>
+      <div class="ghost">Atalhos: <span class="kbd">Ctrl/⌘+K</span> comandos, <span class="kbd">/</span> busca, <span class="kbd">P</span> like.</div>
+      <div class="ghost">Dados ficam só no seu navegador (LocalStorage). Sem servidor, sem bisbilhoteiros.</div>
+    </div>
+  </footer>
+
+  <!-- Modal Lightbox -->
+  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-label="Visualizador de imagem"><div class="lightbox"><img id="lbImg" alt="Imagem selecionada"/></div></div>
+  <!-- Command Palette -->
+  <div id="palette" class="palette" role="dialog" aria-modal="true" aria-label="Comandos">
+    <div class="box">
+      <input id="cmdInput" placeholder="Digite para procurar sessões e ações…" aria-label="Busca de comandos"/>
+      <ul id="cmdList"></ul>
+    </div>
+  </div>
+
+  <script>
+  // ===== Util =====
+  const $ = (sel, el=document) => el.querySelector(sel);
+  const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+  const store = {
+    get:k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},
+    set:(k,v)=>localStorage.setItem(k, JSON.stringify(v))
+  };
+  const fmtDate = d => new Date(d).toLocaleDateString('pt-BR');
+
+  // ===== Tema =====
+  const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
+  const savedTheme = store.get('theme');
+  const applyTheme = t => { document.documentElement.setAttribute('data-theme', t); $('#toggleTheme').setAttribute('aria-pressed', t==='light'?'false':'true'); };
+  applyTheme(savedTheme ?? (prefersDark ? 'dark':'light'));
+  $('#toggleTheme').onclick = () => {
+    const cur = document.documentElement.getAttribute('data-theme');
+    const next = cur==='light'?'dark':'light';
+    applyTheme(next); store.set('theme', next);
+  };
+
+  // ===== Like + confetes =====
+  const likeCount = store.get('likes') ?? 0; $('#likeCount').textContent = likeCount;
+  function confetti(x=window.innerWidth/2, y=80){
+    const c = document.createElement('canvas'); c.width=window.innerWidth; c.height=window.innerHeight; c.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:70'; document.body.appendChild(c);
+    const ctx=c.getContext('2d'); const parts=Array.from({length:120},(_,i)=>({x, y, vx:(Math.random()-0.5)*6, vy:Math.random()*-4-2, g:0.09, r:3+Math.random()*5, a:1}));
+    let t=0; (function loop(){ ctx.clearRect(0,0,c.width,c.height); parts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.a-=0.007; ctx.globalAlpha=Math.max(p.a,0); ctx.beginPath(); ctx.arc(p.x,p.y, p.r, 0, Math.PI*2); ctx.fillStyle = `hsl(${(t+p.x)%360} 90% 60%)`; ctx.fill(); }); if(t++<300){ requestAnimationFrame(loop);} else c.remove(); })();
+  }
+  $('#btnLike').onclick = (e)=>{ const n = (store.get('likes') ?? 0)+1; store.set('likes', n); $('#likeCount').textContent=n; const r=e.currentTarget.getBoundingClientRect(); confetti(r.left+r.width/2, r.top); };
+  document.addEventListener('keydown', (ev)=>{ if((ev.key==='p'||ev.key==='P') && !ev.metaKey && !ev.ctrlKey){ $('#btnLike').click(); }});
+
+  // ===== Impressão =====
+  $('#btnPrint').onclick=()=>window.print();
+
+  // ===== Notificações =====
+  $('#btnNotify').onclick = async ()=>{
+    try{
+      const perm = await Notification.requestPermission();
+      if(perm==='granted'){
+        new Notification('Feka aqui: NÃO MANDA TEXTO GRANDE!', { body:'Respira. 3 linhas, sem novela.', icon:''});
+      } else alert('Beleza. Eu ia te lembrar de não pagar mico, mas tudo bem.');
+    }catch(e){alert('Seu navegador não curte notificações. Sem problemas.');}
+  };
+
+  // ===== Vergonha meter aleatório =====
+  const meter = $('#meter');
+  function setMeter(){ const v = (store.get('vergonha') ?? Math.floor(Math.random()*70)+15); meter.style.width = v+'%'; store.set('vergonha', v);} setMeter();
+
+  // ===== Dias sem stalk =====
+  function diasPassados(from){ const a=new Date(from); const b=new Date(); return Math.floor((b-a)/86400000); }
+  const stalkKey='ultimoStalk';
+  function renderStalk(){ const d = store.get(stalkKey); $('#diasSemStalk').textContent = d? diasPassados(d): 0; }
+  $('#regStalk').onclick = ()=>{ store.set(stalkKey, Date.now()); renderStalk(); };
+  $('#resetStalk').onclick = ()=>{ localStorage.removeItem(stalkKey); renderStalk(); };
+  renderStalk();
+
+  // ===== Countdown grande dia =====
+  const bigDay = $('#bigDay'); const savedBD = store.get('bigDay'); if(savedBD) bigDay.value = savedBD;
+  function tickCount(){ if(!bigDay.value) return $('#countdown').textContent='—'; const diff = (new Date(bigDay.value)-new Date())/86400000; $('#countdown').textContent = (diff>0? Math.ceil(diff)+' dias':'chegou!'); }
+  bigDay.onchange = ()=>{ store.set('bigDay', bigDay.value); tickCount(); };
+  setInterval(tickCount, 1000); tickCount();
+
+  // ===== Coragem =====
+  const cor = $('#coragem'); const badge = $('#coragemBadge'); const savedCor = store.get('coragem') ?? 10; cor.value=savedCor; badge.textContent = `${savedCor}% • ${savedCor<20?'mosca morta':savedCor<60?'em construção': 'razoável'}`;
+  cor.oninput = e=>{ const v=+e.target.value; store.set('coragem', v); badge.textContent = `${v}% • ${v<20?'mosca morta':v<60?'em construção':'razoável'}`; };
+
+  // ===== Objetivo do mês =====
+  $('#objetivoMes').value = store.get('objetivoMes') ?? '';
+  $('#objetivoMes').oninput = e=>store.set('objetivoMes', e.target.value);
+
+  // ===== Timeline =====
+  const tl = $('#timeline');
+  const tldata = store.get('timeline') ?? [
+    {d:'2023-08-10', t:'Descobri o @ dela. Começo do fim.'},
+    {d:'2024-02-14', t:'Quase chamei pra café. Quase.'},
+    {d:'2025-01-05', t:'Respondi um story com “kkk top”. Covardia em HD.'}
+  ];
+  function renderTL(){ tl.innerHTML=''; tldata.sort((a,b)=> new Date(a.d)-new Date(b.d));
+    tldata.forEach((i,idx)=>{
+      const el=document.createElement('div'); el.className='tl-item';
+      el.innerHTML=`<div class="date">${fmtDate(i.d)}</div><div style="font-weight:600">${i.t}</div><div class="toolbar" style="margin-top:8px"><button class="btn" data-ed="${idx}">Editar</button><button class="btn" data-rm="${idx}">Excluir</button></div>`;
+      tl.appendChild(el);
+    }); store.set('timeline', tldata);
+  }
+  renderTL();
+  $('#addTL').onclick=()=>{
+    const d = prompt('Data (AAAA-MM-DD):', new Date().toISOString().slice(0,10)); if(!d) return;
+    const t = prompt('Descrição:', '…'); if(!t) return;
+    tldata.push({d,t}); renderTL();
+  };
+  tl.addEventListener('click', (e)=>{
+    const ed = e.target.getAttribute('data-ed'); const rm = e.target.getAttribute('data-rm');
+    if(ed){ const cur = tldata[+ed]; const t = prompt('Editar', cur.t); if(t!==null){ cur.t=t; renderTL(); } }
+    if(rm){ if(confirm('Apagar este marco?')){ tldata.splice(+rm,1); renderTL(); } }
+  });
+
+  // ===== Galeria =====
+  const gal = $('#gallery');
+  function makeSlot(i, src){
+    const slot = document.createElement('label'); slot.className='slot'; slot.setAttribute('data-i', i);
+    const img = document.createElement('img'); if(src) img.src = src; else img.style.display='none'; slot.appendChild(img);
+    const input = document.createElement('input'); input.type='file'; input.accept='image/*'; slot.appendChild(input);
+    const hint = document.createElement('div'); hint.className='hint'; hint.textContent='Clique ou solte imagem'; slot.appendChild(hint);
+    const rm = document.createElement('button'); rm.className='remove'; rm.textContent='✕'; rm.title='Remover'; slot.appendChild(rm);
+    input.onchange = async (ev)=>{ const f=ev.target.files[0]; if(!f) return; const url = await fileToDataURL(f); img.src=url; img.style.display='block'; persist(); };
+    slot.addEventListener('dragover', e=>{ e.preventDefault(); slot.style.borderColor='var(--accent)'; });
+    slot.addEventListener('dragleave', e=>{ slot.style.borderColor='rgba(255,255,255,.18)'; });
+    slot.addEventListener('drop', async e=>{ e.preventDefault(); slot.style.borderColor='rgba(255,255,255,.18)'; const f=e.dataTransfer.files[0]; if(!f) return; const url=await fileToDataURL(f); img.src=url; img.style.display='block'; persist(); });
+    slot.addEventListener('click', e=>{ if(e.target===rm){ return; } if(img.src) openLightbox(img.src); });
+    rm.onclick = (e)=>{ e.preventDefault(); img.src=''; img.style.display='none'; persist(); };
+    return slot;
+  }
+  function fileToDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
+  function renderGallery(){ gal.innerHTML=''; const data = store.get('gallery') ?? Array(12).fill(null); data.forEach((src,i)=> gal.appendChild(makeSlot(i, src))); }
+  function persist(){ const data = $$('.slot').map(s=> $('img', s).src || null); store.set('gallery', data); }
+  renderGallery();
+  gal.addEventListener('change', persist);
+  $('#clearGallery').onclick = ()=>{ if(confirm('Limpar a galeria?')){ localStorage.removeItem('gallery'); renderGallery(); }};
+  function openLightbox(src){ $('#lbImg').src=src; $('#modal').classList.add('open'); }
+  $('#modal').addEventListener('click', ()=> $('#modal').classList.remove('open'));
+
+  // ===== Lab de mensagens =====
+  const msg = $('#msg'); const diag = $('#diagnostico'); const score = $('#score');
+  const templates = $$('[data-template]'); templates.forEach(b=> b.onclick=()=>{ msg.value = b.getAttribute('data-template'); });
+  $('#limparMsg').onclick=()=>{ msg.value=''; diag.textContent='Limpou. Respira.'; score.textContent='Risco: —'; score.className='badge'; };
+  $('#salvarRascunho').onclick=()=>{ const arr = store.get('rascunhos') ?? []; arr.push({t:Date.now(), m: msg.value}); store.set('rascunhos', arr); alert('Salvo. Você é colecionador de rascunho agora.'); };
+  $('#autosample').onclick=()=>{ const bits=['Oi, lembrei de você hoje','Aquele café ainda vale?','Saudades de conversar','Vi um meme com gatinhos e pensei em você','Fiz um site inteiro (socorro)']; msg.value = bits[Math.floor(Math.random()*bits.length)]+'.'; };
+  $('#analisar').onclick=()=>{
+    const text = msg.value.trim(); if(!text){ diag.textContent='Escreve algo antes, poeta.'; return; }
+    const sinais = [/kkk/ig, /desculpa/ig, /talvez/ig, /se quiser/ig, /acho que/ig, /não sei/ig, /rs/ig];
+    const pontos = sinais.reduce((acc, r)=> acc + (text.match(r)?.length||0), 0);
+    const len = text.length; let nota = Math.min(100, Math.round((pontos*12)+(len/4)));
+    const nivel = nota<35? 'ok': nota<70? 'arriscado': 'perigo';
+    score.textContent = `Risco: ${nota}%`;
+    score.className = 'badge ' + (nivel==='ok'?'ok': 'danger');
+    diag.innerHTML = `Sinais: ${pontos}. Tamanho: ${len} chars. <br>${nivel==='ok'? 'Parece maduro. Manda e vai.': nivel==='arriscado'? 'Corta uns excessos, respira e tenta de novo.' : 'Tá enorme e inseguro. Diminui e seja direto.'}`;
+  };
+
+  // ===== Enquete =====
+  const poll = store.get('poll') ?? {sim:0, nao:0};
+  const renderPoll = ()=>{ $('#pollSim').textContent=poll.sim; $('#pollNao').textContent=poll.nao; store.set('poll', poll); };
+  renderPoll();
+  $$('[data-poll]').forEach(b=> b.onclick=()=>{ const k=b.getAttribute('data-poll'); poll[k]++; renderPoll(); confetti(); });
+
+  // ===== Painel: To-do =====
+  const todo = store.get('todo') ?? ['Treinar olhar contato 10s','Falar sem pedir desculpa','Convidar pro café curto'];
+  function renderTodo(){ const ul=$('#todo'); ul.innerHTML=''; todo.forEach((t,i)=>{ const li=document.createElement('li'); li.style.margin='8px 0';
+    li.innerHTML=`<label style="display:flex; gap:8px; align-items:center"><input type="checkbox" ${t.done?'checked':''}/> <span>${typeof t==='string'? t: t.text}</span><span style="margin-left:auto" class="mini"><button class="btn" data-edit="${i}">Editar</button> <button class="btn" data-del="${i}">Apagar</button></span></label>`; ul.appendChild(li); }); store.set('todo', todo);
+  }
+  renderTodo();
+  $('#addTarefa').onclick=()=>{ const t=prompt('Nova tarefa:'); if(!t) return; todo.push({text:t, done:false}); renderTodo(); };
+  $('#todo').onclick=(e)=>{
+    const del = e.target.getAttribute('data-del'); const ed = e.target.getAttribute('data-edit');
+    if(del){ todo.splice(+del,1); renderTodo(); }
+    if(ed){ const cur = todo[+ed]; const val = prompt('Editar', (cur.text||cur)); if(val!==null){ if(typeof cur==='string'){ todo[+ed]=val } else { cur.text=val } renderTodo(); }}
+    if(e.target.type==='checkbox'){ const idx=[...$('#todo').querySelectorAll('input[type=checkbox]')].indexOf(e.target); const item = todo[idx]; if(typeof item==='string'){ todo[idx] = {text:item, done:e.target.checked}; } else { item.done = e.target.checked; } renderTodo(); }
+  };
+
+  // ===== Web Audio beep =====
+  let ctx, osc, gain;
+  $('#beep').onclick=()=>{ ctx = ctx || new (window.AudioContext||window.webkitAudioContext)(); osc = ctx.createOscillator(); gain = ctx.createGain(); osc.frequency.value= 190 + (Math.random()*200); osc.type='triangle'; gain.gain.value=.0001; osc.connect(gain).connect(ctx.destination); osc.start(); const t=ctx.currentTime; gain.gain.exponentialRampToValueAtTime(.4, t+.1); gain.gain.exponentialRampToValueAtTime(.0001, t+0.8); };
+  $('#stopBeep').onclick=()=>{ try{ osc.stop(); }catch(e){} };
+
+  // ===== Mural =====
+  const board = $('#board'); const notas = store.get('notas') ?? [];
+  function renderBoard(){ board.innerHTML=''; if(notas.length===0){ const n=document.createElement('div'); n.className='note'; n.innerHTML='<div class="meta"><b>Nada ainda</b></div><div class="text">Escreve um recado pra você mesmo. Tipo: NÃO MANDAR ÁUDIO LONGO.</div>'; board.appendChild(n); return; }
+    notas.forEach((n,i)=>{ const el=document.createElement('div'); el.className='note'; el.innerHTML=`<div class="meta"><span>${fmtDate(n.t)}</span><span class="mini"><button class="btn" data-del="${i}">Apagar</button></span></div><div class="text">${n.m.replace(/</g,'&lt;')}</div>`; board.appendChild(el); }); }
+  renderBoard();
+  $('#addNota').onclick=()=>{ const m=prompt('Escreve o recado:'); if(!m) return; notas.unshift({t:Date.now(), m}); store.set('notas', notas); renderBoard(); };
+  board.onclick=(e)=>{ const del=e.target.getAttribute('data-del'); if(del){ if(confirm('Apagar nota?')){ notas.splice(+del,1); store.set('notas', notas); renderBoard(); } } };
+
+  // ===== Stats (Canvas 2D) =====
+  const cv = $('#grafico'); const cx = cv.getContext('2d');
+  function drawChart(){
+    const data = (store.get('stats') ?? Array.from({length:30}, (_,i)=> Math.max(5, Math.round( Math.sin(i/4)*30 + 40 + (Math.random()*12-6)))));
+    store.set('stats', data);
+    const W = cv.width = cv.clientWidth * devicePixelRatio; const H = cv.height = cv.clientHeight * devicePixelRatio;
+    cx.clearRect(0,0,W,H);
+    // grid
+    cx.globalAlpha=.3; cx.lineWidth=1; for(let y=0;y<6;y++){ cx.beginPath(); cx.moveTo(0, H*y/6); cx.lineTo(W, H*y/6); cx.strokeStyle='#888'; cx.stroke(); }
+    // line
+    cx.globalAlpha=1; cx.lineWidth=3; cx.beginPath(); data.forEach((v,i)=>{ const x = i*(W/(data.length-1)); const y = H - (v/100)*H*0.9 - H*0.05; if(i===0) cx.moveTo(x,y); else cx.lineTo(x,y); });
+    const grad = cx.createLinearGradient(0,0,W,0); grad.addColorStop(0,'#f59e0b'); grad.addColorStop(1,'#8b5cf6');
+    cx.strokeStyle = grad; cx.stroke();
+    // fill
+    cx.lineTo(W, H); cx.lineTo(0,H); cx.closePath(); const g2 = cx.createLinearGradient(0,0,0,H); g2.addColorStop(0,'rgba(139,92,246,.25)'); g2.addColorStop(1,'rgba(0,0,0,0)'); cx.fillStyle=g2; cx.fill();
+  }
+  drawChart();
+  window.addEventListener('resize', drawChart);
+  $('#recalc').onclick=()=>{ localStorage.removeItem('stats'); drawChart(); };
+
+  // ===== Command Palette =====
+  const palette = $('#palette'); const cmdInput = $('#cmdInput'); const cmdList = $('#cmdList');
+  const commands = [
+    {t:'Ir para • Sobre', run:()=> location.hash='#sobre'},
+    {t:'Ir para • Linha do tempo', run:()=> location.hash='#linha'},
+    {t:'Ir para • Galeria', run:()=> location.hash='#galeria'},
+    {t:'Ir para • Laboratório', run:()=> location.hash='#lab'},
+    {t:'Ir para • Painel', run:()=> location.hash='#painel'},
+    {t:'Ir para • Mural', run:()=> location.hash='#mural'},
+    {t:'Ir para • Estatísticas', run:()=> location.hash='#stats'},
+    {t:'Ação • Like', run:()=> $('#btnLike').click()},
+    {t:'Ação • Notificação anti-textão', run:()=> $('#btnNotify').click()},
+    {t:'Ação • Imprimir', run:()=> $('#btnPrint').click()},
+  ];
+  function openPalette(){ palette.classList.add('open'); cmdInput.value=''; renderCmds(''); cmdInput.focus(); }
+  function closePalette(){ palette.classList.remove('open'); }
+  function renderCmds(q){ cmdList.innerHTML = commands.filter(c=> c.t.toLowerCase().includes(q.toLowerCase())).map(c=> `<li>${c.t}<span class="mini">↩︎</span></li>`).join(''); }
+  $('#openPalette').onclick=openPalette;
+  document.addEventListener('keydown', (e)=>{
+    if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); openPalette(); }
+    if(e.key==='/'){ if(document.activeElement.tagName!=='INPUT' && document.activeElement.tagName!=='TEXTAREA'){ e.preventDefault(); openPalette(); } }
+    if(e.key==='Escape') closePalette();
+  });
+  palette.addEventListener('click', (e)=>{ if(e.target===palette) closePalette(); });
+  cmdInput.oninput = (e)=> renderCmds(e.target.value);
+  cmdList.onclick = (e)=>{ const idx=[...cmdList.children].indexOf(e.target.closest('li')); const item = commands.filter(c=> c.t.toLowerCase().includes(cmdInput.value.toLowerCase()))[idx]; if(item){ item.run(); closePalette(); } };
+
+  // ===== Estado textual divertido =====
+  const estados = ['Carente','Esperançoso','Drama Queen','Zen (por 5min)','Fingindo costume'];
+  $('#estado').textContent = estados[Math.floor(Math.random()*estados.length)];
+
+  // A11y: foco ao abrir modal/fechar
+  $('#modal').addEventListener('keydown', (e)=>{ if(e.key==='Escape') $('#modal').classList.remove('open'); });
+
+  // Done
+  console.log('Feka pronto. Se der errado, a culpa não é minha (mentira, é).');
+  </script>
+</body>
+</html>
