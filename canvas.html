@@ -17,7 +17,7 @@
       --accent:#0A84FF; --accent-2:#5E5CE6;
       --dur:.25s; --ease:cubic-bezier(.2,.7,.2,1);
       --code-font: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace;
-      --font-size:14px; --editor-font-size:10px; --line-height:1.55; --editor-padding: clamp(8px, 1.5vw, 16px);
+      --font-size:14px; --editor-font-size:10px; --line-height:1.55; --editor-padding: clamp(8px, 1.5vw, 16px); --tab-size:2;
       --gutter-w:48px; --mini-w:120px;
       
       /* Bridge tokens para o Kit Liquid Glass */
@@ -226,7 +226,53 @@
 
     /* Botão apenas ícone */
     .tbtn--icon{ width: var(--hit); padding:0; }
-    .ticon{ width:20px; height:20px; display:block; }
+    
+    /* ================= ICONES ================= */
+    :root{
+      /* mantém 20px como padrão global */
+      --icon-size: 20px;
+      --icon-stroke: 1.8; /* levemente >1.6 para legibilidade */
+    }
+
+    .ticon{
+      width: var(--icon-size);
+      height: var(--icon-size);
+      display: block;
+    }
+
+    /* Para ícones desenhados em stroke */
+    .ticon--stroke{
+      stroke: currentColor;
+      fill: none;
+      stroke-width: var(--icon-stroke);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+
+      /* nitidez/espessura consistente em qualquer escala */
+      vector-effect: non-scaling-stroke;
+      shape-rendering: geometricPrecision;
+    }
+
+    /* Engrenagem: renderize na grade do viewBox p/ não "entortar" */
+    #btnSettings .ticon{
+      width: 20px;  /* mantém consistente com outros ícones */
+      height: 20px;
+      /* Para ícones fill-based da Radix UI */
+      fill: currentColor;
+      /* Melhora renderização em qualquer escala */
+      shape-rendering: geometricPrecision;
+    }
+
+    /* Lápis do chip de título: garanta stroke correto e contraste */
+    .title-chip .ticon{
+      /* como o lápis vira stroke, fixe os atributos aqui */
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: .85; /* ligeiro boost sobre o .7 original */
+    }
 
     /* Campo de busca */
     .tsearch{ position:relative; min-width: 240px; }
@@ -963,7 +1009,7 @@
       color:var(--text);
       font:400 var(--editor-font-size)/var(--line-height) var(--code-font);
       caret-color:var(--accent);
-      tab-size:2;
+      tab-size:var(--tab-size);
       white-space:pre;
       overflow:auto;
       scrollbar-color:var(--panel-strong) transparent;
@@ -982,7 +1028,7 @@
       white-space: pre;
       overflow: hidden;
       pointer-events: none;
-      tab-size: 2;
+      tab-size: var(--tab-size);
       color: transparent; /* O texto é invisível, apenas os destaques aparecem */
     }
     .highlights-overlay mark,
@@ -1668,6 +1714,9 @@
 
     dialog{background:color-mix(in oklab, var(--bg), white 6%);color:var(--text);border:1px solid var(--stroke);border-radius:16px;backdrop-filter:saturate(140%) blur(16px);-webkit-backdrop-filter:saturate(140%) blur(16px)}
     dialog::backdrop{background:rgba(0,0,0,.45)}
+    
+    /* CORREÇÃO: Garantir que dialogs fechados fiquem ocultos */
+    dialog:not(:modal) { display: none !important; }
 
     dialog#settings{width:min(96vw, 680px);padding:14px 14px 10px}
     .settings-grid{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
@@ -1949,6 +1998,228 @@
       
       transition: all 0.2s ease;
     }
+
+    /* ============ Markdown Viewer (MDV) — Liquid Glass ============ */
+
+    #mdv.dialog-sheet{
+      width: min(1000px, 94vw);
+      height: 88vh; max-height: 88vh;
+      position: fixed; inset: 50% auto auto 50%;
+      transform: translate(-50%, -50%);
+      border: 1px solid color-mix(in oklab, var(--c-light), transparent 88%);
+      border-radius: 24px; padding: 0; margin: 0;
+      background: color-mix(in srgb, var(--c-glass) 8%, transparent);
+      -webkit-backdrop-filter: blur(24px) saturate(var(--saturation));
+      backdrop-filter: blur(24px) saturate(var(--saturation));
+      box-shadow: 
+        0 32px 80px color-mix(in oklab, var(--c-dark), transparent 60%),
+        0 12px 32px color-mix(in oklab, var(--c-dark), transparent 75%),
+        inset 0 1px 0 color-mix(in srgb, var(--c-light) 20%, transparent);
+      color: var(--c-content);
+      overflow: hidden;
+    }
+    #mdv::backdrop{
+      background: color-mix(in srgb, black 50%, transparent);
+      backdrop-filter: blur(4px);
+    }
+
+    /* Cabeçalho minimalista */
+    #mdv .mdv-head{
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 24px; min-height: 64px;
+      background: color-mix(in srgb, var(--c-glass) 12%, transparent);
+      -webkit-backdrop-filter: blur(16px) saturate(var(--saturation));
+      backdrop-filter: blur(16px) saturate(var(--saturation));
+      border-bottom: 1px solid color-mix(in srgb, var(--c-light) 8%, transparent);
+    }
+    #mdv .mdv-title h3{ 
+      margin: 0; font-weight: 800; font-size: 18px;
+      color: var(--c-content);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    #mdv .mdv-close{
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1px solid color-mix(in srgb, var(--c-light) 15%, transparent);
+      background: color-mix(in srgb, var(--c-glass) 20%, transparent);
+      color: var(--c-content);
+      cursor: pointer; display: grid; place-items: center;
+      font-size: 16px; font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    #mdv .mdv-close:hover{
+      background: color-mix(in srgb, var(--c-light) 15%, transparent);
+      border-color: color-mix(in srgb, var(--c-light) 25%, transparent);
+      transform: scale(1.05);
+    }
+
+    /* Corpo principal */
+    #mdv .mdv-body{ 
+      height: calc(100% - 64px);
+      display: grid; grid-template-columns: 1fr; 
+      overflow: hidden;
+    }
+    #mdv .mdv-content{
+      padding: 32px 40px 48px;
+      overflow: auto; 
+      scrollbar-width: thin; 
+      scrollbar-color: color-mix(in oklab, var(--stroke), transparent 75%) transparent;
+      
+      /* Máscara elegante para indicar scroll */
+      mask-image: linear-gradient(
+        to bottom, 
+        transparent 0, 
+        black 16px, 
+        black calc(100% - 16px), 
+        transparent 100%
+      );
+    }
+    #mdv .mdv-content::-webkit-scrollbar{ width: 8px; }
+    #mdv .mdv-content::-webkit-scrollbar-track{ 
+      background: transparent; 
+      margin: 8px 0; 
+      border-radius: 4px; 
+    }
+    #mdv .mdv-content::-webkit-scrollbar-thumb{
+      background: color-mix(in oklab, var(--stroke), transparent 80%);
+      border-radius: 4px; 
+      border: 2px solid transparent; 
+      background-clip: content-box;
+    }
+    #mdv .mdv-content::-webkit-scrollbar-thumb:hover{
+      background: color-mix(in oklab, var(--stroke), transparent 65%);
+    }
+
+    #mdv .prose{
+      font-size: 16px;
+      line-height: 1.7;
+      max-width: 75ch;
+      margin: 0 auto;
+      color: var(--c-content);
+    }
+
+    /* Tipografia Markdown otimizada */
+    #mdv .prose h1, #mdv .prose h2, #mdv .prose h3, #mdv .prose h4, #mdv .prose h5, #mdv .prose h6{
+      font-weight: 800; line-height: 1.25; margin: 2em 0 0.8em;
+      color: var(--c-content);
+    }
+    #mdv .prose h1:first-child, #mdv .prose h2:first-child, #mdv .prose h3:first-child{
+      margin-top: 0;
+    }
+    #mdv .prose h1{ font-size: 32px; margin-bottom: 1.2em; }
+    #mdv .prose h2{ font-size: 24px; }
+    #mdv .prose h3{ font-size: 20px; }
+    #mdv .prose h4{ font-size: 18px; }
+    
+    #mdv .prose p, #mdv .prose ul, #mdv .prose ol, #mdv .prose blockquote, #mdv .prose table{
+      margin: 1.2em 0;
+    }
+    #mdv .prose li{ margin: 0.3em 0; }
+    
+    #mdv .prose a{ 
+      color: var(--c-action); 
+      text-decoration: none; 
+      border-bottom: 1px solid color-mix(in srgb, var(--c-action) 40%, transparent);
+      transition: all 0.2s ease;
+    }
+    #mdv .prose a:hover{ 
+      border-bottom-color: var(--c-action);
+      color: var(--c-action);
+    }
+    
+    #mdv .prose blockquote{
+      padding: 1.2em 1.5em; 
+      border-left: 4px solid color-mix(in srgb, var(--c-action) 60%, transparent);
+      background: color-mix(in srgb, var(--c-glass) 15%, transparent);
+      border-radius: 12px;
+      margin: 1.5em 0;
+      font-style: italic;
+    }
+    
+    #mdv .prose img{ 
+      max-width: 100%; height: auto; 
+      border-radius: 16px; 
+      display: block; margin: 2em auto;
+      box-shadow: 0 8px 32px color-mix(in oklab, var(--c-dark), transparent 85%);
+    }
+    
+    #mdv .prose hr{ 
+      border: 0; height: 1px; 
+      background: color-mix(in srgb, var(--c-light) 25%, transparent); 
+      margin: 3em 0; 
+    }
+    
+    #mdv .prose code{ 
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; 
+      font-weight: 600;
+      font-size: 0.9em;
+      padding: 0.2em 0.4em;
+      background: color-mix(in srgb, var(--c-glass) 20%, transparent);
+      border-radius: 6px;
+      border: 1px solid color-mix(in srgb, var(--c-light) 12%, transparent);
+    }
+    
+    #mdv .prose pre{
+      background: color-mix(in srgb, var(--c-glass) 18%, transparent);
+      border: 1px solid color-mix(in srgb, var(--c-light) 16%, transparent);
+      border-radius: 16px; 
+      padding: 20px; 
+      overflow: auto;
+      margin: 1.5em 0;
+      box-shadow: 
+        inset 0 1px 0 color-mix(in srgb, var(--c-light) 25%, transparent),
+        0 4px 16px color-mix(in oklab, var(--c-dark), transparent 90%);
+    }
+    #mdv .prose pre code{
+      background: none; border: none; padding: 0;
+    }
+    
+    #mdv .prose table{
+      width: 100%; border-collapse: collapse; overflow: hidden;
+      background: color-mix(in srgb, var(--c-glass) 16%, transparent);
+      border: 1px solid color-mix(in srgb, var(--c-light) 14%, transparent);
+      border-radius: 16px;
+      margin: 2em 0;
+      box-shadow: 0 4px 16px color-mix(in oklab, var(--c-dark), transparent 90%);
+    }
+    #mdv .prose th{ 
+      background: color-mix(in srgb, var(--c-glass) 25%, transparent);
+      font-weight: 700;
+    }
+    #mdv .prose th, #mdv .prose td{ 
+      border-bottom: 1px solid color-mix(in srgb, var(--c-light) 12%, transparent); 
+      padding: 0.8em 1em; text-align: left; 
+    }     
+    #mdv .prose tr:last-child td{ border-bottom: 0; }
+
+    /* Âncoras de cabeçalho */
+    #mdv .prose .h-anchor{
+      opacity: 0; margin-left: 0.5em; text-decoration: none; 
+      font-weight: 600; color: var(--c-action);
+      transition: opacity 0.2s ease;
+    }
+    #mdv .prose h1:hover .h-anchor,
+    #mdv .prose h2:hover .h-anchor,
+    #mdv .prose h3:hover .h-anchor,
+    #mdv .prose h4:hover .h-anchor{ 
+      opacity: 0.6; 
+    }
+
+    /* Impressão: imprime só o artigo */
+    @media print{
+      #mdv{ position: static; transform: none; width: auto; height: auto; box-shadow: none; border: 0; }
+      #mdv .mdv-head{ display: none !important; }
+      #mdv .mdv-content{ overflow: visible; mask-image: none; padding: 0; }
+      #mdv .prose{ max-width: none; }
+    }
+
+    /* Responsivo */
+    @media (max-width: 768px){
+      #mdv.dialog-sheet{ width: 96vw; height: 92vh; border-radius: 16px; }
+      #mdv .mdv-head{ padding: 12px 16px; min-height: 56px; }
+      #mdv .mdv-content{ padding: 24px 20px 32px; }
+      #mdv .prose{ max-width: none; }
+    }
     
     .sheet-content::-webkit-scrollbar-thumb:hover {
       background: color-mix(in oklab, var(--stroke), transparent 60%);
@@ -1957,6 +2228,243 @@
     
     .sheet-content::-webkit-scrollbar-thumb:active {
       background: color-mix(in oklab, var(--stroke), transparent 50%);
+    }
+
+    /* ============ SETTINGS v2 — Liquid Glass ============ */
+
+    /* Centro absoluto + 80% da viewport + grid fixo */
+    #settings.dialog-sheet {
+      /* geometria */
+      width: min(920px, 96vw);
+      height: 80vh;
+      max-height: 80vh;
+      padding: 0;
+      margin: 0;
+      position: fixed;
+      inset: 50% auto auto 50%;
+      transform: translate(-50%, -50%);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      overflow: hidden;
+
+      /* material vítreo 100% (usa tokens existentes) */
+      border-radius: 20px;
+      background: color-mix(in oklab, var(--bg), white 6%);
+      backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat)) contrast(var(--lg-contrast));
+      -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat)) contrast(var(--lg-contrast));
+      border: 1px solid color-mix(in oklab, var(--lg-highlight), transparent 70%);
+      box-shadow:
+        inset 0 0 0 1px color-mix(in oklab, var(--lg-highlight), transparent 72%),
+        0 24px 64px color-mix(in oklab, var(--c-dark), transparent 65%),
+        0 8px 24px color-mix(in oklab, var(--c-dark), transparent 78%);
+    }
+    #settings::backdrop{
+      background: color-mix(in srgb, black 45%, transparent);
+      backdrop-filter: blur(2px);
+    }
+
+    /* Cabeçalho minimal vítreo (sem sólido, com cantos superiores arredondados) */
+    #settings .settings-head{
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      padding: 12px 16px;
+      background: color-mix(in srgb, var(--c-glass) 10%, transparent);
+      backdrop-filter: blur(12px) saturate(var(--saturation));
+      -webkit-backdrop-filter: blur(12px) saturate(var(--saturation));
+      border-bottom: 1px solid color-mix(in srgb, var(--c-light) 12%, transparent);
+    }
+    #settings .settings-title{
+      display:flex; align-items:center; gap:10px; font-weight:700; font-size:15px;
+    }
+    #settings .settings-actions{ display:flex; align-items:center; gap:8px; }
+
+    /* Campo de busca consistente (reutiliza gramática da toolbar) */
+    #settings #settingsSearch{
+      height: 36px; min-width: 220px; max-width: 420px;
+      padding: 0 12px; border-radius: 12px; outline: none;
+      border: 1px solid color-mix(in srgb, var(--c-light) 10%, transparent);
+      background: color-mix(in srgb, var(--c-glass) 12%, transparent);
+      color: var(--c-content); font: 600 12px/1 "DM Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      box-shadow: inset 0 1px 0 color-mix(in srgb, var(--c-light) 40%, transparent);
+    }
+    #settings #settingsSearch:focus{
+      border-color: var(--c-action);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-action) 60%, transparent);
+    }
+
+    /* Corpo: sidebar + conteúdo (fixo, sem accordions) */
+    #settings .settings-shell{
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: 0; /* permite rolagem do painel direito */
+    }
+
+    /* Sidebar — navegação vertical sticky */
+    #settings .settings-nav{
+      padding: 10px;
+      border-right: 1px solid color-mix(in srgb, var(--c-light) 10%, transparent);
+      background: color-mix(in srgb, var(--c-glass) 8%, transparent);
+      backdrop-filter: blur(10px) saturate(var(--saturation));
+      -webkit-backdrop-filter: blur(10px) saturate(var(--saturation));
+      position: sticky; top: 0;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    #settings .settings-nav button{
+      text-align: left; padding: 8px 10px; border-radius: 10px; cursor: pointer;
+      background: color-mix(in srgb, var(--c-glass) 14%, transparent);
+      border: 1px solid color-mix(in srgb, var(--c-light) 10%, transparent);
+      color: var(--c-content); font: 700 12px/1 "DM Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      transition: transform .14s ease, color .2s ease, background-color .2s ease, border-color .2s ease;
+    }
+    #settings .settings-nav button:hover{ transform: translateY(-1px); color: var(--c-action); }
+    #settings .settings-nav button[aria-current="true"]{
+      color: var(--c-light);
+      background: linear-gradient(135deg, color-mix(in srgb, var(--c-action) 60%, transparent), color-mix(in srgb, var(--c-action) 25%, var(--c-dark)));
+      border-color: color-mix(in srgb, var(--c-action) 40%, transparent);
+    }
+
+    /* Conteúdo rolável: seções verticais */
+    #settings .settings-content{
+      padding: 14px 16px;
+      overflow: auto;
+      mask-image: linear-gradient(to bottom, transparent 0, black 12px, black calc(100% - 12px), transparent 100%);
+    }
+
+    /* Scrollbar vítrea integrada (apenas dentro de #settings) */
+    #settings .settings-content{
+      scrollbar-width: thin;
+      scrollbar-color: color-mix(in oklab, var(--stroke), transparent 70%) transparent;
+    }
+    #settings .settings-content::-webkit-scrollbar{ width: 8px; }
+    #settings .settings-content::-webkit-scrollbar-track{
+      background: transparent; margin: 4px 0; border-radius: 8px;
+    }
+    #settings .settings-content::-webkit-scrollbar-thumb{
+      background: color-mix(in oklab, var(--stroke), transparent 78%);
+      border-radius: 8px; border: 2px solid transparent; background-clip: content-box;
+      box-shadow: inset 0 0 2px rgba(0,0,0,0.12);
+    }
+    #settings .settings-content::-webkit-scrollbar-thumb:hover{
+      background: color-mix(in oklab, var(--stroke), transparent 60%);
+    }
+
+    /* Scrollbar vítrea integrada para modal de ajuda */
+    #help .help-sidebar,
+    #help .help-body{
+      scrollbar-width: thin;
+      scrollbar-color: color-mix(in oklab, var(--stroke), transparent 70%) transparent;
+    }
+    #help .help-sidebar::-webkit-scrollbar,
+    #help .help-body::-webkit-scrollbar{ 
+      width: 8px; 
+    }
+    #help .help-sidebar::-webkit-scrollbar-track,
+    #help .help-body::-webkit-scrollbar-track{
+      background: transparent; 
+      margin: 4px 0; 
+      border-radius: 8px;
+    }
+    #help .help-sidebar::-webkit-scrollbar-thumb,
+    #help .help-body::-webkit-scrollbar-thumb{
+      background: color-mix(in oklab, var(--stroke), transparent 78%);
+      border-radius: 8px; 
+      border: 2px solid transparent; 
+      background-clip: content-box;
+      box-shadow: inset 0 0 2px rgba(0,0,0,0.12);
+    }
+    #help .help-sidebar::-webkit-scrollbar-thumb:hover,
+    #help .help-body::-webkit-scrollbar-thumb:hover{
+      background: color-mix(in oklab, var(--stroke), transparent 60%);
+    }
+
+    /* Cards/Groups limpos (sem sólidos opacos) */
+    #settings .settings-section{
+      margin: 10px 0 14px;
+      border: 1px solid color-mix(in srgb, var(--c-light) 12%, transparent);
+      background: color-mix(in srgb, var(--c-glass) 12%, transparent);
+      box-shadow: inset 0 1px 0 color-mix(in srgb, var(--c-light) 35%, transparent);
+      border-radius: 14px;
+    }
+    #settings .settings-section .section-head{
+      padding: 10px 12px; font-weight: 700; display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid color-mix(in srgb, var(--c-light) 10%, transparent);
+    }
+    #settings .settings-section .section-body{
+      padding: 12px;
+      display: grid; gap: 12px;
+    }
+
+    /* Sub-seções em coluna (vertical), nunca lado a lado */
+    #settings .subsection{
+      background: color-mix(in srgb, var(--c-glass) 10%, transparent);
+      border: 1px solid color-mix(in srgb, var(--c-light) 10%, transparent);
+      border-radius: 12px;
+      padding: 12px;
+      display: grid; gap: 10px;
+    }
+    #settings .subsection h4{ margin: 0 0 4px; font-size: 13px; }
+
+    /* Linha de controle (label à esquerda; controle à direita) */
+    #settings .row{
+      display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;
+    }
+    #settings .hint{ color: var(--text-muted); font-size: 11px; }
+
+    /* Switch vítreo padronizado (substitui ON/OFF textual) */
+    .switch-lg {
+      position: relative; width: 44px; height: 24px; border-radius: 999px; cursor: pointer;
+      background: color-mix(in oklab, var(--panel), var(--stroke) 20%);
+      border: 1px solid color-mix(in oklab, var(--stroke), transparent 40%);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.06), inset 0 -0.5px 0 rgba(255,255,255,0.04);
+      transition: all .2s cubic-bezier(.2,.7,.2,1);
+    }
+    .switch-lg input{ position: absolute; inset: 0; opacity: 0; }
+    .switch-lg .knob{
+      position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.3), transparent 70%),
+        color-mix(in oklab, var(--panel), white 90%);
+      border: .5px solid color-mix(in oklab, var(--stroke), transparent 70%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 1px 2px rgba(0,0,0,.1), 0 0 0 .5px rgba(0,0,0,.03);
+      transition: transform .2s cubic-bezier(.2,.7,.2,1), box-shadow .15s ease, background .15s ease, border-color .15s ease;
+    }
+    .switch-lg:hover .knob{
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 1px 4px rgba(0,0,0,.15), 0 0 0 1px rgba(0,0,0,.05);
+    }
+    .switch-lg input:checked + .knob{
+      transform: translateX(20px);
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.35), transparent 70%),
+        color-mix(in oklab, var(--panel), white 85%);
+      border-color: color-mix(in oklab, var(--stroke), transparent 60%);
+    }
+
+    /* Sliders já ok — apenas reforço do focus-ring */
+    .slider-with-output-container .glass-slider:focus-visible::-webkit-slider-thumb{
+      box-shadow: inset 0 0.5px 0 rgba(255,255,255,.15), 0 0.5px 2px rgba(0,0,0,.08), 0 0 0 2px color-mix(in oklab, var(--accent), transparent 70%);
+    }
+
+    /* Destaque da busca */
+    #settings mark.settings-hit{
+      background: color-mix(in oklab, var(--accent-2), transparent 75%);
+      border-radius: 4px; padding: 0 .2em;
+    }
+
+    /* Rodapé do modal (botões discretos à direita) */
+    #settings .settings-footer{
+      border-top: 1px solid color-mix(in srgb, var(--c-light) 12%, transparent);
+      min-height: 44px;
+      padding: 12px 16px;
+      display: flex; justify-content: flex-end; gap: 8px;
+      background: color-mix(in srgb, var(--c-glass) 10%, transparent);
+      backdrop-filter: blur(10px) saturate(var(--saturation));
+    }
+
+    /* Responsivo: sidebar vira topo em telas estreitas */
+    @media (max-width: 720px){
+      #settings .settings-shell{ grid-template-columns: 1fr; }
+      #settings .settings-nav{ position: static; flex-direction: row; flex-wrap: wrap; }
     }
 
     /* Lista como listbox acessível */
@@ -2079,6 +2587,88 @@
       --text-muted: #e6e6e6;
     }
 
+    /* ===== Ajustes: gramática limpa do Liquid Glass no modal ===== */
+
+    /* Variantes de botão para hierarquia visual */
+    .tbtn--primary{
+      color: var(--c-light);
+      background: linear-gradient(135deg,
+        color-mix(in srgb, var(--c-action) 60%, transparent),
+        color-mix(in srgb, var(--c-action) 25%, var(--c-dark)));
+      border-color: color-mix(in srgb, var(--c-action) 40%, transparent);
+    }
+    .tbtn--ghost{
+      background: transparent;
+      border-color: color-mix(in srgb, var(--c-light) 8%, transparent);
+      box-shadow: none;
+    }
+    .tbtn--danger{
+      color:#ff6b6b;
+      border-color: color-mix(in srgb, #ff6b6b 35%, transparent);
+    }
+
+    /* Field: label + control + hint coesos */
+    .field{ display:grid; gap:6px; }
+    .field__row{ display:grid; grid-template-columns: 1fr auto; gap:10px; align-items:center; }
+    .field__label{
+      font-weight:600; color: var(--c-content);
+    }
+    .field__hint{
+      color: var(--text-muted); font-size:11px;
+    }
+
+    /* Cards de grupo mais limpos (menos sombra) */
+    .group{
+      padding:12px;
+      border:1px solid color-mix(in srgb, var(--c-light) 10%, transparent);
+      border-radius:14px;
+      background: color-mix(in srgb, var(--c-glass) 10%, transparent);
+      box-shadow: inset 0 1px 0 color-mix(in srgb, var(--c-light) 30%, transparent);
+    }
+
+    /* Header/Chipbar reduzem ruído visual */
+    .settings-head{
+      background: color-mix(in srgb, var(--c-glass) 8%, transparent);
+      border-bottom:1px solid color-mix(in srgb, var(--c-light) 10%, transparent);
+    }
+    .settings-chipbar{
+      background: color-mix(in srgb, var(--c-glass) 6%, transparent);
+      border-bottom:1px solid color-mix(in srgb, var(--c-light) 10%, transparent);
+    }
+
+    /* Section = accordions com hierarquia clara */
+    .settings-section{
+      margin: 12px 16px;
+      border-radius:14px;
+      border:1px solid color-mix(in srgb, var(--c-light) 10%, transparent);
+      background: color-mix(in srgb, var(--c-glass) 10%, transparent);
+      box-shadow: inset 0 1px 0 color-mix(in srgb, var(--c-light) 28%, transparent);
+    }
+    .settings-section > summary{
+      font-weight:700;
+      padding: 12px 14px;
+    }
+    .settings-section .section-body{
+      padding: 12px;
+    }
+
+    /* Busca em Ajustes: destaque + estado "sem resultado" */
+    mark.settings-hit{
+      background: color-mix(in oklab, var(--accent-2), transparent 80%);
+      border-radius:4px; padding:0 .2em;
+    }
+    .settings-empty{
+      margin: 12px 16px; padding:12px;
+      border-radius:12px; text-align:center;
+      color: var(--text-muted);
+      border:1px dashed color-mix(in srgb, var(--c-light) 12%, transparent);
+      background: color-mix(in srgb, var(--c-glass) 8%, transparent);
+    }
+
+    /* Sliders: mesma base, foco visível já coberto; diminui polegar */
+    .slider-with-output-container output{ font-weight:600 }
+    .glass-slider::-webkit-slider-thumb{ width: 24px; height: 24px; margin-top: -5px; }
+
     /* ========= Modal base (sheet) ========= */
     .dialog-sheet {
       width: min(96vw, 880px);
@@ -2154,9 +2744,31 @@
     .segmented label:hover{ background: var(--panel-strong) }
     .segmented input:checked + label{
       background: color-mix(in oklab, var(--accent), transparent 85%);
-      border-color: color-mix(in oklab, var(--accent), black 30%);
-      box-shadow: inset 0 1px 2px rgba(0,0,0,.15);
-      color: var(--text);
+      border-color: var(--accent);
+      color: var(--c-text-strong);
+    }
+
+    /* Controle segmentado alternativo para configurações específicas */
+    .segmented-control{
+      display:inline-flex; padding:3px; gap:2px; border-radius:12px;
+      background: color-mix(in oklab, var(--c-glass) 10%, transparent);
+      backdrop-filter: blur(8px) saturate(var(--lg-sat));
+      border:1px solid var(--stroke);
+    }
+    .segmented-control input{ position:absolute; opacity:0; width:0; height:0 }
+    .segmented-control label{
+      position:relative; padding:8px 12px; border-radius:10px; font-size:13px;
+      cursor:pointer; user-select:none; border:1px solid transparent;
+      transition: all 0.15s ease;
+    }
+    .segmented-control label:hover{ 
+      background: color-mix(in oklab, var(--panel-strong), transparent 50%);
+    }
+    .segmented-control input:checked + label{
+      background: color-mix(in oklab, var(--accent), transparent 80%);
+      border-color: color-mix(in oklab, var(--accent), transparent 60%);
+      color: var(--c-text-strong);
+      box-shadow: 0 2px 4px color-mix(in oklab, var(--accent), transparent 90%);
     }
 
     /* Sliders já estão lindos; só foco visível */
@@ -2167,18 +2779,561 @@
     /* Switch foco */
     .switch:focus-visible{ outline: none; box-shadow: var(--focus-ring) }
 
-    /* ========= Help Center ========= */
-    .help-hero{
-      display:grid; gap:8px; padding:14px 16px; border-bottom:1px solid var(--stroke);
-      background: color-mix(in oklab, var(--bg), white 5%);
+    /* ========= Help Center v2 — Liquid Glass ========= */
+    #help {
+      --dialog-max-width: 720px;
+      --dialog-height: 75vh;
     }
-    .help-tabs{ display:flex; gap:6px }
-    .help-tabs button{ padding:6px 10px; border-radius:10px; border:1px solid var(--stroke); background:var(--panel); font-size:12px }
-    .help-tabs button[aria-current="true"]{
-      background: color-mix(in oklab, var(--accent), transparent 85%);
-      border-color: color-mix(in oklab, var(--accent), black 30%);
+    
+    .help-content {
+      padding: 0;
+      display: flex;
+      height: 60vh;
+      min-height: 480px;
+      max-height: 75vh;
     }
-    .help-body{ padding:14px 16px; max-height:60vh; overflow:auto }
+    
+    /* Help Sidebar */
+    .help-sidebar {
+      width: 200px;
+      background: color-mix(in srgb, var(--c-glass) 8%, transparent);
+      border-right: 1px solid color-mix(in srgb, var(--c-light) 12%, transparent);
+      padding: 16px 0;
+      overflow-y: auto;
+    }
+    
+    .help-nav-section {
+      margin-bottom: 20px;
+    }
+    
+    .help-nav-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: color-mix(in srgb, var(--c-content) 60%, transparent);
+      padding: 0 16px 8px;
+      margin: 0;
+    }
+    
+    .help-nav-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      color: color-mix(in srgb, var(--c-content) 80%, transparent);
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      transition: all 0.2s ease;
+      border-radius: 0 6px 6px 0;
+      margin-right: 6px;
+    }
+    
+    .help-nav-item:hover {
+      background: color-mix(in srgb, var(--c-action) 10%, transparent);
+      color: var(--c-action);
+    }
+    
+    .help-nav-item.active {
+      background: color-mix(in srgb, var(--c-action) 15%, transparent);
+      color: var(--c-action);
+      font-weight: 500;
+    }
+    
+    .help-nav-item .ticon {
+      width: 14px;
+      height: 14px;
+      margin-right: 8px;
+      opacity: 0.7;
+    }
+    
+    /* Help Main Content */
+    .help-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    /* Help Header with Search */
+    .help-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid color-mix(in srgb, var(--c-light) 12%, transparent);
+      background: color-mix(in srgb, var(--c-glass) 6%, transparent);
+    }
+    
+    .help-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--c-content);
+      margin: 0 0 12px;
+    }
+    
+    .help-search-container {
+      position: relative;
+    }
+    
+    .help-search {
+      width: 100%;
+      padding: 10px 12px 10px 36px;
+      border: 1px solid color-mix(in srgb, var(--c-light) 12%, transparent);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--c-glass) 12%, transparent);
+      color: var(--c-content);
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    
+    .help-search:focus {
+      border-color: var(--c-action);
+      background: color-mix(in srgb, var(--c-glass) 18%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-action) 15%, transparent);
+    }
+    
+    .help-search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: color-mix(in srgb, var(--c-content) 50%, transparent);
+      pointer-events: none;
+    }
+    
+    /* Help Content Area */
+    .help-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+    
+    .help-section {
+      display: none;
+    }
+    
+    .help-section.active {
+      display: block;
+      animation: helpFadeIn 0.3s ease;
+    }
+    
+    @keyframes helpFadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .help-section h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--c-content);
+      margin: 0 0 16px;
+    }
+    
+    .help-section h3 {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--c-content);
+      margin: 20px 0 12px;
+    }
+    
+    .help-section p {
+      font-size: 14px;
+      line-height: 1.5;
+      color: color-mix(in srgb, var(--c-content) 80%, transparent);
+      margin: 0 0 12px;
+    }
+    
+    /* Keyboard Shortcuts - Coluna Única Vertical com Largura Fixa */
+    .shortcuts-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin: 16px 0;
+      width: 100%;
+      max-width: 100%;
+    }
+    
+    .shortcuts-category {
+      margin: 24px 0 12px 0;
+      width: 100%;
+    }
+    
+    .shortcuts-category:first-child {
+      margin-top: 0;
+    }
+    
+    .shortcuts-category-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--c-action);
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid color-mix(in srgb, var(--c-action) 20%, transparent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+    
+    .shortcuts-category-icon {
+      width: 16px;
+      height: 16px;
+      opacity: 0.8;
+      flex-shrink: 0;
+    }
+    
+    .shortcuts-list {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    
+    .shortcut-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: color-mix(in srgb, var(--c-glass) 6%, transparent);
+      border: 1px solid color-mix(in srgb, var(--c-light) 8%, transparent);
+      margin-bottom: 1px;
+      transition: all 0.2s ease;
+      position: relative;
+      width: 100%;
+      box-sizing: border-box;
+      min-height: 60px; /* Altura mínima consistente */
+      gap: 16px; /* Espaçamento fixo entre conteúdo e teclas */
+    }
+    
+    .shortcut-item:first-child {
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+    
+    .shortcut-item:last-child {
+      border-bottom-left-radius: 8px;
+      border-bottom-right-radius: 8px;
+      margin-bottom: 0;
+    }
+    
+    .shortcut-item:hover {
+      background: color-mix(in srgb, var(--c-glass) 12%, transparent);
+      border-color: color-mix(in srgb, var(--c-action) 25%, transparent);
+      transform: translateX(2px);
+    }
+    
+    .shortcut-info {
+      flex: 1;
+      min-width: 0;
+      max-width: calc(100% - 180px); /* Garante espaço para as teclas */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+    }
+    
+    .shortcut-desc {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--c-content);
+      margin: 0;
+      line-height: 1.3;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    
+    .shortcut-detail {
+      font-size: 13px;
+      color: color-mix(in srgb, var(--c-content) 65%, transparent);
+      line-height: 1.4;
+      margin: 0;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    
+    .shortcut-keys {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      min-width: 140px; /* Largura mínima para as teclas */
+      max-width: 160px; /* Largura máxima para as teclas */
+    }
+    
+    .key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 28px;
+      padding: 0 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: color-mix(in srgb, var(--c-content) 85%, transparent);
+      background: color-mix(in srgb, var(--c-glass) 15%, transparent);
+      border: 1px solid color-mix(in srgb, var(--c-light) 25%, transparent);
+      border-radius: 6px;
+      box-shadow: 
+        0 1px 2px color-mix(in srgb, var(--c-dark) 8%, transparent),
+        inset 0 1px 0 color-mix(in srgb, var(--c-light) 20%, transparent);
+      font-family: var(--code-font);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    
+    .key-plus {
+      color: color-mix(in srgb, var(--c-content) 40%, transparent);
+      margin: 0 2px;
+      font-size: 11px;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+      .shortcut-item {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+        min-height: 80px; /* Altura mínima maior em mobile */
+        padding: 16px;
+      }
+      
+      .shortcut-info {
+        max-width: 100%;
+      }
+      
+      .shortcut-keys {
+        justify-content: flex-start;
+        min-width: auto;
+        max-width: 100%;
+        margin-top: 4px;
+      }
+      
+      .key {
+        min-width: 24px;
+        height: 24px;
+        font-size: 11px;
+        padding: 0 6px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .shortcut-item {
+        padding: 12px 14px;
+        min-height: 70px;
+      }
+      
+      .shortcut-desc {
+        font-size: 13px;
+      }
+      
+      .shortcut-detail {
+        font-size: 12px;
+      }
+      
+      .shortcuts-category-title {
+        font-size: 15px;
+      }
+    }
+    
+    /* Special styling for different categories */
+    .shortcuts-category[data-category="Arquivos"] .shortcuts-category-title {
+      color: #3b82f6;
+    }
+    
+    .shortcuts-category[data-category="Edição"] .shortcuts-category-title {
+      color: #10b981;
+    }
+    
+    .shortcuts-category[data-category="Busca e Navegação"] .shortcuts-category-title {
+      color: #f59e0b;
+    }
+    
+    .shortcuts-category[data-category="Visualização"] .shortcuts-category-title {
+      color: #8b5cf6;
+    }
+    
+    .shortcuts-category[data-category="Sistema"] .shortcuts-category-title {
+      color: #ef4444;
+    }
+    
+    .shortcuts-category[data-category="Especiais"] .shortcuts-category-title {
+      color: #6b7280;
+    }
+    
+    /* Search Results */
+    .help-search-results {
+      margin-top: 16px;
+    }
+    
+    .search-result-item {
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      background: color-mix(in srgb, var(--c-glass) 6%, transparent);
+      border: 1px solid color-mix(in srgb, var(--c-light) 12%, transparent);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .search-result-item:hover {
+      background: color-mix(in srgb, var(--c-action) 8%, transparent);
+      border-color: color-mix(in srgb, var(--c-action) 25%, transparent);
+    }
+    
+    .search-result-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--c-content);
+      margin-bottom: 4px;
+    }
+    
+    .search-result-snippet {
+      font-size: 13px;
+      color: color-mix(in srgb, var(--c-content) 70%, transparent);
+      line-height: 1.4;
+    }
+    
+    .search-highlight {
+      background: color-mix(in srgb, var(--c-action) 25%, transparent);
+      color: var(--c-action);
+      padding: 1px 2px;
+      border-radius: 2px;
+    }
+    
+    /* Feature Cards */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 16px 0;
+    }
+    
+    .feature-card {
+      padding: 16px;
+      background: color-mix(in srgb, var(--c-glass) 6%, transparent);
+      border: 1px solid color-mix(in srgb, var(--c-light) 12%, transparent);
+      border-radius: 10px;
+      transition: all 0.2s ease;
+    }
+    
+    .feature-card:hover {
+      background: color-mix(in srgb, var(--c-glass) 10%, transparent);
+      border-color: color-mix(in srgb, var(--c-action) 25%, transparent);
+      transform: translateY(-1px);
+    }
+    
+    .feature-icon {
+      width: 20px;
+      height: 20px;
+      color: var(--c-action);
+      margin-bottom: 8px;
+    }
+    
+    .feature-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--c-content);
+      margin-bottom: 6px;
+    }
+    
+    .feature-desc {
+      font-size: 13px;
+      color: color-mix(in srgb, var(--c-content) 70%, transparent);
+      line-height: 1.4;
+    }
+
+    /* Professional Feature Sections */
+    .feature-section {
+      margin: 24px 0;
+      padding: 20px;
+      background: color-mix(in srgb, var(--c-glass) 4%, transparent);
+      border: 1px solid color-mix(in srgb, var(--c-light) 8%, transparent);
+      border-radius: 12px;
+      box-shadow: inset 0 1px 0 color-mix(in srgb, var(--c-light) 20%, transparent);
+    }
+
+    .feature-section h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--c-content);
+      margin: 0 0 16px 0;
+      padding-bottom: 8px;
+      border-bottom: 1px solid color-mix(in srgb, var(--c-light) 12%, transparent);
+    }
+
+    .feature-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .feature-list li {
+      margin: 12px 0;
+      padding-left: 16px;
+      position: relative;
+      font-size: 14px;
+      line-height: 1.5;
+      color: color-mix(in srgb, var(--c-content) 85%, transparent);
+    }
+
+    .feature-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 4px;
+      height: 4px;
+      background: var(--c-action);
+      border-radius: 50%;
+    }
+
+    .feature-list li strong {
+      color: var(--c-content);
+      font-weight: 500;
+    }
+
+    /* Platform Detection for Shortcuts */
+    @media (max-width: 640px) {
+      .help-content {
+        flex-direction: column;
+        height: auto;
+        max-height: 80vh;
+      }
+      
+      .help-sidebar {
+        width: auto;
+        max-height: 120px;
+        border-right: none;
+        border-bottom: 1px solid color-mix(in srgb, var(--c-light) 12%, transparent);
+        padding: 12px 16px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+      }
+      
+      .help-nav-section {
+        display: inline-block;
+        margin-right: 20px;
+        margin-bottom: 0;
+      }
+      
+      .help-nav-item {
+        display: inline-flex;
+        margin-right: 8px;
+        border-radius: 6px;
+        white-space: nowrap;
+      }
+    }
+
+    /* Legacy compatibility */
     .cards{ display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); }
     .card{
       padding:12px; border:1px solid var(--stroke); border-radius:14px; background: var(--lg-card-bg);
@@ -2190,6 +3345,111 @@
     @media (max-width: 720px){
       .sheet-body{ grid-template-columns: 1fr } /* sidebar vira topo */
       .sheet-sidebar{ border-right:0; border-bottom:1px solid var(--stroke) }
+    }
+
+    /* === AJUSTES UNO – mesmo paradigma da toolbar/findbar === */
+
+    /* Cabeçalho do sheet com busca e chipbar */
+    .settings-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      padding: 12px 16px;
+      background: color-mix(in srgb, var(--c-glass) 10%, transparent);
+      border-bottom: 1px solid color-mix(in srgb, var(--c-light) 12%, transparent);
+    }
+    .settings-title {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 15px;
+    }
+    .settings-actions { display: flex; gap: 8px; align-items: center; }
+
+    /* Busca em ajustes: mesma gramática da .find-input */
+    #settingsSearch {
+      height: 36px; min-width: 220px; max-width: 420px;
+      padding: 0 12px; border-radius: 12px;
+      border: 1px solid color-mix(in srgb, var(--c-light) 10%, transparent);
+      background: color-mix(in srgb, var(--c-glass) 12%, transparent);
+      color: var(--c-content); outline: none; font: 600 12px/1 "DM Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      box-shadow: inset 0 1px 0 color-mix(in srgb, var(--c-light) 40%, transparent);
+    }
+    #settingsSearch:focus {
+      border-color: var(--c-action);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-action) 60%, transparent);
+    }
+
+    /* Chipbar de seções – sticky dentro do conteúdo */
+    .settings-chipbar {
+      position: sticky; top: 0; z-index: 2;
+      display: flex; gap: 6px; padding: 10px 16px;
+      border-bottom: 1px solid color-mix(in srgb, var(--c-light) 10%, transparent);
+      background: color-mix(in srgb, var(--c-glass) 8%, transparent);
+      backdrop-filter: blur(10px) saturate(var(--saturation));
+      -webkit-backdrop-filter: blur(10px) saturate(var(--saturation));
+    }
+    .settings-chipbar .chip {
+      height: 28px; padding: 0 10px; border-radius: 999px;
+      color: var(--c-content);
+      background: color-mix(in srgb, var(--c-glass) 14%, transparent);
+      border: 1px solid color-mix(in srgb, var(--c-light) 10%, transparent);
+      font: 700 11px/1 "DM Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      cursor: pointer; transition: transform .14s ease, color .2s ease;
+    }
+    .settings-chipbar .chip:hover { transform: translateY(-1px); color: var(--c-action); }
+    .settings-chipbar .chip[aria-current="true"] {
+      color: var(--c-light);
+      background: linear-gradient(135deg, color-mix(in srgb, var(--c-action) 60%, transparent), color-mix(in srgb, var(--c-action) 25%, var(--c-dark)));
+      border-color: color-mix(in srgb, var(--c-action) 40%, transparent);
+    }
+
+    /* Acordions de seção */
+    .settings-section {
+      margin: 12px 16px; border-radius: 14px;
+      border: 1px solid color-mix(in srgb, var(--c-light) 12%, transparent);
+      background: color-mix(in srgb, var(--c-glass) 12%, transparent);
+      box-shadow: inset 0 1px 0 color-mix(in srgb, var(--c-light) 35%, transparent);
+      overflow: clip;
+    }
+    .settings-section > summary {
+      list-style: none; cursor: pointer; user-select: none;
+      padding: 12px 14px; font-weight: 700; display: flex; align-items: center; gap: 8px;
+    }
+    .settings-section > summary::-webkit-details-marker { display: none; }
+    .settings-section > summary .chev {
+      width: 12px; height: 12px; transform: rotate(-90deg); transition: transform 180ms var(--ease);
+      opacity: .85;
+    }
+    .settings-section[open] > summary .chev { transform: rotate(0deg); }
+    .settings-section .section-body { padding: 12px 12px 14px; }
+
+    /* Grid das linhas (reusa sua .row) + variações responsivas */
+    .settings-grid {
+      display: grid; gap: 12px;
+    }
+    @media (min-width: 760px){
+      .settings-grid.two-col { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* Quick toggles no topo do conteúdo */
+    .quick-toggles {
+      display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 16px 0;
+    }
+
+    /* Marcação de busca */
+    mark.settings-hit {
+      background: color-mix(in oklab, var(--accent-2), transparent 75%);
+      border-radius: 4px; padding: 0 .2em;
+    }
+
+    /* Respeito ao reduce-motion */
+    @media (prefers-reduced-motion: no-preference) {
+      .settings-section[open] .section-body {
+        animation: sec-reveal 180ms var(--ease);
+      }
+    }
+    @keyframes sec-reveal {
+      from { opacity: 0; transform: translateY(-2px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
   <!-- SVG filter noise for liquid-y feel (degrades gracefully) -->
@@ -2211,7 +3471,10 @@
         <div class="tgroup" role="group" aria-label="Contexto">
           <span class="brand-dot" aria-hidden="true"></span>
           <button id="noteTitleChip" class="title-chip" title="Renomear (F2)" aria-label="Título da nota (duplo clique para renomear)">
-            <svg class="ticon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10-10a2.828 2.828 0 0 0-4-4L4 16v4z"></path><path d="M13.5 6.5l4 4"/></svg>
+            <svg class="ticon ticon--stroke" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 20h4l10-10a2.828 2.828 0 0 0-4-4L4 16v4z"></path>
+              <path d="M13.5 6.5l4 4"></path>
+            </svg>
             <span id="noteTitleChipText">—</span>
           </button>
         </div>
@@ -2275,10 +3538,27 @@
         <!-- Mais -->
         <div class="tgroup" role="group" aria-label="Mais">
           <button class="tbtn tbtn--icon" id="btnSettings" title="Ajustes (⌘,)" aria-haspopup="dialog" aria-controls="settings">
-            <svg class="ticon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V22a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 20.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 1 1 7.04 4.3l.06.06A1.65 1.65 0 0 0 8.92 4a1.65 1.65 0 0 0 1-1.51V2a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 3.6c.41.17.75.43 1.02.77l.06.06a2 2 0 1 1 2.83 2.83l-.06.06c-.34.27-.6.61-.77 1.02.29.69.45 1.44.45 2.22s-.16 1.53-.45 2.22Z"/></svg>
+            <!-- License: MIT. Made by radix-ui: https://github.com/radix-ui/icons -->
+            <svg class="ticon" viewBox="0 0 15 15" aria-hidden="true">
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M7.07095 0.650238C6.67391 0.650238 6.32977 0.925096 6.24198 1.31231L6.0039 2.36247C5.6249 2.47269 5.26335 2.62363 4.92436 2.81013L4.01335 2.23585C3.67748 2.02413 3.23978 2.07312 2.95903 2.35386L2.35294 2.95996C2.0722 3.2407 2.0232 3.6784 2.23493 4.01427L2.80942 4.92561C2.62307 5.2645 2.47227 5.62594 2.36216 6.00481L1.31209 6.24287C0.924883 6.33065 0.650024 6.6748 0.650024 7.07183V7.92897C0.650024 8.32601 0.924883 8.67015 1.31209 8.75794L2.36228 8.99603C2.47246 9.375 2.62335 9.73652 2.80979 10.0755L2.2354 10.9867C2.02367 11.3225 2.07267 11.7602 2.35341 12.041L2.95951 12.6471C3.24025 12.9278 3.67795 12.9768 4.01382 12.7651L4.92506 12.1907C5.26384 12.377 5.62516 12.5278 6.0039 12.6379L6.24198 13.6881C6.32977 14.0753 6.67391 14.3502 7.07095 14.3502H7.92809C8.32512 14.3502 8.66927 14.0753 8.75705 13.6881L8.99505 12.6383C9.37411 12.5282 9.73573 12.3773 10.0748 12.1909L10.986 12.7653C11.3218 12.977 11.7595 12.928 12.0403 12.6473L12.6464 12.0412C12.9271 11.7604 12.9761 11.3227 12.7644 10.9869L12.1902 10.076C12.3768 9.73688 12.5278 9.37515 12.638 8.99596L13.6879 8.75794C14.0751 8.67015 14.35 8.32601 14.35 7.92897V7.07183C14.35 6.6748 14.0751 6.33065 13.6879 6.24287L12.6381 6.00488C12.528 5.62578 12.3771 5.26414 12.1906 4.92507L12.7648 4.01407C12.9766 3.6782 12.9276 3.2405 12.6468 2.95975L12.0407 2.35366C11.76 2.07292 11.3223 2.02392 10.9864 2.23565L10.0755 2.80989C9.73622 2.62328 9.37437 2.47229 8.99505 2.36209L8.75705 1.31231C8.66927 0.925096 8.32512 0.650238 7.92809 0.650238H7.07095ZM4.92053 3.81251C5.44724 3.44339 6.05665 3.18424 6.71543 3.06839L7.07095 1.50024H7.92809L8.28355 3.06816C8.94267 3.18387 9.5524 3.44302 10.0794 3.81224L11.4397 2.9547L12.0458 3.56079L11.1882 4.92117C11.5573 5.44798 11.8164 6.0575 11.9321 6.71638L13.5 7.07183V7.92897L11.932 8.28444C11.8162 8.94342 11.557 9.55301 11.1878 10.0798L12.0453 11.4402L11.4392 12.0462L10.0787 11.1886C9.55192 11.5576 8.94241 11.8166 8.28355 11.9323L7.92809 13.5002H7.07095L6.71543 11.932C6.0569 11.8162 5.44772 11.5572 4.92116 11.1883L3.56055 12.046L2.95445 11.4399L3.81213 10.0794C3.4431 9.55266 3.18403 8.94326 3.06825 8.2845L1.50002 7.92897V7.07183L3.06818 6.71632C3.18388 6.05765 3.44283 5.44833 3.81171 4.92165L2.95398 3.561L3.56008 2.95491L4.92053 3.81251ZM9.02496 7.50008C9.02496 8.34226 8.34223 9.02499 7.50005 9.02499C6.65786 9.02499 5.97513 8.34226 5.97513 7.50008C5.97513 6.65789 6.65786 5.97516 7.50005 5.97516C8.34223 5.97516 9.02496 6.65789 9.02496 7.50008ZM9.92496 7.50008C9.92496 8.83932 8.83929 9.92499 7.50005 9.92499C6.1608 9.92499 5.07513 8.83932 5.07513 7.50008C5.07513 6.16084 6.1608 5.07516 7.50005 5.07516C8.83929 5.07516 9.92496 6.16084 9.92496 7.50008Z"
+                fill="currentColor"
+              />
+            </svg>
           </button>
           <button class="tbtn tbtn--icon" id="btnHelp" title="Ajuda (⌘/)" aria-haspopup="dialog" aria-controls="help">
             <svg class="ticon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+          </button>
+          <button class="tbtn tbtn--icon" id="btnMarkdownPreview" title="Visualizar Markdown (⌘⇧P)" aria-haspopup="dialog" aria-controls="mdv">
+            <svg class="ticon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14,2 14,8 20,8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10,9 9,9 8,9"/>
+            </svg>
           </button>
           <button class="tbtn tbtn--icon" aria-label="Mais" aria-haspopup="menu" aria-expanded="false" data-popover="#more-menu">
             <svg class="ticon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>
@@ -2303,6 +3583,7 @@
             <div class="menu-divider" role="separator"></div>
 
             <div class="menu-section" aria-label="Exibir">Exibir</div>
+            <div class="popover__item"><button class="tbtn popover__btn" role="menuitem" id="mmMarkdownPreview">Visualizar Markdown</button></div>
             <div class="popover__item"><button class="tbtn popover__btn" role="menuitemcheckbox" aria-checked="false" id="mmToggleWrap">Quebra automática</button></div>
             <div class="popover__item"><button class="tbtn popover__btn" role="menuitemcheckbox" aria-checked="false" id="mmToggleLines">Números de linha</button></div>
             <div class="popover__item"><button class="tbtn popover__btn" role="menuitemcheckbox" aria-checked="false" id="mmToggleMini">Minimap</button></div>
@@ -2321,7 +3602,7 @@
       <aside class="gutter" id="gutter" aria-hidden="true"></aside>
       <section class="editor-wrap">
         <div id="highlights" class="highlights-overlay" aria-hidden="true"></div>
-        <textarea id="editor" wrap="off" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Área de edição"></textarea>
+        <textarea id="editor" wrap="off" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Área de edição"></textarea>
         
         <div id="findBar" class="toolbar" role="toolbar" aria-label="Buscar e Substituir" hidden>
           <!-- Linha principal: busca + navegação + contador + fechar -->
@@ -2430,237 +3711,542 @@
   <input type="file" id="file" accept=".txt,.md,.markdown,.rtf,.html,.htm" hidden />
 
   <!-- ========== Ajustes (novo) ========== -->
-  <dialog id="settings" class="dialog-sheet glass-panel large" aria-modal="true" aria-labelledby="settingsTitle">
-    <div class="glass-panel-header">
-      <h3 id="settingsTitle">Ajustes</h3>
-      <button class="tbtn sheet-close" value="cancel" title="Fechar">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
+  <dialog id="settings" class="dialog-sheet" aria-modal="true" aria-labelledby="settingsTitle">
+    <!-- Cabeçalho -->
+    <div class="settings-head">
+      <div class="settings-title">
+        <h3 id="settingsTitle" style="margin:0;">Ajustes</h3>
+        <input id="settingsSearch" type="search" placeholder="Buscar ajustes…" aria-label="Buscar ajustes">
+      </div>
+      <div class="settings-actions">
+        <button class="tbtn" id="btnExportSettings">Exportar</button>
+        <button class="tbtn" id="btnImportFromSettings">Importar</button>
+        <button class="tbtn" id="btnResetSettings" title="Restaurar padrões">Reset</button>
+        <button class="tbtn sheet-close" value="cancel" title="Fechar" aria-label="Fechar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
     </div>
 
-    <div class="glass-panel-content" id="settingsBody">
-      <aside class="sheet-sidebar">
-        <nav class="nav" aria-label="Seções de ajustes">
-          <button type="button" data-sec="appearance" aria-current="true">Aparência</button>
-          <button type="button" data-sec="editor">Editor</button>
-          <button type="button" data-sec="interface">Interface</button>
-          <button type="button" data-sec="accessibility">Acessibilidade</button>
-          <button type="button" data-sec="files">Notas & Arquivos</button>
-          <button type="button" data-sec="advanced">Avançado</button>
-          <button type="button" data-sec="about">Sobre</button>
-        </nav>
-      </aside>
+    <!-- Corpo (sidebar + conteúdo) -->
+    <div class="settings-shell">
+      <nav class="settings-nav" role="tablist" aria-label="Seções de ajustes">
+        <button data-jump="#sec-appearance" aria-current="true">Aparência</button>
+        <button data-jump="#sec-editor">Editor</button>
+        <button data-jump="#sec-interface">Interface</button>
+        <button data-jump="#sec-accessibility">Acessibilidade</button>
+        <button data-jump="#sec-files">Notas & Arquivos</button>
+        <button data-jump="#sec-advanced">Avançado</button>
+        <button data-jump="#sec-about">Sobre</button>
+      </nav>
 
-      <section class="sheet-content">
+      <div class="settings-content" id="settingsBody">
         <!-- Aparência -->
-        <div class="section" data-section="appearance">
-          <h4>Tema</h4>
-          <div class="group">
-            <div class="row">
-              <div>
+        <section class="settings-section" id="sec-appearance">
+          <div class="section-head">Aparência</div>
+          <div class="section-body">
+            <div class="subsection">
+              <h4>Tema</h4>
+              <div class="row">
                 <div class="hint">Aparência do sistema</div>
-              </div>
-              <div class="segmented" role="radiogroup" aria-label="Tema">
-                <input id="theme-auto" type="radio" name="theme" value="auto" checked>
-                <label for="theme-auto">Auto</label>
-                <input id="theme-light" type="radio" name="theme" value="light">
-                <label for="theme-light">Claro</label>
-                <input id="theme-dark" type="radio" name="theme" value="dark">
-                <label for="theme-dark">Escuro</label>
+                <div class="segmented" role="radiogroup" aria-label="Tema">
+                  <input id="theme-auto" type="radio" name="theme" value="auto" checked><label for="theme-auto">Auto</label>
+                  <input id="theme-light" type="radio" name="theme" value="light"><label for="theme-light">Claro</label>
+                  <input id="theme-dark" type="radio" name="theme" value="dark"><label for="theme-dark">Escuro</label>
+                </div>
               </div>
             </div>
-          </div>
 
-          <h4>Liquid Glass</h4>
-          <div class="group" role="group" aria-label="Intensidade do vidro">
-            <div class="row">
-              <label for="glassBlur">Desfoque</label>
-              <div class="slider-with-output-container" id="glassBlurWrap">
-                <output class="glass-ui slider-output" for="glassBlur" id="glassBlurValue">18px</output>
-                <input id="glassBlur" class="glass-slider" type="range" min="8" max="28" step="1">
+            <div class="subsection">
+              <h4>Liquid Glass</h4>
+              <div class="row">
+                <label for="glassBlur">Desfoque</label>
+                <div class="slider-with-output-container" id="glassBlurWrap">
+                  <output class="glass-ui slider-output" for="glassBlur" id="glassBlurValue">18px</output>
+                  <input id="glassBlur" class="glass-slider" type="range" min="8" max="28" step="1">
+                </div>
               </div>
-            </div>
-            <div class="row">
-              <label for="glassSat">Saturação</label>
-              <div class="slider-with-output-container" id="glassSatWrap">
-                <output class="glass-ui slider-output" for="glassSat" id="glassSatValue">135%</output>
-                <input id="glassSat" class="glass-slider" type="range" min="100" max="170" step="5">
+              <div class="row">
+                <label for="glassSat">Saturação</label>
+                <div class="slider-with-output-container" id="glassSatWrap">
+                  <output class="glass-ui slider-output" for="glassSat" id="glassSatValue">135%</output>
+                  <input id="glassSat" class="glass-slider" type="range" min="100" max="170" step="5">
+                </div>
               </div>
-            </div>
-            <div class="row">
-              <label for="glassContrast">Contraste</label>
-              <div class="slider-with-output-container" id="glassContrastWrap">
-                <output class="glass-ui slider-output" for="glassContrast" id="glassContrastValue">1.05</output>
-                <input id="glassContrast" class="glass-slider" type="range" min="1.00" max="1.10" step="0.01">
+              <div class="row">
+                <label for="glassContrast">Contraste</label>
+                <div class="slider-with-output-container" id="glassContrastWrap">
+                  <output class="glass-ui slider-output" for="glassContrast" id="glassContrastValue">1.05</output>
+                  <input id="glassContrast" class="glass-slider" type="range" min="1.00" max="1.10" step="0.01">
+                </div>
               </div>
+              <div class="hint">Limites seguros de legibilidade.</div>
             </div>
-            <div class="hint">Mantemos limites seguros para legibilidade conforme HIG (evite vidro "leitoso" demais).</div>
           </div>
-        </div>
+        </section>
 
         <!-- Editor -->
-        <div class="section" data-section="editor" hidden>
-          <h4>Tipografia</h4>
-          <div class="group">
-            <div class="row">
-              <label for="fontSize">
-                Tamanho da letra
-                <span id="fontSizeHint" class="hint" aria-live="polite"></span>
-              </label>
-              <div class="slider-with-output-container" id="fontSizeWrap">
-                <output class="glass-ui slider-output" for="fontSize" id="fontSizeValueDisplay">16px</output>
-                <input id="fontSize" class="glass-slider" type="range" min="8" max="24" step="1" />
+        <section class="settings-section" id="sec-editor">
+          <div class="section-head">Editor</div>
+          <div class="section-body">
+            <div class="subsection">
+              <h4>Tipografia</h4>
+              <div class="row">
+                <label for="fontSize">Tamanho da letra <span id="fontSizeHint" class="hint" aria-live="polite"></span></label>
+                <div class="slider-with-output-container" id="fontSizeWrap">
+                  <output class="glass-ui slider-output" for="fontSize" id="fontSizeValueDisplay">16px</output>
+                  <input id="fontSize" class="glass-slider" type="range" min="8" max="24" step="1" />
+                </div>
               </div>
-            </div>
-            <div class="row">
-              <label for="lineHeight">
-                Altura da linha
-                <span id="lineHeightHint" class="hint" aria-live="polite"></span>
-              </label>
-              <div class="slider-with-output-container" id="lineHeightWrap">
-                <output class="glass-ui slider-output" for="lineHeight" id="lineHeightValueDisplay">1.60</output>
-                <input id="lineHeight" class="glass-slider" type="range" min="1.30" max="1.90" step="0.05" />
+              <div class="row">
+                <label for="lineHeight">Altura da linha <span id="lineHeightHint" class="hint" aria-live="polite"></span></label>
+                <div class="slider-with-output-container" id="lineHeightWrap">
+                  <output class="glass-ui slider-output" for="lineHeight" id="lineHeightValueDisplay">1.60</output>
+                  <input id="lineHeight" class="glass-slider" type="range" min="1.30" max="1.90" step="0.05" />
+                </div>
               </div>
-            </div>
-            <div class="row">
-              <label for="padX">
-                Espaçamento interno
-                <span id="padXHint" class="hint" aria-live="polite"></span>
-              </label>
-              <div class="slider-with-output-container" id="padXWrap">
-                <output class="glass-ui slider-output" for="padX" id="padXValueDisplay">24px</output>
-                <input id="padX" class="glass-slider" type="range" min="8" max="40" step="1" />
+              <div class="row">
+                <label for="padX">Espaçamento interno <span id="padXHint" class="hint" aria-live="polite"></span></label>
+                <div class="slider-with-output-container" id="padXWrap">
+                  <output class="glass-ui slider-output" for="padX" id="padXValueDisplay">24px</output>
+                  <input id="padX" class="glass-slider" type="range" min="8" max="40" step="1" />
+                </div>
               </div>
+              <div class="hint">Dica: 10–12px com 1.5–1.6 de linha é o ponto doce.</div>
             </div>
-            <div class="hint">Dica: 10–12px no editor com 1.5–1.6 de linha costuma ser o "ponto doce".</div>
-          </div>
 
-          <h4>Visual do Editor</h4>
-          <div class="group">
-            <div class="row"><label>Quebra automática</label><div class="switch" id="switchWrap" role="switch" aria-checked="false" tabindex="0"><div class="knob"></div></div></div>
-            <div class="row"><label>Números de linha</label><div class="switch" id="switchLines" role="switch" aria-checked="false" tabindex="0"><div class="knob"></div></div></div>
-            <div class="row"><label>Minimap</label><div class="switch" id="switchMini" role="switch" aria-checked="false" tabindex="0"><div class="knob"></div></div></div>
-            <div class="hint">Sem quebra = experiência de editor de código.</div>
+            <div class="subsection">
+              <h4>Visual do editor</h4>
+              <div class="row"><label>Quebra automática</label>
+                <label class="switch-lg"><input id="switchWrap" type="checkbox" /><span class="knob"></span></label>
+              </div>
+              <div class="row"><label>Números de linha</label>
+                <label class="switch-lg"><input id="switchLines" type="checkbox" /><span class="knob"></span></label>
+              </div>
+              <div class="row"><label>Minimap</label>
+                <label class="switch-lg"><input id="switchMini" type="checkbox" /><span class="knob"></span></label>
+              </div>
+              <div class="hint">Sem textos ON/OFF — o estado é o switch.</div>
+            </div>
+
+            <div class="subsection">
+              <h4>Comportamento</h4>
+              <div class="row"><label>Salvamento automático</label>
+                <label class="switch-lg"><input id="switchAutoSave" type="checkbox" checked /><span class="knob"></span></label>
+              </div>
+              <div class="row">
+                <label for="tabSize">Tamanho da tabulação <span id="tabSizeHint" class="hint" aria-live="polite"></span></label>
+                <div class="segmented-control" id="tabSizeWrap">
+                  <input id="tab2" name="tabSize" type="radio" value="2" checked />
+                  <label for="tab2">2</label>
+                  <input id="tab4" name="tabSize" type="radio" value="4" />
+                  <label for="tab4">4</label>
+                  <input id="tab8" name="tabSize" type="radio" value="8" />
+                  <label for="tab8">8</label>
+                </div>
+              </div>
+              <div class="hint">Salvamento automático preserva mudanças e tabulação controla indentação do código.</div>
+            </div>
           </div>
-        </div>
+        </section>
 
         <!-- Interface -->
-        <div class="section" data-section="interface" hidden>
-          <h4>Animações & Densidade</h4>
-          <div class="group">
-            <div class="row"><label>Reduzir animações</label><div class="switch" id="switchMotion" role="switch" aria-checked="false" tabindex="0"><div class="knob"></div></div></div>
-            <div class="row">
-              <label>Densidade</label>
-              <div class="segmented" role="radiogroup" aria-label="Densidade" id="densitySeg">
-                <input id="dense-comf" type="radio" name="density" value="comfortable" checked>
-                <label for="dense-comf">Confortável</label>
-                <input id="dense-comp" type="radio" name="density" value="compact">
-                <label for="dense-comp">Compacta</label>
+        <section class="settings-section" id="sec-interface">
+          <div class="section-head">Interface</div>
+          <div class="section-body">
+            <div class="subsection">
+              <h4>Elementos da interface</h4>
+              <div class="row"><label>Barra de ferramentas</label>
+                <label class="switch-lg"><input id="switchToolbar" type="checkbox" checked /><span class="knob"></span></label>
+              </div>
+              <div class="row"><label>Barra de status</label>
+                <label class="switch-lg"><input id="switchStatusBar" type="checkbox" checked /><span class="knob"></span></label>
+              </div>
+              <div class="row"><label>Painel de notas</label>
+                <label class="switch-lg"><input id="switchNotesPanel" type="checkbox" checked /><span class="knob"></span></label>
+              </div>
+              <div class="hint">Controla visibilidade dos elementos da interface.</div>
+            </div>
+
+            <div class="subsection">
+              <h4>Animações & Densidade</h4>
+              <div class="row"><label>Reduzir animações</label>
+                <label class="switch-lg"><input id="switchMotion" type="checkbox" /><span class="knob"></span></label>
+              </div>
+              <div class="row">
+                <label>Densidade</label>
+                <div class="segmented" role="radiogroup" aria-label="Densidade" id="densitySeg">
+                  <input id="dense-comf" type="radio" name="density" value="comfortable" checked><label for="dense-comf">Confortável</label>
+                  <input id="dense-comp" type="radio" name="density" value="compact"><label for="dense-comp">Compacta</label>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
         <!-- Acessibilidade -->
-        <div class="section" data-section="accessibility" hidden>
-          <h4>Contraste & Foco</h4>
-          <div class="group">
-            <div class="row"><label>Aumentar contraste</label><div class="switch" id="switchContrast" role="switch" aria-checked="false" tabindex="0"><div class="knob"></div></div></div>
-            <div class="hint">Melhora legibilidade de textos/controles; segue boas práticas de contraste (WCAG/APCA). </div>
+        <section class="settings-section" id="sec-accessibility">
+          <div class="section-head">Acessibilidade</div>
+          <div class="section-body">
+            <div class="subsection">
+              <h4>Contraste & Foco</h4>
+              <div class="row"><label>Aumentar contraste</label>
+                <label class="switch-lg"><input id="switchContrast" type="checkbox" /><span class="knob"></span></label>
+              </div>
+              <div class="hint">Segue boas práticas de contraste.</div>
+            </div>
           </div>
-        </div>
+        </section>
 
         <!-- Notas & Arquivos -->
-        <div class="section" data-section="files" hidden>
-          <h4>Gerenciar</h4>
-          <div class="group">
-            <div class="row">
-              <div>
-                <div class="hint">Backup de notas</div>
-              </div>
-              <div style="display:flex; gap:8px">
-                <button class="btn" id="btnExportFromSettings">Exportar Tudo</button>
-                <button class="btn" id="btnImportFromSettings">Importar</button>
+        <section class="settings-section" id="sec-files">
+          <div class="section-head">Notas & Arquivos</div>
+          <div class="section-body">
+            <div class="subsection">
+              <h4>Backup</h4>
+              <div class="row">
+                <div class="hint">Exportar todas as notas ou importar backup.</div>
+                <div style="display:flex; gap:8px">
+                  <button class="tbtn" id="btnExportFromSettings">Exportar Tudo</button>
+                  <button class="tbtn" id="btnImportFromSettings">Importar</button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
         <!-- Avançado -->
-        <div class="section" data-section="advanced" hidden>
-          <h4>Configurações</h4>
-          <div class="group" style="display:flex; gap:8px; justify-content:flex-end">
-            <button class="btn" id="btnExportSettings">Exportar Config</button>
-            <button class="btn" id="btnResetSettings">Restaurar Padrões</button>
+        <section class="settings-section" id="sec-advanced">
+          <div class="section-head">Avançado</div>
+          <div class="section-body">
+            <div class="subsection" style="display:flex; gap:8px; justify-content:flex-end">
+              <button class="tbtn" id="btnExportSettings2">Exportar Config</button>
+              <button class="tbtn" id="btnResetSettings2">Restaurar Padrões</button>
+            </div>
           </div>
-        </div>
+        </section>
 
         <!-- Sobre -->
-        <div class="section" data-section="about" hidden>
-          <h4>Sobre este app</h4>
-          <div class="group">
-            <div class="hint">Canvas de Texto — Editor v3. Design baseado no material translúcido do sistema (Materials/Vibrancy). </div>
+        <section class="settings-section" id="sec-about">
+          <div class="section-head">Sobre</div>
+          <div class="section-body">
+            <div class="subsection">
+              <div class="hint">Canvas de Texto — Editor v3. Material translúcido (Vibrancy).</div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
+    </div>
+
+    <!-- Rodapé -->
+    <div class="settings-footer">
+      <button class="tbtn sheet-close" value="cancel">Fechar</button>
     </div>
   </dialog>
 
-  <!-- ========== Centro de Ajuda (novo) ========== -->
+  <!-- ========== Centro de Ajuda v2 — Liquid Glass ========== -->
   <dialog id="help" class="dialog-sheet glass-panel large" aria-modal="true" aria-labelledby="helpTitle">
-    <div class="glass-panel-header">
-      <h3 id="helpTitle">Ajuda</h3>
-      <div class="help-tabs" role="tablist" aria-label="Seções de ajuda">
-        <button type="button" role="tab" data-tab="overview" aria-current="true">Visão geral</button>
-        <button type="button" role="tab" data-tab="shortcuts">Atalhos</button>
-        <button type="button" role="tab" data-tab="tips">Dicas</button>
-        <button type="button" role="tab" data-tab="about">Sobre</button>
+    <div class="help-content">
+      <!-- Sidebar de Navegação -->
+      <div class="help-sidebar">
+        <div class="help-nav-section">
+          <h4 class="help-nav-title">Centro de Ajuda</h4>
+          <button class="help-nav-item active" data-section="overview">
+            <svg class="ticon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9,22 9,12 15,12 15,22"/>
+            </svg>
+            Visão Geral
+          </button>
+          <button class="help-nav-item" data-section="shortcuts">
+            <svg class="ticon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+            Atalhos
+          </button>
+        </div>
+        
+        <div class="help-nav-section">
+          <h4 class="help-nav-title">Recursos</h4>
+          <button class="help-nav-item" data-section="features">
+            <svg class="ticon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+            Funcionalidades
+          </button>
+          <button class="help-nav-item" data-section="tips">
+            <svg class="ticon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            Dicas
+          </button>
+        </div>
+        
+        <div class="help-nav-section">
+          <h4 class="help-nav-title">Informações</h4>
+          <button class="help-nav-item" data-section="about">
+            <svg class="ticon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            Sobre
+          </button>
+        </div>
       </div>
-      <button class="tbtn sheet-close" value="cancel" title="Fechar">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
+      
+      <!-- Conteúdo Principal -->
+      <div class="help-main">
+        <!-- Cabeçalho com Busca -->
+        <div class="help-header">
+          <h2 class="help-title" id="helpTitle">Centro de Ajuda</h2>
+          <div class="help-search-container">
+            <svg class="help-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input type="text" class="help-search" id="helpSearch" placeholder="Buscar na ajuda..." aria-label="Buscar na ajuda">
+          </div>
+        </div>
+        
+        <!-- Corpo do Conteúdo -->
+        <div class="help-body" id="helpBody">
+          <!-- Visão Geral -->
+          <div class="help-section active" id="section-overview">
+            <h2>Bem-vindo ao Canvas</h2>
+            <p>Um editor de texto moderno e minimalista com foco na produtividade e experiência do usuário.</p>
+            
+            <div class="feature-grid">
+              <div class="feature-card">
+                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14,2 14,8 20,8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                  <polyline points="10,9 9,9 8,9"/>
+                </svg>
+                <div class="feature-title">Editor Inteligente</div>
+                <div class="feature-desc">Interface limpa com numeração de linhas, minimap e busca avançada.</div>
+              </div>
+              
+              <div class="feature-card">
+                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                </svg>
+                <div class="feature-title">Gerenciamento de Notas</div>
+                <div class="feature-desc">Organize, filtre e acesse suas notas de forma rápida e eficiente.</div>
+              </div>
+              
+              <div class="feature-card">
+                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                <div class="feature-title">Personalização</div>
+                <div class="feature-desc">Themes, fontes, layout e preferências totalmente customizáveis.</div>
+              </div>
+              
+              <div class="feature-card">
+                <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
+                </svg>
+                <div class="feature-title">Performance</div>
+                <div class="feature-desc">Resposta instantânea mesmo com documentos extensos.</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Atalhos de Teclado -->
+          <div class="help-section" id="section-shortcuts">
+            <h2>Atalhos de Teclado</h2>
+            <p>Acelere seu fluxo de trabalho com atalhos poderosos:</p>
+            
+            <div class="shortcuts-grid" id="shortcutsList">
+              <!-- Preenchido dinamicamente pelo JavaScript -->
+            </div>
+          </div>
+          
+          <!-- Funcionalidades -->
+          <div class="help-section" id="section-features">
+            <h2>Funcionalidades Principais</h2>
+            
+            <div class="feature-section">
+              <h3>Editor de Texto Avançado</h3>
+              <ul class="feature-list">
+                <li><strong>Sintaxe de Markdown:</strong> Suporte completo para formatação Markdown com renderização em tempo real</li>
+                <li><strong>Numeração de Linhas:</strong> Sistema de numeração dinâmico com navegação direta por clique</li>
+                <li><strong>Quebra de Linha Inteligente:</strong> Controle automático e manual de quebra de linha para melhor legibilidade</li>
+                <li><strong>Estatísticas em Tempo Real:</strong> Contagem automática de caracteres, palavras e linhas</li>
+                <li><strong>Codificação UTF-8:</strong> Suporte completo para caracteres especiais e múltiplos idiomas</li>
+              </ul>
+            </div>
+
+            <div class="feature-section">
+              <h3>Sistema de Busca e Substituição</h3>
+              <ul class="feature-list">
+                <li><strong>Busca por Expressões Regulares:</strong> Suporte completo para RegEx com validação em tempo real</li>
+                <li><strong>Busca Global:</strong> Localização instantânea com navegação sequencial entre resultados</li>
+                <li><strong>Substituição em Lote:</strong> Capacidade de substituir todas as ocorrências ou seletivamente</li>
+                <li><strong>Destaque Visual:</strong> Realce automático de todas as correspondências encontradas</li>
+                <li><strong>Histórico de Busca:</strong> Manutenção automática do histórico de termos pesquisados</li>
+              </ul>
+            </div>
+
+            <div class="feature-section">
+              <h3>Navegação e Visualização</h3>
+              <ul class="feature-list">
+                <li><strong>Minimap Interativo:</strong> Visão panorâmica do documento com navegação por clique e arrastar</li>
+                <li><strong>Ir para Linha:</strong> Navegação direta para qualquer linha do documento</li>
+                <li><strong>Barra de Status:</strong> Informações de posição do cursor e estatísticas do documento</li>
+                <li><strong>Viewport Responsivo:</strong> Adaptação automática a diferentes tamanhos de tela</li>
+                <li><strong>Zoom de Fonte:</strong> Controle granular do tamanho da fonte com atalhos de teclado</li>
+              </ul>
+            </div>
+
+            <div class="feature-section">
+              <h3>Gerenciamento de Documentos</h3>
+              <ul class="feature-list">
+                <li><strong>Sistema de Notas:</strong> Criação, organização e gerenciamento de múltiplas notas</li>
+                <li><strong>Auto-salvamento:</strong> Persistência automática de alterações em tempo real</li>
+                <li><strong>Importação/Exportação:</strong> Suporte para arquivos TXT, MD e formato JSON</li>
+                <li><strong>Drag & Drop:</strong> Carregamento de arquivos por arrastar e soltar</li>
+                <li><strong>Sincronização Cross-Tab:</strong> Sincronização automática entre múltiplas abas do navegador</li>
+              </ul>
+            </div>
+
+            <div class="feature-section">
+              <h3>Recursos de Produtividade</h3>
+              <ul class="feature-list">
+                <li><strong>Movimentação de Linhas:</strong> Reordenação rápida de conteúdo com atalhos Alt+↑/↓</li>
+                <li><strong>Duplicação de Linhas:</strong> Clonagem instantânea de linhas com Ctrl+D</li>
+                <li><strong>Manipulação de Texto:</strong> Inserção de tabs, controle de indentação e formatação</li>
+                <li><strong>Seleção Inteligente:</strong> Seleção por palavra duplo-clique e seleção total com Ctrl+A</li>
+                <li><strong>Atalhos de Teclado:</strong> Conjunto abrangente de atalhos para todas as funcionalidades</li>
+              </ul>
+            </div>
+
+            <div class="feature-section">
+              <h3>Interface e Personalização</h3>
+              <ul class="feature-list">
+                <li><strong>Design Liquid Glass:</strong> Interface moderna com efeitos de vidro e transparência</li>
+                <li><strong>Temas Adaptativos:</strong> Suporte automático para modo claro e escuro</li>
+                <li><strong>Configurações Avançadas:</strong> Personalização completa de comportamento e aparência</li>
+                <li><strong>Acessibilidade:</strong> Conformidade com padrões WCAG e suporte para leitores de tela</li>
+                <li><strong>Responsividade:</strong> Otimização para desktop, tablet e dispositivos móveis</li>
+              </ul>
+            </div>
+
+            <div class="feature-section">
+              <h3>Tecnologias e Performance</h3>
+              <ul class="feature-list">
+                <li><strong>Web Standards:</strong> Implementação usando HTML5, CSS3 e JavaScript moderno</li>
+                <li><strong>Local Storage:</strong> Armazenamento local seguro com fallback para sessionStorage</li>
+                <li><strong>Performance Otimizada:</strong> Renderização eficiente com virtual scrolling e debouncing</li>
+                <li><strong>Cross-Browser:</strong> Compatibilidade com Chrome, Firefox, Safari e Edge</li>
+                <li><strong>PWA Ready:</strong> Preparado para funcionar como Progressive Web App</li>
+              </ul>
+            </div>
+          </div>
+          
+          <!-- Dicas -->
+          <div class="help-section" id="section-tips">
+            <h2>Guia de Uso Avançado</h2>
+            
+            <div class="feature-section">
+              <h3>Técnicas de Busca Avançada</h3>
+              <ul class="feature-list">
+                <li><strong>Expressões Regulares:</strong> Utilize <kbd>.*</kbd> para corresponder a qualquer caractere, <kbd>\d+</kbd> para números, e <kbd>\w+</kbd> para palavras</li>
+                <li><strong>Busca Multi-linha:</strong> Use <kbd>^</kbd> para início de linha e <kbd>$</kbd> para final de linha em padrões RegEx</li>
+                <li><strong>Caracteres Especiais:</strong> Escape caracteres especiais com <kbd>\</kbd> quando necessário em padrões de busca</li>
+                <li><strong>Navegação de Resultados:</strong> Use <kbd>F3</kbd> para próximo resultado e <kbd>Shift+F3</kbd> para resultado anterior</li>
+              </ul>
+            </div>
+
+            <div class="feature-section">
+              <h3>Manipulação Eficiente de Texto</h3>
+              <ul class="feature-list">
+                <li><strong>Movimentação de Linhas:</strong> <kbd>Alt+↑</kbd> e <kbd>Alt+↓</kbd> para mover linhas ou blocos selecionados verticalmente</li>
+                <li><strong>Duplicação Rápida:</strong> <kbd>Ctrl+D</kbd> (ou <kbd>⌘+D</kbd> no Mac) para duplicar a linha atual ou seleção</li>
+                <li><strong>Seleção de Palavras:</strong> Duplo-clique para selecionar palavra completa, incluindo caracteres especiais adjacentes</li>
+                <li><strong>Indentação com Tab:</strong> Use <kbd>Tab</kbd> para inserir indentação mesmo com texto selecionado</li>
+              </ul>
+            </div>
+
+            <div class="feature-section">
+              <h3>Navegação e Produtividade</h3>
+              <ul class="feature-list">
+                <li><strong>Ir para Linha:</strong> <kbd>Ctrl+G</kbd> abre o diálogo de navegação direta para qualquer linha do documento</li>
+                <li><strong>Navegação por Clique:</strong> Clique nos indicadores de linha/coluna na barra de status para navegação rápida</li>
+                <li><strong>Zoom de Fonte:</strong> <kbd>Ctrl++</kbd> e <kbd>Ctrl+-</kbd> para ajustar tamanho da fonte; <kbd>Ctrl+0</kbd> para resetar</li>
+                <li><strong>Minimap Interativo:</strong> Arraste a área destacada no minimap para navegação rápida em documentos longos</li>
+              </ul>
+            </div>
+
+            <div class="feature-section">
+              <h3>Gerenciamento de Arquivos</h3>
+              <ul class="feature-list">
+                <li><strong>Importação por Drag & Drop:</strong> Arraste arquivos .txt, .md ou .json diretamente para o editor</li>
+                <li><strong>Auto-salvamento:</strong> Todas as alterações são persistidas automaticamente no localStorage do navegador</li>
+                <li><strong>Exportação Flexível:</strong> Salve documentos como .txt ou .md através do menu de arquivo</li>
+                <li><strong>Sincronização Cross-Tab:</strong> Alterações são sincronizadas automaticamente entre abas do mesmo navegador</li>
+              </ul>
+            </div>
+
+            <div class="feature-section">
+              <h3>Configuração e Personalização</h3>
+              <ul class="feature-list">
+                <li><strong>Temas Adaptativos:</strong> O editor detecta automaticamente preferências do sistema (claro/escuro)</li>
+                <li><strong>Configurações Persistentes:</strong> Todas as preferências são salvas localmente e restauradas entre sessões</li>
+                <li><strong>Acessibilidade:</strong> Suporte completo para navegação por teclado e leitores de tela</li>
+                <li><strong>Performance:</strong> Renderização otimizada para documentos grandes com lazy loading</li>
+              </ul>
+            </div>
+          </div>
+          
+          <!-- Sobre -->
+          <div class="help-section" id="section-about">
+            <h2>Sobre o Canvas</h2>
+            <p>Canvas é um editor de texto moderno construído com tecnologias web nativas, focado na simplicidade, performance e experiência do usuário.</p>
+            
+            <h3>Características</h3>
+            <ul style="line-height: 1.6; color: color-mix(in srgb, var(--c-content) 80%, transparent);">
+              <li>Interface Liquid Glass com blur e transparências</li>
+              <li>Arquitetura totalmente client-side</li>
+              <li>Suporte completo a acessibilidade</li>
+              <li>Design responsivo e adaptativo</li>
+              <li>Armazenamento local seguro</li>
+            </ul>
+            
+            <p style="margin-top: 20px; padding: 12px; background: color-mix(in srgb, var(--c-glass) 8%, transparent); border-radius: 8px; font-size: 13px;">
+              💡 <strong>Dica:</strong> Feche esta ajuda com <kbd>Esc</kbd> ou <kbd class="key">⌘</kbd><kbd>/</kbd> a qualquer momento.
+            </p>
+          </div>
+          
+          <!-- Resultados de Busca -->
+          <div class="help-section" id="section-search-results" style="display: none;">
+            <h2>Resultados da Busca</h2>
+            <div class="help-search-results" id="searchResults">
+              <!-- Preenchido dinamicamente -->
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <div class="glass-panel-content" id="helpBody">
-      <!-- Overview -->
-      <div data-tabpanel="overview">
-        <div class="cards">
-          <div class="card"><strong>1) Crie/abra</strong><br>Use <kbd>⌘N</kbd> para nova nota ou <kbd>⌘O</kbd> para abrir o gerenciador.</div>
-          <div class="card"><strong>2) Escreva</strong><br>Editor rápido com números de linha, minimap e busca/substituir (<kbd>⌘F</kbd>/<kbd>⌘H</kbd>).</div>
-          <div class="card"><strong>3) Formate</strong><br>Ajuste fonte/linha no <em>Ajustes</em> (<kbd>⌘,</kbd>). </div>
-          <div class="card"><strong>4) Compartilhe</strong><br>Salve como <kbd>.md</kbd> ou imprima (<kbd>⌘P</kbd>).</div>
-        </div>
-      </div>
-
-      <!-- Shortcuts -->
-      <div data-tabpanel="shortcuts" hidden>
-        <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px">
-          <input id="helpSearch" placeholder="Buscar atalho…" style="flex:1;height:28px;border:1px solid var(--stroke);border-radius:8px;background:var(--panel);color:var(--text);padding:0 10px;font-size:12px;outline:none">
-          <button class="btn" id="btnCopyShortcuts">Copiar</button>
-        </div>
-        <div id="shortcutList"></div>
-      </div>
-
-      <!-- Tips -->
-      <div data-tabpanel="tips" hidden>
-        <div class="cards">
-          <div class="card"><strong>Find avançado</strong><br>Ative <kbd>.*</kbd> para RegEx e <kbd>^$</kbd> para multilinha.</div>
-          <div class="card"><strong>Mover/duplicar</strong><br><kbd>Alt</kbd>+<kbd>↑/↓</kbd> move; <kbd>⌘D</kbd> duplica seleção/linha.</div>
-          <div class="card"><strong>Minimap</strong><br>Arraste a lente para navegar por textos grandes.</div>
-        </div>
-      </div>
-
-      <!-- About -->
-      <div data-tabpanel="about" hidden>
-        <p class="hint">Ajuda concisa e acionável (HIG: "Offering help"). Feche com <kbd>Esc</kbd> ou clique em "Fechar".</p>
-      </div>
-    </div>
+    
+    <!-- Botão Fechar -->
+    <button class="tbtn sheet-close" value="cancel" title="Fechar (Esc)" style="position: absolute; top: 16px; right: 16px; z-index: 10;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
   </dialog>
 
   <!-- ========== Gerenciador de notas ========== -->
@@ -2864,6 +4450,23 @@
       closeOpenPopover(false);
       exportAllNotes();
     });
+    
+    document.getElementById('mmMarkdownPreview')?.addEventListener('click', () => {
+      closeOpenPopover(false);
+      const content = editor.value;
+      if (content.trim()) {
+        const meta = getCurrentNoteMeta();
+        const title = meta ? `${meta.title}.md` : 'Nota.md';
+        if (typeof openMarkdownViewer === 'function') {
+          openMarkdownViewer({ 
+            markdown: content, 
+            title: title 
+          });
+        }
+      } else {
+        showToast('Nenhum conteúdo para visualizar', 'info');
+      }
+    });
 
     // Exibir (checkboxes sincronizados)
     const mmWrap  = document.getElementById('mmToggleWrap');
@@ -2972,6 +4575,13 @@
     let uiDensity = 'comfortable';
     let uiHighContrast = false;
 
+    // ===== Novas configurações do editor =====
+    let autoSaveEnabled = true;
+    let tabSize = 2;
+    let toolbarVisible = true;
+    let statusBarVisible = true;
+    let notesPanelVisible = true;
+
     function applyGlass({blur, sat, contrast}) {
       setVar('--lg-blur', `${blur}px`);
       setVar('--lg-sat', `${sat}%`);
@@ -2992,6 +4602,35 @@
 
     function applyContrast(high){
       document.documentElement.classList.toggle('contrast-plus', !!high);
+    }
+
+    function applyTabSize(size) {
+      setVar('--tab-size', size);
+      const editor = document.getElementById('editor');
+      if (editor) {
+        editor.style.tabSize = size;
+      }
+    }
+
+    function applyToolbarVisibility(visible) {
+      const toolbar = document.querySelector('.toolbar');
+      if (toolbar) {
+        toolbar.style.display = visible ? '' : 'none';
+      }
+    }
+
+    function applyStatusBarVisibility(visible) {
+      const statusBar = document.querySelector('.status-bar');
+      if (statusBar) {
+        statusBar.style.display = visible ? '' : 'none';
+      }
+    }
+
+    function applyNotesPanelVisibility(visible) {
+      const notesPanel = document.querySelector('.notes-panel');
+      if (notesPanel) {
+        notesPanel.style.display = visible ? '' : 'none';
+      }
     }
 
     function focusTrap(dialog){
@@ -3077,6 +4716,11 @@
       const meta = currentId ? idx.find(n=>n.id===currentId) : null;
       const t = (meta && meta.title) ? meta.title : baseTitle;
       document.title = (isDirty ? '• ' : '') + t;
+    }
+
+    function getCurrentNoteMeta(){
+      const idx = loadIndex();
+      return currentId ? idx.find(n => n.id === currentId) : null;
     }
 
     // ===== Notes Ops =====
@@ -4149,6 +5793,13 @@
           density: uiDensity,
           highContrast: uiHighContrast
         },
+        editor: {
+          autoSave: autoSaveEnabled,
+          tabSize: tabSize,
+          toolbar: toolbarVisible,
+          statusBar: statusBarVisible,
+          notesPanel: notesPanelVisible
+        },
         currentId
       };
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(data));
@@ -4200,6 +5851,37 @@
       const dm = document.querySelector(`input[name="density"][value="${uiDensity}"]`); if (dm) dm.checked = true;
       document.getElementById('switchMotion')?.setAttribute('aria-checked', String(uiReduceMotion));
       document.getElementById('switchContrast')?.setAttribute('aria-checked', String(uiHighContrast));
+
+      // Novas configurações do editor
+      const e = Object.assign({ 
+        autoSave: true, 
+        tabSize: 2, 
+        toolbar: true, 
+        statusBar: true, 
+        notesPanel: true 
+      }, s.editor || {});
+      
+      autoSaveEnabled = !!e.autoSave;
+      tabSize = e.tabSize; applyTabSize(tabSize);
+      toolbarVisible = !!e.toolbar; applyToolbarVisibility(toolbarVisible);
+      statusBarVisible = !!e.statusBar; applyStatusBarVisibility(statusBarVisible);
+      notesPanelVisible = !!e.notesPanel; applyNotesPanelVisibility(notesPanelVisible);
+      
+      // Atualizar controles UI - usar .checked para switches
+      const autoSaveSwitch = document.getElementById('switchAutoSave');
+      if (autoSaveSwitch) autoSaveSwitch.checked = autoSaveEnabled;
+      
+      const toolbarSwitch = document.getElementById('switchToolbar');
+      if (toolbarSwitch) toolbarSwitch.checked = toolbarVisible;
+      
+      const statusBarSwitch = document.getElementById('switchStatusBar');
+      if (statusBarSwitch) statusBarSwitch.checked = statusBarVisible;
+      
+      const notesPanelSwitch = document.getElementById('switchNotesPanel');
+      if (notesPanelSwitch) notesPanelSwitch.checked = notesPanelVisible;
+      
+      const tabRadio = document.querySelector(`input[name="tabSize"][value="${tabSize}"]`);
+      if (tabRadio) tabRadio.checked = true;
 
       if(s.currentId) currentId = s.currentId;
       updateHints();
@@ -4284,15 +5966,576 @@
     // abrir com foco e trap
     btnSettings.addEventListener('click', () => { dlgSettings.showModal(); focusTrap(dlgSettings); });
 
-    // navegação lateral
-    document.querySelectorAll('#settings .sheet-sidebar .nav button').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        document.querySelectorAll('#settings .sheet-sidebar .nav button').forEach(b=>b.setAttribute('aria-current','false'));
-        btn.setAttribute('aria-current','true');
-        const sec = btn.dataset.sec;
-        document.querySelectorAll('#settings [data-section]').forEach(s => s.hidden = (s.dataset.section !== sec));
+    // ===== SETTINGS v2: navegação lateral, busca funcional e limpeza de duplicidades =====
+
+    // CORREÇÃO: Garantir que o modal inicia fechado
+    document.addEventListener('DOMContentLoaded', () => {
+      const settingsModal = document.getElementById('settings');
+      if (settingsModal && settingsModal.open) {
+        settingsModal.close();
+      }
+    });
+
+    // 1) Sidebar: rolar até a seção e destacar ativo
+    const settingsDlg = document.getElementById('settings');
+    const settingsBody = document.getElementById('settingsBody');
+    const navButtons = Array.from(document.querySelectorAll('#settings .settings-nav [data-jump]'));
+    const sections = Array.from(document.querySelectorAll('#settings .settings-section'));
+
+    // CORREÇÃO ADICIONAL: Forçar fechamento imediato se estiver aberto
+    if (settingsDlg && settingsDlg.open) {
+      settingsDlg.close();
+    }
+
+    navButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sel = btn.getAttribute('data-jump');
+        const sec = document.querySelector(sel);
+        if (!sec) return;
+        
+        // Marca como navegação manual e registra timestamp
+        isManualNavigation = true;
+        lastScrollTime = Date.now();
+        manuallySelectedSection = sel; // Armazena a seção selecionada manualmente
+        updateActiveNavigation(sel);
+        
+        // Comportamento de scroll diferenciado para seções finais
+        const isBottomSection = ['#sec-files', '#sec-advanced', '#sec-about'].includes(sel);
+        
+        if (isBottomSection) {
+          // Para seções finais, usa 'center' em vez de 'start' para evitar scroll excessivo
+          sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        // Para seções problemáticas próximas ao final, usa timeout maior
+        const timeout = isBottomSection ? 3000 : 1500;
+        
+        // Remove a flag após tempo suficiente para animação + margem de segurança
+        setTimeout(() => {
+          isManualNavigation = false;
+          // Para seções finais, mantém a proteção por mais tempo
+          if (!isBottomSection) {
+            manuallySelectedSection = null;
+          }
+          // Força uma verificação final para garantir estado correto
+          setTimeout(optimizedScrollSpy, 100);
+        }, timeout);
+        
+        // Remove a proteção estendida para seções finais após 6 segundos
+        if (isBottomSection) {
+          setTimeout(() => {
+            manuallySelectedSection = null;
+          }, 6000);
+        }
       });
     });
+
+    // Função para atualizar navegação ativa
+    function updateActiveNavigation(sectionId) {
+      const previousActive = navButtons.find(b => b.hasAttribute('aria-current'));
+      const previousId = previousActive ? previousActive.getAttribute('data-jump') : null;
+      
+      // Só atualiza se realmente mudou para evitar oscilações desnecessárias
+      if (previousId === sectionId) return;
+      
+      navButtons.forEach(b => b.removeAttribute('aria-current'));
+      const current = navButtons.find(b => b.getAttribute('data-jump') === sectionId);
+      current?.setAttribute('aria-current', 'true');
+      
+      // Debug opcional (descomente para testar)
+      // console.log('Active section changed:', previousId, '->', sectionId, 'Manual nav:', isManualNavigation);
+    }
+
+    // ScrollSpy otimizado com lógica melhorada para edge cases
+    let scrollTimeout;
+    let isManualNavigation = false;
+    let lastScrollTime = 0;
+    let manuallySelectedSection = null; // Armazena qual seção foi selecionada manualmente
+    
+    function optimizedScrollSpy() {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        // Evita conflitos durante navegação manual recente
+        const timeSinceLastNav = Date.now() - lastScrollTime;
+        if (isManualNavigation && timeSinceLastNav < 2000) return;
+        
+        const containerRect = settingsBody.getBoundingClientRect();
+        const containerTop = containerRect.top;
+        const containerHeight = containerRect.height;
+        const containerBottom = containerTop + containerHeight;
+        
+        let activeSection = null;
+        const visibleSections = [];
+        
+        // Primeiro passo: coleta todas as seções visíveis com suas métricas
+        sections.forEach(section => {
+          if (section.style.display === 'none') return; // Ignora seções filtradas
+          
+          const rect = section.getBoundingClientRect();
+          const sectionTop = rect.top;
+          const sectionBottom = rect.bottom;
+          const sectionHeight = rect.height;
+          
+          // Verifica se a seção está pelo menos parcialmente visível
+          if (sectionBottom > containerTop && sectionTop < containerBottom) {
+            const visibleTop = Math.max(sectionTop, containerTop);
+            const visibleBottom = Math.min(sectionBottom, containerBottom);
+            const visibleHeight = visibleBottom - visibleTop;
+            const visiblePercentage = visibleHeight / sectionHeight;
+            
+            visibleSections.push({
+              section,
+              rect,
+              sectionTop,
+              sectionBottom,
+              sectionHeight,
+              visibleHeight,
+              visiblePercentage,
+              distanceFromTop: Math.abs(sectionTop - containerTop),
+              isFullyVisible: sectionTop >= containerTop && sectionBottom <= containerBottom,
+              centerDistance: Math.abs((sectionTop + sectionBottom) / 2 - (containerTop + containerHeight / 2))
+            });
+          }
+        });
+        
+        if (visibleSections.length === 0) return;
+        
+        // Ordena seções por posição (primeira no topo)
+        visibleSections.sort((a, b) => a.sectionTop - b.sectionTop);
+        
+        // Estratégia de seleção refinada
+        const scrollTop = settingsBody.scrollTop;
+        const scrollHeight = settingsBody.scrollHeight;
+        const maxScroll = scrollHeight - containerHeight;
+        
+        // Condições MUITO mais restritivas para comportamentos especiais
+        const isVeryTop = scrollTop < 10; // Extremamente restritivo para o topo
+        
+        // Para o fundo, só considera se está REALMENTE no final E não é navegação manual recente
+        const isAtAbsoluteBottom = scrollTop >= maxScroll - 5 && maxScroll > 0;
+        const canUseBottomLogic = isAtAbsoluteBottom && timeSinceLastNav > 4000; // 4 segundos de proteção
+        
+        if (isVeryTop && visibleSections.length > 0) {
+          // Apenas quando realmente no topo absoluto
+          activeSection = visibleSections[0].section;
+        } else if (canUseBottomLogic && visibleSections.length > 0) {
+          // Apenas quando realmente no fundo absoluto E sem navegação manual recente
+          const lastSection = visibleSections[visibleSections.length - 1];
+          if (lastSection.section === sections[sections.length - 1] && lastSection.visiblePercentage > 0.5) {
+            activeSection = lastSection.section;
+          } else {
+            // Se não está realmente vendo a última seção bem, usa lógica normal
+            activeSection = null; // Força uso da lógica padrão abaixo
+          }
+        }
+        
+        // Se não foi determinado por condições especiais, usa lógica padrão
+        if (!activeSection) {
+          // PROTEÇÃO SUPER FORTE: Se há uma seção selecionada manualmente, prioriza ela
+          if (manuallySelectedSection) {
+            const manualSectionId = manuallySelectedSection.substring(1);
+            const manualSection = visibleSections.find(s => s.section.id === manualSectionId);
+            
+            if (manualSection && manualSection.visiblePercentage > 0.15) { // Muito tolerante
+              activeSection = manualSection.section;
+            }
+          }
+          
+          // Verificação adicional: se há uma seção atualmente ativa via navegação manual,
+          // verifica se ela ainda está razoavelmente visível antes de mudá-la
+          if (!activeSection) {
+            const currentlyActive = navButtons.find(b => b.hasAttribute('aria-current'));
+            if (currentlyActive) {
+              const currentSectionId = currentlyActive.getAttribute('data-jump').substring(1);
+              const currentSection = visibleSections.find(s => s.section.id === currentSectionId);
+              
+              // Proteção muito forte para seções finais após navegação manual
+              const isBottomSectionActive = ['sec-files', 'sec-advanced', 'sec-about'].includes(currentSectionId);
+              const protectionTime = isBottomSectionActive ? 5000 : 3000; // 5s para seções finais
+              const minVisibility = isBottomSectionActive ? 0.2 : 0.3; // Menos exigente para seções finais
+              
+              if (timeSinceLastNav < protectionTime && currentSection && currentSection.visiblePercentage > minVisibility) {
+                activeSection = currentSection.section;
+              }
+            }
+          }
+          
+          // Se ainda não determinou uma seção, usa estratégia hierárquica refinada
+          if (!activeSection) {
+            // Prioridade 1: Seção com mais de 60% visível (aumentado de 50%)
+            let bestSection = visibleSections.find(s => s.visiblePercentage > 0.6);
+            
+            if (bestSection) {
+              activeSection = bestSection.section;
+            } else {
+              // Prioridade 2: Seção completamente visível (para seções pequenas)
+              bestSection = visibleSections.find(s => s.isFullyVisible);
+              
+              if (bestSection) {
+                activeSection = bestSection.section;
+              } else {
+                // Prioridade 3: Seção que cruza a linha de referência (25% do topo - mais baixo)
+                const referencePoint = containerTop + (containerHeight * 0.25);
+                bestSection = visibleSections.find(s => 
+                  s.sectionTop <= referencePoint && s.sectionBottom > referencePoint
+                );
+                
+                if (bestSection) {
+                  activeSection = bestSection.section;
+                } else {
+                  // Prioridade 4: Seção com maior área visível
+                  bestSection = visibleSections.reduce((best, current) => {
+                    return current.visibleHeight > best.visibleHeight ? current : best;
+                  });
+                  
+                  if (bestSection) {
+                    activeSection = bestSection.section;
+                  } else {
+                    // Fallback final: seção mais próxima do centro
+                    bestSection = visibleSections.reduce((closest, current) => {
+                      return current.centerDistance < closest.centerDistance ? current : closest;
+                    });
+                    activeSection = bestSection.section;
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        if (activeSection) {
+          const id = '#' + activeSection.id;
+          updateActiveNavigation(id);
+        }
+      }, 100);
+    }
+
+    // Event listeners para scroll otimizado
+    settingsBody.addEventListener('scroll', optimizedScrollSpy, { passive: true });
+    
+    // Listener para quando o scroll termina (melhor detecção de fim de animação)
+    if ('onscrollend' in window) {
+      settingsBody.addEventListener('scrollend', () => {
+        if (isManualNavigation) {
+          // Aguarda um pouco mais antes de reativar o scrollspy
+          setTimeout(() => {
+            isManualNavigation = false;
+            optimizedScrollSpy();
+          }, 200);
+        }
+      });
+    }
+    
+    // ResizeObserver para recalcular quando o modal muda de tamanho
+    if (window.ResizeObserver) {
+      const resizeObserver = new ResizeObserver(() => {
+        if (!isManualNavigation) {
+          optimizedScrollSpy();
+        }
+      });
+      resizeObserver.observe(settingsBody);
+    }
+    
+    // Inicializa o estado ativo
+    optimizedScrollSpy();
+
+    // 2) Busca funcional (filtra grupos e destaca matches)
+    const settingsSearch = document.getElementById('settingsSearch');
+
+    function clearMarks(root) {
+      root.querySelectorAll('mark.settings-hit').forEach(m => {
+        const t = document.createTextNode(m.textContent);
+        m.replaceWith(t);
+      });
+    }
+
+    function highlightText(el, query) {
+      if (!query) return;
+      const rx = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+      for (const node of Array.from(el.childNodes)) {
+        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+          const parts = node.textContent.split(rx);
+          if (parts.length > 1) {
+            const frag = document.createDocumentFragment();
+            parts.forEach((p, i) => {
+              if (i % 2 === 1) {
+                const mark = document.createElement('mark');
+                mark.className = 'settings-hit';
+                mark.textContent = p;
+                frag.appendChild(mark);
+              } else {
+                frag.appendChild(document.createTextNode(p));
+              }
+            });
+            node.replaceWith(frag);
+          }
+        }
+      }
+    }
+
+    function filterSettings(q) {
+      const query = (q || '').trim().toLowerCase();
+      let firstMatch = null;
+
+      sections.forEach(section => {
+        clearMarks(section);
+        let sectionHasMatch = false;
+
+        // cada .subsection é uma "categoria" vertical
+        section.querySelectorAll('.subsection').forEach(sub => {
+          clearMarks(sub);
+          const text = sub.textContent.toLowerCase();
+          const match = query ? text.includes(query) : true;
+          sub.style.display = match ? '' : 'none';
+          if (match && query) {
+            // highlight em títulos e labels
+            sub.querySelectorAll('h4, label, .hint, .section-head').forEach(el => highlightText(el, query));
+            if (!firstMatch) firstMatch = sub;
+          }
+          sectionHasMatch = sectionHasMatch || match;
+        });
+
+        // se nenhuma subseção bateu, esconde a seção
+        section.style.display = sectionHasMatch ? '' : 'none';
+      });
+
+      // navega ao primeiro resultado
+      if (firstMatch) {
+        firstMatch.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      
+      // Recalcula o scrollspy após filtrar
+      setTimeout(optimizedScrollSpy, 100);
+    }
+
+    settingsSearch.addEventListener('input', (e) => filterSettings(e.target.value));
+
+    // Atalho: / foca busca; Enter vai para primeira seção com hit
+    settingsDlg.addEventListener('keydown', (e) => {
+      if (e.key === '/' && (document.activeElement.tagName !== 'INPUT')) {
+        e.preventDefault(); 
+        settingsSearch.focus(); 
+        settingsSearch.select();
+      } else if (e.key === 'Enter' && document.activeElement === settingsSearch) {
+        const firstVisible = settingsBody.querySelector('.settings-section:not([style*="display: none"])');
+        firstVisible?.scrollIntoView({behavior:'smooth', block:'start'});
+      }
+    });
+
+    // 3) Switches (novos com <input type="checkbox">): sincronizar com seu estado
+    function reflectSwitchesFromState() {
+      document.getElementById('switchWrap').checked  = !!wrapOn;
+      document.getElementById('switchLines').checked = !!linesVisible;
+      document.getElementById('switchMini').checked  = !!miniVisible;
+      document.getElementById('switchMotion').checked   = !!uiReduceMotion;
+      document.getElementById('switchContrast').checked = !!uiHighContrast;
+      
+      // Novos switches - usar .checked em vez de setAttribute
+      const autoSaveSwitch = document.getElementById('switchAutoSave');
+      if (autoSaveSwitch) autoSaveSwitch.checked = autoSaveEnabled;
+      
+      const toolbarSwitch = document.getElementById('switchToolbar');
+      if (toolbarSwitch) toolbarSwitch.checked = toolbarVisible;
+      
+      const statusBarSwitch = document.getElementById('switchStatusBar');
+      if (statusBarSwitch) statusBarSwitch.checked = statusBarVisible;
+      
+      const notesPanelSwitch = document.getElementById('switchNotesPanel');
+      if (notesPanelSwitch) notesPanelSwitch.checked = notesPanelVisible;
+    }
+    reflectSwitchesFromState();
+
+    // 4) Listeners dos switches (reaproveitando suas funções apply/persist)
+    document.getElementById('switchWrap').addEventListener('change', (e)=> setWrap(e.target.checked));
+    document.getElementById('switchLines').addEventListener('change', (e)=> setLineNumbers(e.target.checked));
+    document.getElementById('switchMini').addEventListener('change', (e)=> setMinimap(e.target.checked));
+    document.getElementById('switchMotion').addEventListener('change', (e)=> { uiReduceMotion = e.target.checked; applyMotion(uiReduceMotion); persistSettings(); });
+    document.getElementById('switchContrast').addEventListener('change', (e)=> { uiHighContrast = e.target.checked; applyContrast(uiHighContrast); persistSettings(); });
+
+    // Event listeners para novas configurações
+    document.getElementById('switchAutoSave')?.addEventListener('change', (e)=> { 
+      autoSaveEnabled = e.target.checked; 
+      persistSettings(); 
+    });
+    document.getElementById('switchToolbar')?.addEventListener('change', (e)=> { 
+      toolbarVisible = e.target.checked; 
+      applyToolbarVisibility(toolbarVisible); 
+      persistSettings(); 
+    });
+    document.getElementById('switchStatusBar')?.addEventListener('change', (e)=> { 
+      statusBarVisible = e.target.checked; 
+      applyStatusBarVisibility(statusBarVisible); 
+      persistSettings(); 
+    });
+    document.getElementById('switchNotesPanel')?.addEventListener('change', (e)=> { 
+      notesPanelVisible = e.target.checked; 
+      applyNotesPanelVisibility(notesPanelVisible); 
+      persistSettings(); 
+    });
+
+    // Event listener para tamanho de tabulação
+    document.querySelectorAll('input[name="tabSize"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        if (e.target.checked) {
+          tabSize = Number(e.target.value);
+          applyTabSize(tabSize);
+          persistSettings();
+        }
+      });
+    });
+
+    // 5) Tema & Densidade (mantém compatibilidade)
+    document.querySelectorAll('input[name="theme"]').forEach(r => {
+      r.addEventListener('change', ()=> { setTheme(r.value); persistSettings(); });
+    });
+    document.querySelectorAll('input[name="density"]').forEach(r => {
+      r.addEventListener('change', ()=> { uiDensity = r.value; applyDensity(uiDensity); persistSettings(); });
+    });
+
+    // 6) Ao abrir o modal, garantir estado dos switches + limpar busca + inicializar scrollspy
+    document.getElementById('btnSettings').addEventListener('click', () => {
+      settingsSearch.value = '';
+      filterSettings('');
+      reflectSwitchesFromState();
+      // Inicializa scrollspy após um pequeno delay para garantir que o modal esteja renderizado
+      setTimeout(() => {
+        optimizedScrollSpy();
+        // Garantir que a primeira seção esteja ativa inicialmente
+        if (navButtons.length > 0 && !navButtons.find(b => b.hasAttribute('aria-current'))) {
+          navButtons[0].setAttribute('aria-current', 'true');
+        }
+      }, 100);
+    });
+
+    // 7) Conectar botões de importar/exportar ao sistema existente
+    document.getElementById('btnImportFromSettings')?.addEventListener('click', () => {
+      document.getElementById('inputCfg')?.click();
+    });
+    document.getElementById('btnExportFromSettings')?.addEventListener('click', () => {
+      exportSettings();
+    });
+
+    // ===== SETTINGS I/O (Export/Import/Reset) =====
+    (function(){
+      const KEY = 'editor:settings:v5';
+
+      function exportSettings(){
+        const data = localStorage.getItem(KEY) || '{}';
+        const blob = new Blob([data], {type:'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `canvas_settings_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }
+
+      function importSettingsFile(file){
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try{
+            const obj = JSON.parse(reader.result);
+            localStorage.setItem(KEY, JSON.stringify(obj));
+            // Reaplicar imediatamente
+            restoreSettings();
+            // Refresca UI dependente
+            renderGutter(true);
+            updateMinimap(true);
+            alert('Configurações importadas.');
+          }catch(err){ alert('Arquivo inválido.'); }
+        };
+        reader.readAsText(file);
+      }
+
+      function resetSettingsAll(){
+        localStorage.removeItem(KEY);
+        restoreSettings();
+        renderGutter(true);
+        updateMinimap(true);
+        alert('Configurações restauradas aos padrões.');
+      }
+
+      // Botões
+      document.getElementById('btnExportSettings')?.addEventListener('click', exportSettings);
+      document.getElementById('btnExportSettings2')?.addEventListener('click', exportSettings);
+
+      // Import de config: use um input escondido para não confundir com import de notas
+      let inputCfg = document.getElementById('importSettingsFile');
+      if(!inputCfg){
+        inputCfg = document.createElement('input');
+        inputCfg.type = 'file';
+        inputCfg.accept = '.json';
+        inputCfg.id = 'importSettingsFile';
+        inputCfg.hidden = true;
+        document.body.appendChild(inputCfg);
+      }
+
+      document.getElementById('btnImportNotes')?.addEventListener('click', () => {
+        // este é para NOTAS, já existe handleImport() (de notas)
+        document.getElementById('importFile')?.click();
+      });
+
+      // Se quiser um botão de Importar Config em "Avançado", crie-o e ligue aqui:
+      document.getElementById('btnImportSettings')?.addEventListener('click', () => inputCfg.click());
+      inputCfg.addEventListener('change', e => importSettingsFile(e.target.files[0]));
+
+      // Reset geral
+      document.getElementById('btnResetSettings')?.addEventListener('click', resetSettingsAll);
+      document.getElementById('btnResetSettings2')?.addEventListener('click', resetSettingsAll);
+    })();
+
+    // 1) Chipbar: rolar até a seção e marcar chip ativo
+    // Observa rolagem para atualizar chip ativo (antiga implementação removida)
+
+    // 3) Quick toggles iguais à toolbar (antigas funções removidas)
+    // 4) Reset/Export atalhos duplicados (head e seção avançado) (antigas funções removidas)
+    // 5) Reset de SEÇÃO (opcional, se quiser granular) (antigas funções removidas)
+    // Exemplo: chame resetSection('appearance') de um botão que você inserir no summary da seção.
+    function resetSection(sectionId){
+      if (!confirm('Restaurar padrões desta seção?')) return;
+
+      switch(sectionId){
+        case 'appearance': {
+          // tema auto + glass defaults
+          document.getElementById('theme-auto').checked = true; setTheme('auto');
+          const g = { blur: 12, sat: 150, contrast: 1.04 };
+          document.getElementById('glassBlur').value = g.blur;
+          document.getElementById('glassSat').value = g.sat;
+          document.getElementById('glassContrast').value = g.contrast;
+          document.getElementById('glassBlurValue').textContent = g.blur + 'px';
+          document.getElementById('glassSatValue').textContent = g.sat + '%';
+          document.getElementById('glassContrastValue').textContent = g.contrast.toFixed(2);
+          applyGlass(g); persistSettings();
+          break;
+        }
+        case 'editor': {
+          setFontSize(10);
+          lineHeight.value = 1.55; document.getElementById('lineHeightValueDisplay').textContent = '1.55';
+          setVar('--line-height', '1.55');
+          padX.value = 16; document.getElementById('padXValueDisplay').textContent = '16px';
+          setVar('--editor-padding', '16px');
+          setWrap(false); setLineNumbers(false); setMinimap(false);
+          persistSettings(); renderGutter(true); updateMinimap(true);
+          break;
+        }
+        case 'interface': {
+          uiReduceMotion = false; applyMotion(uiReduceMotion);
+          uiDensity = 'comfortable'; applyDensity(uiDensity);
+          document.getElementById('switchMotion').setAttribute('aria-checked','false');
+          document.querySelector('#densitySeg input[value="comfortable"]').checked = true;
+          persistSettings();
+          break;
+        }
+        case 'accessibility': {
+          uiHighContrast = false; applyContrast(false);
+          document.getElementById('switchContrast').setAttribute('aria-checked','false');
+          persistSettings();
+          break;
+        }
+      }
+    }
 
     // tema (segmented)
     document.querySelectorAll('input[name="theme"]').forEach(r=>{
@@ -4347,72 +6590,420 @@
       applyContrast(uiHighContrast); persistSettings();
     });
 
-    // botões utilidades
+    // botões utilidades (algumas removidas - agora integradas nas novas implementações)
     document.getElementById('btnExportFromSettings')?.addEventListener('click', ()=> btnExport.click());
-    document.getElementById('btnImportFromSettings')?.addEventListener('click', ()=> btnImport.click());
 
-    document.getElementById('btnResetSettings')?.addEventListener('click', ()=>{
-      if (!confirm('Restaurar padrões de Ajustes?')) return;
-      localStorage.removeItem(SETTINGS_KEY);
-      restoreSettings();
-      showToast('Configurações restauradas', 'success');
-    });
-    document.getElementById('btnExportSettings')?.addEventListener('click', ()=>{
-      const data = localStorage.getItem(SETTINGS_KEY) || '{}';
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([data],{type:'application/json'}));
-      a.download = 'canvas_settings.json'; a.click(); URL.revokeObjectURL(a.href);
-    });
-
-    // ========== Help Center ==========
+    // ========== Help Center v2 — Liquid Glass ==========
     const dlgHelp = document.getElementById('help');
-    btnHelp.addEventListener('click', ()=> { dlgHelp.showModal(); focusTrap(dlgHelp); });
+    const helpNavItems = document.querySelectorAll('.help-nav-item');
+    const helpSections = document.querySelectorAll('.help-section');
+    const helpSearch = document.getElementById('helpSearch');
+    const helpTitle = document.querySelector('.help-title');
+    const searchResultsSection = document.getElementById('section-search-results');
+    const searchResults = document.getElementById('searchResults');
+    
+    // Keyboard shortcuts database (source of truth) - Expandido e Reorganizado
+    const KEYBOARD_SHORTCUTS = [
+      // === Arquivos ===
+      { desc: 'Nova Nota', keys: ['⌘', 'N'], category: 'Arquivos', detail: 'Cria uma nova nota em branco' },
+      { desc: 'Abrir Gerenciador de Notas', keys: ['⌘', 'O'], category: 'Arquivos', detail: 'Abre o painel de gerenciamento de notas' },
+      { desc: 'Salvar como Arquivo', keys: ['⌘', 'S'], category: 'Arquivos', detail: 'Salva a nota atual como arquivo .md' },
+      { desc: 'Imprimir', keys: ['⌘', 'P'], category: 'Arquivos', detail: 'Abre a visualização de impressão' },
+      
+      // === Edição de Texto ===
+      { desc: 'Desfazer', keys: ['⌘', 'Z'], category: 'Edição', detail: 'Desfaz a última alteração' },
+      { desc: 'Refazer', keys: ['⌘', 'Shift', 'Z'], category: 'Edição', detail: 'Refaz a última alteração desfeita' },
+      { desc: 'Selecionar Tudo', keys: ['⌘', 'A'], category: 'Edição', detail: 'Seleciona todo o texto do documento' },
+      { desc: 'Copiar', keys: ['⌘', 'C'], category: 'Edição', detail: 'Copia a seleção para a área de transferência' },
+      { desc: 'Recortar', keys: ['⌘', 'X'], category: 'Edição', detail: 'Recorta a seleção para a área de transferência' },
+      { desc: 'Colar', keys: ['⌘', 'V'], category: 'Edição', detail: 'Cola o conteúdo da área de transferência' },
+      { desc: 'Duplicar Linha/Seleção', keys: ['⌘', 'D'], category: 'Edição', detail: 'Duplica a linha atual ou seleção' },
+      { desc: 'Mover Linha para Cima', keys: ['Alt', '↑'], category: 'Edição', detail: 'Move a linha atual para cima' },
+      { desc: 'Mover Linha para Baixo', keys: ['Alt', '↓'], category: 'Edição', detail: 'Move a linha atual para baixo' },
+      { desc: 'Renomear Nota', keys: ['F2'], category: 'Edição', detail: 'Edita o título da nota atual' },
+      
+      // === Busca e Navegação ===
+      { desc: 'Buscar', keys: ['⌘', 'F'], category: 'Busca e Navegação', detail: 'Abre a barra de busca' },
+      { desc: 'Buscar e Substituir', keys: ['⌘', 'H'], category: 'Busca e Navegação', detail: 'Abre a barra de busca com substituição' },
+      { desc: 'Próximo Resultado', keys: ['F3'], category: 'Busca e Navegação', detail: 'Vai para o próximo resultado da busca' },
+      { desc: 'Resultado Anterior', keys: ['Shift', 'F3'], category: 'Busca e Navegação', detail: 'Vai para o resultado anterior da busca' },
+      { desc: 'Ir para Linha', keys: ['⌘', 'G'], category: 'Busca e Navegação', detail: 'Salta para uma linha específica' },
+      { desc: 'Fechar Busca', keys: ['Escape'], category: 'Busca e Navegação', detail: 'Fecha a barra de busca' },
+      
+      // === Visualização ===
+      { desc: 'Quebra de Linha', keys: ['Alt', 'Z'], category: 'Visualização', detail: 'Liga/desliga quebra automática de linha' },
+      { desc: 'Alternar Numeração', keys: ['⌘', 'L'], category: 'Visualização', detail: 'Mostra/oculta números de linha' },
+      { desc: 'Alternar Bookmark', keys: ['⌘', 'B'], category: 'Visualização', detail: 'Liga/desliga bookmark na linha atual' },
+      { desc: 'Alternar Bookmark (Alt)', keys: ['F3'], category: 'Visualização', detail: 'Alternativa para bookmark' },
+      { desc: 'Alternar Minimap', keys: ['⌘', 'M'], category: 'Visualização', detail: 'Mostra/oculta o minimap' },
+      { desc: 'Aumentar Fonte', keys: ['⌘', '+'], category: 'Visualização', detail: 'Aumenta o tamanho da fonte' },
+      { desc: 'Diminuir Fonte', keys: ['⌘', '-'], category: 'Visualização', detail: 'Diminui o tamanho da fonte' },
+      { desc: 'Resetar Fonte', keys: ['⌘', '0'], category: 'Visualização', detail: 'Restaura o tamanho padrão da fonte' },
+      { desc: 'Modo Foco', keys: ['F11'], category: 'Visualização', detail: 'Alterna para tela cheia (depende do navegador)' },
+      
+      // === Sistema ===
+      { desc: 'Ajustes', keys: ['⌘', ','], category: 'Sistema', detail: 'Abre o painel de configurações' },
+      { desc: 'Centro de Ajuda', keys: ['⌘', '/'], category: 'Sistema', detail: 'Abre este centro de ajuda' },
+      { desc: 'Fechar Modal', keys: ['Escape'], category: 'Sistema', detail: 'Fecha qualquer modal ou painel aberto' },
+      
+      // === Atalhos Especiais ===
+      { desc: 'Clique na Linha/Coluna', keys: ['Click'], category: 'Especiais', detail: 'Clique no rodapé para ir para linha' },
+      { desc: 'Duplo Clique no Título', keys: ['Double Click'], category: 'Especiais', detail: 'Duplo clique no título para renomear' },
+      { desc: 'Arrastar Arquivo', keys: ['Drag & Drop'], category: 'Especiais', detail: 'Arraste .txt/.md para abrir' }
+    ];
 
-    document.querySelectorAll('#help .help-tabs [role="tab"]').forEach(tab=>{
-      tab.addEventListener('click', ()=>{
-        document.querySelectorAll('#help .help-tabs [role="tab"]').forEach(t=>t.setAttribute('aria-current','false'));
-        tab.setAttribute('aria-current','true');
-        const id = tab.dataset.tab;
-        document.querySelectorAll('#help [data-tabpanel]').forEach(p => p.hidden = (p.getAttribute('data-tabpanel') !== id));
+    // Platform detection for shortcuts
+    const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+    
+    function formatShortcutKey(key) {
+      if (key === '⌘') return isMac ? '⌘' : 'Ctrl';
+      return key;
+    }
+    
+    function renderShortcutKeys(keys) {
+      return keys.map(key => `<span class="key">${formatShortcutKey(key)}</span>`).join('<span class="key-plus">+</span>');
+    }
+
+    // Content database for search
+    const HELP_CONTENT = [
+      {
+        section: 'overview',
+        title: 'Visão Geral',
+        content: 'Canvas editor de texto moderno minimalista produtividade experiência usuário interface limpa numeração linhas minimap busca avançada',
+        snippet: 'Um editor de texto moderno e minimalista com foco na produtividade.'
+      },
+      {
+        section: 'shortcuts',
+        title: 'Atalhos de Teclado',
+        content: 'atalhos teclado shortcuts keyboard nova nota abrir buscar substituir ir linha duplicar mover quebra renomear fonte aumentar diminuir resetar numeração minimap ajustes ajuda',
+        snippet: 'Acelere seu fluxo de trabalho com atalhos poderosos.'
+      },
+      {
+        section: 'features',
+        title: 'Funcionalidades',
+        content: 'busca substituição regex expressões regulares minimap navegação gerenciador notas filtros exportação importação configurações fontes temas auto-salvamento',
+        snippet: 'Sistema avançado de busca, minimap, gerenciador de notas e muito mais.'
+      },
+      {
+        section: 'tips',
+        title: 'Dicas e Truques',
+        content: 'dicas truques regex multilinha mover duplicar navegação drag drop arquivos txt md',
+        snippet: 'Aprenda truques para ser mais produtivo no Canvas.'
+      },
+      {
+        section: 'about',
+        title: 'Sobre',
+        content: 'sobre canvas liquid glass blur transparências client-side acessibilidade responsivo armazenamento local',
+        snippet: 'Saiba mais sobre o Canvas e suas características.'
+      }
+    ];
+
+    // Initialize help center
+    btnHelp.addEventListener('click', () => { 
+      dlgHelp.showModal(); 
+      focusTrap(dlgHelp); 
+      // Ensure shortcuts are rendered when help opens
+      setTimeout(renderShortcuts, 100);
+    });
+    
+    // Event listener para o Markdown Viewer
+    document.addEventListener('DOMContentLoaded', function() {
+      const btnMarkdownPreview = document.getElementById('btnMarkdownPreview');
+      if (btnMarkdownPreview) {
+        btnMarkdownPreview.addEventListener('click', () => {
+          const content = editor.value;
+          if (content.trim()) {
+            const meta = getCurrentNoteMeta();
+            const title = meta ? `${meta.title}.md` : 'Nota.md';
+            if (typeof openMarkdownViewer === 'function') {
+              openMarkdownViewer({ 
+                markdown: content, 
+                title: title 
+              });
+            } else {
+              showToast('MDV ainda não foi carregado', 'error');
+            }
+          } else {
+            // Exemplo de teste se não houver conteúdo
+            if (typeof openMarkdownViewer === 'function') {
+              openMarkdownViewer({
+                title: 'Demo MDV',
+                markdown: `# Visualizador de Markdown
+
+Este é o **Visualizador de Markdown (MDV)** do Canvas de Texto!
+
+## Recursos
+
+- ✅ Renderização completa de Markdown
+- ✅ Destaque de sintaxe com \`highlight.js\`
+- ✅ Busca in-page com navegação
+- ✅ Zoom ajustável
+- ✅ Design Liquid Glass
+- ✅ Suporte a LaTeX: $E=mc^2$
+- ✅ Suporte a Mermaid (diagramas)
+
+### Exemplo de código
+
+\`\`\`javascript
+function exemplo() {
+  console.log("Olá, MDV!");
+}
+\`\`\`
+
+### Exemplo de tabela
+
+| Recurso | Status |
+|---------|--------|
+| Markdown | ✅ |
+| LaTeX | ✅ |
+| Mermaid | ✅ |
+
+### Blockquote
+
+> Este é um exemplo de citação no MDV.
+
+---
+
+**Pressione \`/\` para buscar ou use Ctrl+/Cmd+ e Ctrl-/Cmd- para zoom!**`
+              });
+            } else {
+              showToast('MDV ainda não foi carregado', 'error');
+            }
+          }
+        });
+      }
+    });
+
+    // Navigation between sections
+    helpNavItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const sectionId = item.dataset.section;
+        showHelpSection(sectionId);
+        
+        // Update navigation state
+        helpNavItems.forEach(nav => nav.classList.remove('active'));
+        item.classList.add('active');
+        
+        // Clear search if navigating manually
+        if (helpSearch.value) {
+          helpSearch.value = '';
+          helpTitle.textContent = 'Centro de Ajuda';
+        }
       });
     });
 
-    // Tabela de atalhos (mesmo conteúdo que você tinha, mas gerado dinamicamente para filtrar)
-    const SHORTCUTS = [
-      ['Nova Nota','⌘/Ctrl + N'],
-      ['Abrir Notas','⌘/Ctrl + O'],
-      ['Ajustes','⌘/Ctrl + ,'],
-      ['Buscar','⌘/Ctrl + F'],
-      ['Substituir','⌘/Ctrl + H'],
-      ['Ir para Linha','⌘/Ctrl + G'],
-      ['Imprimir','⌘/Ctrl + P'],
-      ['Duplicar Linha/Seleção','⌘/Ctrl + D'],
-      ['Mover Linha/Seleção','Alt + ↑/↓'],
-      ['Quebra de Linha','Alt + Z'],
-      ['Alternar Marcador','F3 ou ⌘/Ctrl + B'],
-      ['Renomear Nota','F2'],
-      ['Aumentar Fonte','⌘/Ctrl + +'],
-      ['Diminuir Fonte','⌘/Ctrl + -'],
-      ['Resetar Fonte','⌘/Ctrl + 0']
-    ];
-    const shortcutList = document.getElementById('shortcutList');
-    function renderShortcuts(filter=''){
-      const f = filter.toLowerCase().trim();
-      shortcutList.innerHTML = '';
-      (f ? SHORTCUTS.filter(([a,b]) => a.toLowerCase().includes(f) || b.toLowerCase().includes(f)) : SHORTCUTS)
-        .forEach(([name, combo])=>{
-          const row = document.createElement('div'); row.className='shortcut-row';
-          const left = document.createElement('div'); left.textContent = name;
-          const right = document.createElement('div'); right.innerHTML = `<kbd>${combo}</kbd>`;
-          row.append(left, right); shortcutList.appendChild(row);
-        });
+    function showHelpSection(sectionId) {
+      helpSections.forEach(section => {
+        section.classList.remove('active');
+        if (section.id === `section-${sectionId}`) {
+          section.classList.add('active');
+        }
+      });
     }
-    renderShortcuts();
-    document.getElementById('helpSearch')?.addEventListener('input', (e)=> renderShortcuts(e.target.value));
-    document.getElementById('btnCopyShortcuts')?.addEventListener('click', async ()=>{
-      const asMd = SHORTCUTS.map(([n,k])=>`- ${n}: \`${k}\``).join('\n');
-      await navigator.clipboard.writeText(asMd);
-      showToast('Atalhos copiados', 'success');
+
+    function renderShortcuts() {
+      const shortcutsList = document.getElementById('shortcutsList');
+      if (!shortcutsList) return;
+      
+      // Group shortcuts by category
+      const groupedShortcuts = {};
+      KEYBOARD_SHORTCUTS.forEach(shortcut => {
+        if (!groupedShortcuts[shortcut.category]) {
+          groupedShortcuts[shortcut.category] = [];
+        }
+        groupedShortcuts[shortcut.category].push(shortcut);
+      });
+      
+      // Category icons
+      const categoryIcons = {
+        'Arquivos': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>',
+        'Edição': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+        'Busca e Navegação': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>',
+        'Visualização': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+        'Sistema': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+        'Especiais': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>'
+      };
+      
+      let html = '';
+      
+      // Render categories in order
+      const categoryOrder = ['Arquivos', 'Edição', 'Busca e Navegação', 'Visualização', 'Sistema', 'Especiais'];
+      
+      categoryOrder.forEach(category => {
+        if (groupedShortcuts[category]) {
+          const shortcuts = groupedShortcuts[category];
+          const icon = categoryIcons[category] || '';
+          
+          html += `
+            <div class="shortcuts-category" data-category="${category}">
+              <h3 class="shortcuts-category-title">
+                <span class="shortcuts-category-icon">${icon}</span>
+                ${category}
+              </h3>
+              <div class="shortcuts-list">
+          `;
+          
+          shortcuts.forEach(shortcut => {
+            html += `
+              <div class="shortcut-item">
+                <div class="shortcut-info">
+                  <div class="shortcut-desc">${shortcut.desc}</div>
+                  <div class="shortcut-detail">${shortcut.detail}</div>
+                </div>
+                <div class="shortcut-keys">${renderShortcutKeys(shortcut.keys)}</div>
+              </div>
+            `;
+          });
+          
+          html += `
+              </div>
+            </div>
+          `;
+        }
+      });
+      
+      shortcutsList.innerHTML = html;
+    }
+
+    // Search functionality
+    helpSearch.addEventListener('input', debounce((e) => {
+      const query = e.target.value.trim().toLowerCase();
+      
+      if (!query) {
+        // Return to current section or default
+        const activeNav = document.querySelector('.help-nav-item.active');
+        const currentSection = activeNav ? activeNav.dataset.section : 'overview';
+        showHelpSection(currentSection);
+        helpTitle.textContent = 'Centro de Ajuda';
+        return;
+      }
+      
+      performHelpSearch(query);
+    }, 300));
+
+    function performHelpSearch(query) {
+      // Search in content and shortcuts
+      const results = [];
+      
+      // Search help content
+      HELP_CONTENT.forEach(item => {
+        if (item.content.includes(query) || item.title.toLowerCase().includes(query)) {
+          results.push({
+            type: 'content',
+            section: item.section,
+            title: item.title,
+            snippet: highlightText(item.snippet, query)
+          });
+        }
+      });
+      
+      // Search shortcuts
+      KEYBOARD_SHORTCUTS.forEach(shortcut => {
+        const desc = shortcut.desc.toLowerCase();
+        const detail = shortcut.detail.toLowerCase();
+        const keys = shortcut.keys.join(' ').toLowerCase();
+        const category = shortcut.category.toLowerCase();
+        
+        if (desc.includes(query) || detail.includes(query) || keys.includes(query) || category.includes(query)) {
+          results.push({
+            type: 'shortcut',
+            title: shortcut.desc,
+            snippet: `${shortcut.detail} — Atalho: ${shortcut.keys.map(formatShortcutKey).join(' + ')}`,
+            shortcut: shortcut,
+            section: 'shortcuts'
+          });
+        }
+      });
+      
+      displaySearchResults(results, query);
+    }
+
+    function displaySearchResults(results, query) {
+      helpTitle.textContent = `Resultados para "${query}"`;
+      
+      let html = '';
+      if (results.length === 0) {
+        html = `
+          <div style="text-align: center; padding: 40px; color: color-mix(in srgb, var(--c-content) 60%, transparent);">
+            <svg style="width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <div>Nenhum resultado encontrado</div>
+            <div style="font-size: 13px; margin-top: 8px;">Tente termos diferentes ou navegue pelas seções</div>
+          </div>
+        `;
+      } else {
+        results.forEach(result => {
+          html += `
+            <div class="search-result-item" data-section="${result.section || ''}" data-type="${result.type}">
+              <div class="search-result-title">${highlightText(result.title, query)}</div>
+              <div class="search-result-snippet">${result.snippet}</div>
+            </div>
+          `;
+        });
+      }
+      
+      searchResults.innerHTML = html;
+      showHelpSection('search-results');
+      
+      // Add click handlers to results
+      searchResults.querySelectorAll('.search-result-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const section = item.dataset.section;
+          if (section && section !== 'search-results') {
+            // Clear search and navigate to section
+            helpSearch.value = '';
+            showHelpSection(section);
+            helpTitle.textContent = 'Centro de Ajuda';
+            
+            // Update navigation
+            helpNavItems.forEach(nav => nav.classList.remove('active'));
+            const targetNav = document.querySelector(`[data-section="${section}"]`);
+            if (targetNav) targetNav.classList.add('active');
+          }
+        });
+      });
+    }
+
+    function highlightText(text, query) {
+      if (!query) return text;
+      const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+      return text.replace(regex, '<span class="search-highlight">$1</span>');
+    }
+
+    function escapeRegex(string) {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+
+    // Keyboard shortcuts for help center
+    dlgHelp.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        dlgHelp.close();
+      }
+      // Removed duplicate Ctrl+/ handler - handled globally
+    });
+
+    // Initialize with overview section
+    showHelpSection('overview');
+    
+    // Legacy compatibility - remove old help system references
+    document.querySelectorAll('#help .help-tabs [role="tab"]').forEach(tab => {
+      // Remove old tab system event listeners if they exist
+      const newTab = tab.cloneNode(true);
+      tab.parentNode?.replaceChild(newTab, tab);
     });
     
     // Font size controls
@@ -4730,11 +7321,15 @@
         e.preventDefault(); const start = editor.selectionStart; const end = editor.selectionEnd; const v = editor.value; editor.value = v.slice(0,start) + '	' + v.slice(end); editor.selectionStart = editor.selectionEnd = start + 1; editor.dispatchEvent(new Event('input')); updateLnCol();
       }
       if(e.altKey && e.key.toLowerCase()==='z'){ e.preventDefault(); setWrap(!wrapOn); }
+      
       if((e.metaKey||e.ctrlKey) && e.key==='o'){ e.preventDefault(); buildNotesList(); dlgNotes.showModal(); }
 
       if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='n'){ e.preventDefault(); const id = createNote(''); openNote(id); }
+      if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); btnSaveFile.click(); }
       if((e.metaKey||e.ctrlKey) && e.key===','){ e.preventDefault(); dlgSettings.open?dlgSettings.close():dlgSettings.showModal(); }
       if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='p'){ e.preventDefault(); window.print(); }
+      if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='m'){ e.preventDefault(); setMinimap(!minimapOn); }
+      if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='l'){ e.preventDefault(); setLineNumbers(!linesVisible); }
       
       // Font size controls
       if((e.metaKey||e.ctrlKey) && (e.key==='=' || e.key==='+')){ e.preventDefault(); increaseFontSize(); }
@@ -5333,8 +7928,44 @@
       }
       if ((e.metaKey || e.ctrlKey) && e.key === '/') {
         e.preventDefault();
-        dlgHelp.showModal(); focusTrap(dlgHelp);
+        if (dlgHelp.open) {
+          dlgHelp.close();
+        } else {
+          dlgHelp.showModal(); 
+          focusTrap(dlgHelp);
+          // Ensure shortcuts are rendered when help opens via keyboard
+          setTimeout(renderShortcuts, 100);
+        }
       }
+      
+      // Markdown Viewer - Cmd/Ctrl + Shift + P
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        const content = editor.value;
+        if (content.trim()) {
+          const meta = getCurrentNoteMeta();
+          const title = meta ? `${meta.title}.md` : 'Nota.md';
+          if (typeof openMarkdownViewer === 'function') {
+            openMarkdownViewer({ 
+              markdown: content, 
+              title: title 
+            });
+          }
+        } else {
+          showToast('Nenhum conteúdo para visualizar', 'info');
+        }
+      }
+      
+      // F3 navigation for search results (global)
+      if (e.key === 'F3' && findBar.hidden === false) {
+        e.preventDefault();
+        if (e.shiftKey) {
+          goToHit(findIdx - 1);
+        } else {
+          goToHit(findIdx + 1);
+        }
+      }
+      
       if (e.key === 'Escape' && !findBar.hidden) {
         e.preventDefault();
         closeFindBar();
@@ -5685,19 +8316,27 @@
       function setupDialogClose(dialogId) {
         const dlg = document.getElementById(dialogId);
         if (!dlg) return;
-        // Botão X
-        dlg.querySelector('.sheet-close')?.addEventListener('click', () => {
-          dlg.close();
+        
+        // Botões X (todos os .sheet-close dentro do modal)
+        dlg.querySelectorAll('.sheet-close').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dlg.close();
+          });
         });
+        
         // Clique fora do modal
         dlg.addEventListener('click', (e) => {
           if (e.target === dlg) {
             dlg.close();
           }
         });
+        
         // Tecla ESC
         dlg.addEventListener('keydown', (e) => {
           if (e.key === 'Escape') {
+            e.preventDefault();
             dlg.close();
           }
         });
@@ -5706,6 +8345,257 @@
       setupDialogClose('settings');
       setupDialogClose('help');
       setupDialogClose('notes');
+      setupDialogClose('mdv');
+
+      // CORREÇÃO FINAL: Garantir que todos os modais estejam fechados na inicialização
+      ['settings', 'help', 'notes', 'mdv'].forEach(id => {
+        const modal = document.getElementById(id);
+        if (modal && modal.open) {
+          modal.close();
+        }
+      });
+
+      // ===== VISUALIZADOR DE MARKDOWN (MDV) - LIQUID GLASS =====
+      
+      // Aguardar DOM carregar para garantir que os elementos existam
+      document.addEventListener('DOMContentLoaded', function initMDV() {
+        // Se já foi inicializado, não fazer novamente
+        if (window.openMarkdownViewer) return;
+        
+        /* ===== Helpers para carregar sob demanda ===== */
+        function loadScriptOnce(url, globalProp){
+          return new Promise((resolve, reject)=>{
+            if (globalProp && window[globalProp]) return resolve(window[globalProp]);
+            const s = document.createElement('script'); s.src = url; s.async = true; s.crossOrigin='anonymous';
+            s.onload = ()=> resolve(window[globalProp] || true); s.onerror = reject; document.head.appendChild(s);
+          });
+        }
+        function loadCssOnce(url, id){
+          if (id && document.getElementById(id)) return;
+          const l = document.createElement('link'); l.rel='stylesheet'; l.href=url; l.crossOrigin='anonymous'; if (id) l.id=id;
+          document.head.appendChild(l);
+        }
+
+        /* ===== Config base (pegamos defaults e deixamos ler do APP_SETTINGS se existir) ===== */
+        const DEFAULT_MDV_SETTINGS = {
+          scale: 1.0,
+          lineHeight: 1.6,
+          columnWidthCh: 72,
+          codeLineNumbers: false,
+          highlightTheme: 'auto', // 'auto' | 'light' | 'dark'
+          enableMermaid: true,
+          enableMath: true,
+        };
+        function getMDVSettings(){
+          const root = (window.APP_SETTINGS && window.APP_SETTINGS.markdownViewer) || {};
+          return { ...DEFAULT_MDV_SETTINGS, ...root };
+        }
+        function applyHLJSTheme(theme){
+          const link = document.getElementById('hljs-theme');
+          if (!link) return;
+          const isDark = theme === 'dark' || (theme === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+          link.href = isDark
+            ? 'https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github-dark.min.css'
+            : 'https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github.min.css';
+        }
+
+        /* ===== Instâncias ===== */
+        const mdvDlg = document.getElementById('mdv');
+        const mdvArticle = document.getElementById('mdvArticle');
+        const mdvContent = document.getElementById('mdvContent');
+        const mdvTitle = document.getElementById('mdvTitle');
+        const mdvClose = document.getElementById('mdvClose');
+
+        // Log para debug
+        console.log('MDV Elements:', {
+          mdvDlg: !!mdvDlg,
+          mdvArticle: !!mdvArticle,
+          mdvContent: !!mdvContent,
+          mdvTitle: !!mdvTitle,
+          mdvClose: !!mdvClose
+        });
+
+        // Se elementos não existem, não prosseguir
+        if (!mdvDlg || !mdvArticle || !mdvContent || !mdvTitle) {
+          console.warn('MDV: Elementos essenciais não encontrados, pulando inicialização');
+          return;
+        }
+
+      /* ===== Markdown → HTML com segurança ===== */
+      function initMarkdown() {
+        if (typeof marked !== 'undefined') {
+          marked.setOptions({
+            gfm: true,
+            breaks: false,
+            smartLists: true,
+            smartypants: true,
+            mangle: false,
+          });
+          
+          // Contador para IDs únicos de cabeçalhos
+          const usedIds = new Set();
+          function createSlug(text) {
+            let slug = text
+              .toLowerCase()
+              .trim()
+              .replace(/[^\w\s-]/g, '') // Remove caracteres especiais
+              .replace(/[\s_-]+/g, '-') // Substitui espaços e _ por -
+              .replace(/^-+|-+$/g, ''); // Remove - do início e fim
+            
+            // Garantir ID único
+            let finalSlug = slug;
+            let counter = 1;
+            while (usedIds.has(finalSlug)) {
+              finalSlug = `${slug}-${counter}`;
+              counter++;
+            }
+            usedIds.add(finalSlug);
+            return finalSlug;
+          }
+          
+          const renderer = new marked.Renderer();
+          renderer.link = function(href, title, text){
+            const t = title ? ` title="${title}"` : '';
+            return `<a href="${href}" target="_blank" rel="noopener noreferrer"${t}>${text}</a>`;
+          };
+          renderer.heading = function(text, level, raw){
+            const id = createSlug(raw);
+            return `<h${level} id="${id}">${text}<a class="h-anchor" href="#${id}" aria-label="Copiar link de seção">#</a></h${level}>`;
+          };
+          window.mdvRenderer = renderer;
+        }
+      }
+
+      async function renderMarkdown(mdText){
+        // Aguarda os scripts carregarem se necessário
+        if (typeof marked === 'undefined' || typeof DOMPurify === 'undefined') {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        initMarkdown();
+        
+        // 1) Markdown → HTML
+        const unsafe = marked.parse(mdText, { renderer: window.mdvRenderer });
+
+        // 2) Sanitizar
+        const clean = DOMPurify.sanitize(unsafe, {
+          ADD_ATTR: ['target','rel','class','id','style','aria-label','aria-hidden','data-*'],
+          ADD_TAGS: ['iframe','details','summary'] // se precisar
+        });
+
+        // 3) Inserir
+        mdvArticle.innerHTML = clean;
+
+        // 4) Syntax highlight
+        if (typeof hljs !== 'undefined') {
+          document.querySelectorAll('#mdv pre code').forEach(el => {
+            try {
+              hljs.highlightElement(el);
+            } catch(e) {
+              console.warn('Highlight.js error:', e);
+            }
+          });
+        }
+
+        // 5) Mermaid (quando houver)
+        const hasMermaid = !!mdvArticle.querySelector('code.language-mermaid');
+        if (hasMermaid && getMDVSettings().enableMermaid){
+          try {
+            await loadScriptOnce('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js', 'mermaid');
+            mermaid.initialize({ startOnLoad:false, theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default' });
+            mdvArticle.querySelectorAll('code.language-mermaid').forEach(code=>{
+              const pre = code.closest('pre'); const parent = pre?.parentNode || code.parentNode;
+              const d = document.createElement('div'); d.className = 'mermaid'; d.textContent = code.textContent;
+              pre ? parent.replaceChild(d, pre) : parent.replaceChild(d, code);
+            });
+            await mermaid.run({ querySelector: '#mdv .mermaid' });
+          } catch(e) {
+            console.warn('Mermaid loading failed:', e);
+          }
+        }
+
+        // 6) Math (KaTeX) — auto-render se encontrar delimitadores
+        const mdStringHasMath = /\$\$[\s\S]+?\$\$|(?<!\\)\$[^$\n]+\$/m.test(mdText);
+        if (mdStringHasMath && getMDVSettings().enableMath){
+          try {
+            loadCssOnce('https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.css', 'katex-css');
+            await loadScriptOnce('https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.js', 'katex');
+            await loadScriptOnce('https://cdn.jsdelivr.net/npm/katex@0.16/dist/contrib/auto-render.min.js', 'renderMathInElement');
+            window.renderMathInElement(mdvArticle, {
+              delimiters: [
+                {left: "$$", right: "$$", display: true},
+                {left: "$", right: "$", display: false},
+                {left: "\\(", right: "\\)", display: false},
+                {left: "\\[", right: "\\]", display: true}
+              ],
+              throwOnError: false
+            });
+          } catch(e) {
+            console.warn('KaTeX loading failed:', e);
+          }
+        }
+      }
+
+      /* ===== API pública ===== */
+      async function openMarkdownViewer({ markdown, src, title }){
+        if (!mdvDlg || !mdvContent || !mdvTitle) {
+          console.error('MDV: Elementos necessários não encontrados');
+          showToast('Erro ao abrir visualizador', 'error');
+          return;
+        }
+
+        mdvTitle.textContent = title || 'Visualizador Markdown';
+
+        // Carregar conteúdo
+        let md = markdown || '';
+        await renderMarkdown(md);
+
+        // Abrir modal
+        mdvDlg.showModal();
+      }
+
+      /* ===== Ligações de UI ===== */
+      if (mdvDlg) {
+        mdvDlg.addEventListener('keydown', (e)=>{
+          if (e.key === 'Escape') mdvDlg.close('cancel');
+        });
+      }
+
+      if (mdvClose) {
+        mdvClose.addEventListener('click', ()=> mdvDlg.close('cancel'));
+      }
+
+      // Exponha a função
+      window.openMarkdownViewer = openMarkdownViewer;
+
+      // ===== FIM DO MDV =====
+
+      }); // Fim do DOMContentLoaded MDV
   </script>
+
+  <!-- MDV Modal HTML -->
+  <dialog id="mdv" class="dialog-sheet" aria-modal="true" aria-labelledby="mdvTitle">
+    <!-- Head -->
+    <div class="mdv-head">
+      <div class="mdv-title">
+        <h3 id="mdvTitle">Visualizador Markdown</h3>
+      </div>
+      <button class="mdv-close" id="mdvClose" title="Fechar" aria-label="Fechar">✕</button>
+    </div>
+
+    <!-- Body -->
+    <div class="mdv-body">
+      <div id="mdvContent" class="mdv-content">
+        <article class="prose" id="mdvArticle"><!-- conteúdo MD renderizado aqui --></article>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- CDNs essenciais para o MDV -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" crossorigin="anonymous"></script>
+  <link id="hljs-theme" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github.min.css" crossorigin="anonymous">
+
 </body>
 </html>
