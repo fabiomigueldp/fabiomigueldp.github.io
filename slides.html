@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binário - A Linguagem dos Computadores</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;700;900&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .mono {
+            font-family: 'Space Mono', monospace;
+        }
+
+        .neo-box {
+            border: 4px solid #000;
+            box-shadow: 8px 8px 0px #000;
+            transition: all 0.2s ease;
+        }
+
+        .neo-box:hover {
+            box-shadow: 12px 12px 0px #000;
+            transform: translate(-2px, -2px);
+        }
+
+        .neo-btn {
+            border: 3px solid #000;
+            box-shadow: 5px 5px 0px #000;
+            transition: all 0.1s ease;
+        }
+
+        .neo-btn:hover {
+            box-shadow: 7px 7px 0px #000;
+            transform: translate(-2px, -2px);
+        }
+
+        .neo-btn:active {
+            box-shadow: 2px 2px 0px #000;
+            transform: translate(3px, 3px);
+        }
+
+        .bit-box {
+            width: 80px;
+            height: 80px;
+            border: 4px solid #000;
+            font-size: 3rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .bit-0 {
+            background-color: #f8f8f8;
+            color: #000;
+        }
+
+        .bit-1 {
+            background-color: #000;
+            color: #fff;
+        }
+
+        .slide {
+            display: none;
+            min-height: 100vh;
+            padding: 2rem;
+            padding-bottom: 100px;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        .blink {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .bounce {
+            animation: bounce 0.5s ease infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+
+        .ascii-table {
+            font-size: 0.9rem;
+        }
+
+        .ascii-table td, .ascii-table th {
+            border: 2px solid #000;
+            padding: 0.5rem;
+            text-align: center;
+        }
+
+        .highlight-row {
+            background-color: #FFDE59 !important;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border: 2px solid #000;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #FF6B6B;
+            transition: width 0.3s ease;
+        }
+
+        .lamp {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 4px solid #000;
+            transition: all 0.3s ease;
+        }
+
+        .lamp-off {
+            background: #444;
+        }
+
+        .lamp-on {
+            background: #FFDE59;
+            box-shadow: 0 0 30px #FFDE59;
+        }
+
+        /* Modal ASCII */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            max-width: 90vw;
+            max-height: 85vh;
+            overflow: auto;
+            border: 4px solid #000;
+            box-shadow: 12px 12px 0px #000;
+        }
+
+        .modal-ascii-table td, .modal-ascii-table th {
+            border: 2px solid #000;
+            padding: 0.3rem 0.5rem;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Progress Bar -->
+    <div class="fixed top-0 left-0 w-full z-50 progress-bar">
+        <div class="progress-fill" id="progressBar"></div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="fixed bottom-0 left-0 w-full z-50 bg-white border-t-4 border-black py-3">
+        <div class="flex justify-center items-center gap-4">
+            <button onclick="toggleFullscreen()" class="neo-btn bg-gray-800 text-white px-3 py-2 font-bold text-sm" id="fullscreenBtn" title="Tela Cheia (F11)">⛶</button>
+            <button onclick="prevSlide()" class="neo-btn bg-gray-100 px-6 py-2 font-bold text-lg">← Anterior</button>
+            <span class="neo-box bg-yellow-300 px-4 py-2 font-bold text-lg mono" id="slideCounter">1/15</span>
+            <button onclick="nextSlide()" class="neo-btn bg-gray-100 px-6 py-2 font-bold text-lg">Próximo →</button>
+        </div>
+    </div>
+
+    <!-- Modal ASCII Table -->
+    <div class="modal-overlay" id="asciiModal" onclick="closeAsciiModal(event)">
+        <div class="modal-content p-6" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-black">📋 TABELA ASCII</h3>
+                <button onclick="closeAsciiModal()" class="neo-btn bg-red-500 text-white px-4 py-2 font-bold">✕ Fechar</button>
+            </div>
+            <table class="modal-ascii-table w-full">
+                <thead>
+                    <tr class="bg-black text-white">
+                        <th>Dec</th><th>Char</th>
+                        <th>Dec</th><th>Char</th>
+                        <th>Dec</th><th>Char</th>
+                        <th>Dec</th><th>Char</th>
+                    </tr>
+                </thead>
+                <tbody id="modalAsciiTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Slide 1: Título -->
+    <section class="slide active bg-yellow-300 flex-col justify-center items-center" id="slide1">
+        <div class="text-center">
+            <h1 class="text-8xl font-black mb-8 tracking-tight">01010101</h1>
+            <div class="neo-box bg-white p-8 inline-block mb-8">
+                <h2 class="text-5xl font-black">A LINGUAGEM DOS</h2>
+                <h2 class="text-6xl font-black text-red-500">COMPUTADORES</h2>
+            </div>
+            <p class="text-2xl font-bold mt-8">Como máquinas "pensam" usando apenas 0 e 1</p>
+            <div class="mt-12 flex justify-center gap-4">
+                <span class="text-6xl mono font-bold bounce">0</span>
+                <span class="text-6xl mono font-bold bounce" style="animation-delay: 0.1s">1</span>
+                <span class="text-6xl mono font-bold bounce" style="animation-delay: 0.2s">0</span>
+                <span class="text-6xl mono font-bold bounce" style="animation-delay: 0.3s">1</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 2: O que significa "computador"? -->
+    <section class="slide bg-teal-400 flex-col justify-center items-center" id="slide2">
+        <div class="max-w-5xl mx-auto text-center">
+            <h2 class="text-5xl font-black mb-8 neo-box bg-white p-6 inline-block">O QUE SIGNIFICA "COMPUTADOR"?</h2>
+            
+            <div class="neo-box bg-white p-8 mb-8">
+                <p class="text-3xl font-bold mb-4">Do latim <span class="text-red-500 font-black">computare</span></p>
+                <p class="text-4xl font-black">"Calcular" ou "Contar"</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-8">
+                <div class="neo-box bg-yellow-300 p-8">
+                    <p class="text-6xl mb-4">📅</p>
+                    <h3 class="text-2xl font-black mb-4">ANTES DE 1920</h3>
+                    <p class="text-xl font-bold">"Computador" era uma</p>
+                    <p class="text-3xl font-black text-red-500">PROFISSÃO!</p>
+                    <p class="text-lg mt-4">Pessoas que faziam cálculos manualmente</p>
+                </div>
+                <div class="neo-box bg-cyan-300 p-8">
+                    <p class="text-6xl mb-4">👩‍💼</p>
+                    <h3 class="text-2xl font-black mb-4">COMPUTADORES HUMANOS</h3>
+                    <p class="text-xl font-bold">Calculavam trajetórias,</p>
+                    <p class="text-xl font-bold">tabelas matemáticas,</p>
+                    <p class="text-xl font-bold">censos populacionais...</p>
+                </div>
+            </div>
+
+            <div class="neo-box bg-black text-white p-6 mt-8 inline-block">
+                <p class="text-2xl font-bold">💡 Computador = Aquele que computa (calcula)</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 3: A evolução do computador -->
+    <section class="slide bg-rose-400 flex-col justify-center items-center" id="slide3">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-5xl font-black mb-8 neo-box bg-white p-6 inline-block">A EVOLUÇÃO</h2>
+            
+            <div class="grid grid-cols-4 gap-6">
+                <div class="neo-box bg-white p-6">
+                    <p class="text-4xl mb-2">🧮</p>
+                    <h3 class="text-lg font-black">ÁBACO</h3>
+                    <p class="text-sm font-bold">~2000 a.C.</p>
+                    <p class="text-xs mt-2">Primeiro instrumento de cálculo</p>
+                </div>
+                <div class="neo-box bg-white p-6">
+                    <p class="text-4xl mb-2">⚙️</p>
+                    <h3 class="text-lg font-black">PASCAL</h3>
+                    <p class="text-sm font-bold">1642</p>
+                    <p class="text-xs mt-2">Calculadora mecânica</p>
+                </div>
+                <div class="neo-box bg-white p-6">
+                    <p class="text-4xl mb-2">👩‍💼</p>
+                    <h3 class="text-lg font-black">HUMANOS</h3>
+                    <p class="text-sm font-bold">Séc. XIX-XX</p>
+                    <p class="text-xs mt-2">Profissão "computador"</p>
+                </div>
+                <div class="neo-box bg-yellow-300 p-6">
+                    <p class="text-4xl mb-2">💻</p>
+                    <h3 class="text-lg font-black">ELETRÔNICO</h3>
+                    <p class="text-sm font-bold">1940+</p>
+                    <p class="text-xs mt-2">Máquinas digitais</p>
+                </div>
+            </div>
+
+            <div class="neo-box bg-white p-8 mt-8">
+                <p class="text-2xl font-bold mb-4">Mas o que faz um computador eletrônico ser tão especial?</p>
+                <p class="text-4xl font-black text-red-500">VELOCIDADE + PROGRAMÁVEL</p>
+                <p class="text-xl font-bold mt-4">Bilhões de operações por segundo, seguindo instruções!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 4: Alan Turing -->
+    <section class="slide bg-slate-800 flex-col justify-center items-center" id="slide4">
+        <div class="max-w-5xl mx-auto text-center">
+            <h2 class="text-5xl font-black mb-6 neo-box bg-white p-6 inline-block">ALAN TURING (1912-1954)</h2>
+            
+            <div class="grid grid-cols-2 gap-6">
+                <div class="neo-box bg-white p-6 text-left">
+                    <h3 class="text-2xl font-black mb-4 text-center">O Pai da Computação</h3>
+                    <ul class="space-y-3 text-lg">
+                        <li class="font-bold">• Matemático e lógico britânico</li>
+                        <li class="font-bold">• Em <span class="text-red-600">1936</span>, publicou o artigo que definiu o que é "computar"</li>
+                        <li class="font-bold">• Criou o conceito teórico da <span class="text-red-600">Máquina de Turing</span></li>
+                        <li class="font-bold">• Provou matematicamente os limites do que pode ser calculado</li>
+                    </ul>
+                </div>
+                <div class="neo-box bg-yellow-300 p-6 text-left">
+                    <h3 class="text-2xl font-black mb-4 text-center">Segunda Guerra Mundial</h3>
+                    <ul class="space-y-3 text-lg">
+                        <li class="font-bold">• Trabalhou em Bletchley Park, Inglaterra</li>
+                        <li class="font-bold">• Liderou a equipe que quebrou a <span class="text-red-600">Enigma</span>, a máquina de códigos nazista</li>
+                        <li class="font-bold">• Estima-se que seu trabalho encurtou a guerra em 2-4 anos</li>
+                        <li class="font-bold">• Salvou milhões de vidas</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="neo-box bg-black text-white p-6 mt-6">
+                <h3 class="text-2xl font-black mb-3">A Máquina de Turing</h3>
+                <p class="text-xl">Um modelo teórico simples: uma fita infinita, um leitor, e um conjunto de regras.</p>
+                <p class="text-xl mt-2">Turing provou que essa máquina simples pode resolver <span class="text-yellow-300 font-black">QUALQUER problema</span> que possa ser resolvido por qualquer computador, não importa quão avançado.</p>
+            </div>
+
+            <div class="neo-box bg-red-500 text-white p-4 mt-6 inline-block">
+                <p class="text-lg font-bold">Esta ideia levou ao conceito de MÁQUINA UNIVERSAL →</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 5: Máquina Universal -->
+    <section class="slide bg-indigo-900 flex-col justify-center items-center" id="slide5">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-4xl font-black mb-6 neo-box bg-white p-5 inline-block">POR QUE O COMPUTADOR É "UNIVERSAL"?</h2>
+            
+            <div class="neo-box bg-white p-6 mb-6">
+                <p class="text-2xl font-bold mb-4">Antes dos computadores, cada máquina fazia UMA coisa:</p>
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="neo-box bg-gray-200 p-4">
+                        <p class="text-3xl">🧮</p>
+                        <p class="font-black">Calculadora</p>
+                        <p class="text-sm">só calcula</p>
+                    </div>
+                    <div class="neo-box bg-gray-200 p-4">
+                        <p class="text-3xl">⌨️</p>
+                        <p class="font-black">Máquina de escrever</p>
+                        <p class="text-sm">só escreve</p>
+                    </div>
+                    <div class="neo-box bg-gray-200 p-4">
+                        <p class="text-3xl">📻</p>
+                        <p class="font-black">Rádio</p>
+                        <p class="text-sm">só toca áudio</p>
+                    </div>
+                    <div class="neo-box bg-gray-200 p-4">
+                        <p class="text-3xl">📺</p>
+                        <p class="font-black">TV</p>
+                        <p class="text-sm">só mostra vídeo</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="neo-box bg-yellow-300 p-6 mb-6">
+                <p class="text-2xl font-black mb-4">O COMPUTADOR faz TUDO isso e MAIS:</p>
+                <div class="grid grid-cols-5 gap-3 text-sm">
+                    <div class="neo-box bg-white p-3">
+                        <p class="font-black">Calculadora</p>
+                    </div>
+                    <div class="neo-box bg-white p-3">
+                        <p class="font-black">Editor de texto</p>
+                    </div>
+                    <div class="neo-box bg-white p-3">
+                        <p class="font-black">Tocador de música</p>
+                    </div>
+                    <div class="neo-box bg-white p-3">
+                        <p class="font-black">Player de vídeo</p>
+                    </div>
+                    <div class="neo-box bg-white p-3">
+                        <p class="font-black">Videogame</p>
+                    </div>
+                    <div class="neo-box bg-white p-3">
+                        <p class="font-black">Navegador web</p>
+                    </div>
+                    <div class="neo-box bg-white p-3">
+                        <p class="font-black">Editor de fotos</p>
+                    </div>
+                    <div class="neo-box bg-white p-3">
+                        <p class="font-black">Planilha</p>
+                    </div>
+                    <div class="neo-box bg-white p-3">
+                        <p class="font-black">E-mail</p>
+                    </div>
+                    <div class="neo-box bg-white p-3">
+                        <p class="font-black">∞ infinito...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="neo-box bg-black text-white p-6">
+                <h3 class="text-2xl font-black text-yellow-300 mb-4">O SEGREDO: SOFTWARE</h3>
+                <p class="text-xl mb-4">O mesmo hardware (a máquina física) executa diferentes <span class="text-green-400 font-black">PROGRAMAS</span>.</p>
+                <div class="grid grid-cols-3 gap-4 text-base">
+                    <div class="border-2 border-white p-3">
+                        <p class="text-yellow-300 font-black">Hardware = Corpo</p>
+                        <p>Sempre o mesmo</p>
+                    </div>
+                    <div class="border-2 border-white p-3">
+                        <p class="text-green-400 font-black">Software = Instruções</p>
+                        <p>Muda o comportamento</p>
+                    </div>
+                    <div class="border-2 border-white p-3">
+                        <p class="text-cyan-400 font-black">Resultado</p>
+                        <p>Infinitas possibilidades</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 6: O que é um computador? (elétrico) -->
+    <section class="slide bg-cyan-400 flex-col justify-center items-center" id="slide6">
+        <div class="max-w-5xl mx-auto text-center">
+            <h2 class="text-5xl font-black mb-8 neo-box bg-white p-6 inline-block">COMO FUNCIONA?</h2>
+            
+            <div class="grid grid-cols-3 gap-8 mt-8">
+                <div class="neo-box bg-white p-8">
+                    <div class="text-6xl mb-4">⚡</div>
+                    <h3 class="text-2xl font-black mb-4">ELETRICIDADE</h3>
+                    <p class="text-lg font-bold">Liga / Desliga</p>
+                    <p class="text-lg font-bold">Passa / Não Passa</p>
+                </div>
+                <div class="neo-box bg-white p-8">
+                    <div class="text-6xl mb-4">💡</div>
+                    <h3 class="text-2xl font-black mb-4">LÂMPADA</h3>
+                    <p class="text-lg font-bold">Acesa / Apagada</p>
+                    <p class="text-lg font-bold">ON / OFF</p>
+                </div>
+                <div class="neo-box bg-white p-8">
+                    <div class="text-6xl mb-4">🔢</div>
+                    <h3 class="text-2xl font-black mb-4">NÚMERO</h3>
+                    <p class="text-lg font-bold mono text-4xl">1 / 0</p>
+                </div>
+            </div>
+
+            <div class="neo-box bg-red-500 text-white p-8 mt-8 inline-block">
+                <p class="text-3xl font-black">Um computador é uma máquina que processa</p>
+                <p class="text-4xl font-black mt-2">BILHÕES de 0s e 1s por segundo!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 7: Lâmpadas Interativas -->
+    <section class="slide bg-purple-400 flex-col justify-center items-center" id="slide7">
+        <div class="max-w-5xl mx-auto text-center">
+            <h2 class="text-5xl font-black mb-6 neo-box bg-white p-6 inline-block">SIMULADOR DE LÂMPADAS</h2>
+            <p class="text-2xl font-bold mb-6">Clique nas lâmpadas para ligar/desligar!</p>
+            
+            <div class="flex justify-center gap-8 mb-8">
+                <div class="text-center" onclick="toggleLamp(0)">
+                    <div class="lamp lamp-off cursor-pointer mx-auto" id="lamp0"></div>
+                    <p class="mono text-3xl font-bold mt-4" id="lampVal0">0</p>
+                </div>
+                <div class="text-center" onclick="toggleLamp(1)">
+                    <div class="lamp lamp-off cursor-pointer mx-auto" id="lamp1"></div>
+                    <p class="mono text-3xl font-bold mt-4" id="lampVal1">0</p>
+                </div>
+                <div class="text-center" onclick="toggleLamp(2)">
+                    <div class="lamp lamp-off cursor-pointer mx-auto" id="lamp2"></div>
+                    <p class="mono text-3xl font-bold mt-4" id="lampVal2">0</p>
+                </div>
+                <div class="text-center" onclick="toggleLamp(3)">
+                    <div class="lamp lamp-off cursor-pointer mx-auto" id="lamp3"></div>
+                    <p class="mono text-3xl font-bold mt-4" id="lampVal3">0</p>
+                </div>
+            </div>
+
+            <div class="neo-box bg-white p-6 inline-block">
+                <p class="text-xl font-bold">Valor das posições:</p>
+                <div class="flex justify-center gap-8 mt-4">
+                    <span class="neo-box bg-yellow-300 p-4 text-2xl font-black">8</span>
+                    <span class="neo-box bg-yellow-300 p-4 text-2xl font-black">4</span>
+                    <span class="neo-box bg-yellow-300 p-4 text-2xl font-black">2</span>
+                    <span class="neo-box bg-yellow-300 p-4 text-2xl font-black">1</span>
+                </div>
+            </div>
+
+            <div class="neo-box bg-black text-white p-8 mt-8 inline-block">
+                <p class="text-2xl font-bold">Binário: <span class="mono text-4xl text-yellow-300" id="binaryResult">0000</span></p>
+                <p class="text-2xl font-bold mt-4">Decimal: <span class="mono text-4xl text-green-400" id="decimalResult">0</span></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 8: Contando em Binário -->
+    <section class="slide bg-green-400 flex-col justify-center items-center" id="slide8">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-5xl font-black mb-6 neo-box bg-white p-6 inline-block">CONTANDO EM BINÁRIO</h2>
+            
+            <div class="grid grid-cols-2 gap-8">
+                <div class="neo-box bg-white p-8">
+                    <h3 class="text-3xl font-black mb-6">Decimal (base 10)</h3>
+                    <p class="text-xl font-bold mb-4">Usamos 10 símbolos:</p>
+                    <div class="flex justify-center gap-2 flex-wrap">
+                        <span class="neo-box bg-blue-400 p-3 text-2xl font-black">0</span>
+                        <span class="neo-box bg-blue-400 p-3 text-2xl font-black">1</span>
+                        <span class="neo-box bg-blue-400 p-3 text-2xl font-black">2</span>
+                        <span class="neo-box bg-blue-400 p-3 text-2xl font-black">3</span>
+                        <span class="neo-box bg-blue-400 p-3 text-2xl font-black">4</span>
+                        <span class="neo-box bg-blue-400 p-3 text-2xl font-black">5</span>
+                        <span class="neo-box bg-blue-400 p-3 text-2xl font-black">6</span>
+                        <span class="neo-box bg-blue-400 p-3 text-2xl font-black">7</span>
+                        <span class="neo-box bg-blue-400 p-3 text-2xl font-black">8</span>
+                        <span class="neo-box bg-blue-400 p-3 text-2xl font-black">9</span>
+                    </div>
+                </div>
+                <div class="neo-box bg-white p-8">
+                    <h3 class="text-3xl font-black mb-6">Binário (base 2)</h3>
+                    <p class="text-xl font-bold mb-4">Usamos 2 símbolos:</p>
+                    <div class="flex justify-center gap-4">
+                        <span class="neo-box bg-red-500 text-white p-6 text-4xl font-black">0</span>
+                        <span class="neo-box bg-red-500 text-white p-6 text-4xl font-black">1</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="neo-box bg-white p-8 mt-8">
+                <h3 class="text-3xl font-black mb-6">Tabela de Conversão</h3>
+                <div class="grid grid-cols-8 gap-4">
+                    <div class="neo-box bg-yellow-300 p-4">
+                        <p class="text-2xl font-black">0</p>
+                        <p class="mono font-bold">0000</p>
+                    </div>
+                    <div class="neo-box bg-yellow-300 p-4">
+                        <p class="text-2xl font-black">1</p>
+                        <p class="mono font-bold">0001</p>
+                    </div>
+                    <div class="neo-box bg-yellow-300 p-4">
+                        <p class="text-2xl font-black">2</p>
+                        <p class="mono font-bold">0010</p>
+                    </div>
+                    <div class="neo-box bg-yellow-300 p-4">
+                        <p class="text-2xl font-black">3</p>
+                        <p class="mono font-bold">0011</p>
+                    </div>
+                    <div class="neo-box bg-yellow-300 p-4">
+                        <p class="text-2xl font-black">4</p>
+                        <p class="mono font-bold">0100</p>
+                    </div>
+                    <div class="neo-box bg-yellow-300 p-4">
+                        <p class="text-2xl font-black">5</p>
+                        <p class="mono font-bold">0101</p>
+                    </div>
+                    <div class="neo-box bg-yellow-300 p-4">
+                        <p class="text-2xl font-black">6</p>
+                        <p class="mono font-bold">0110</p>
+                    </div>
+                    <div class="neo-box bg-yellow-300 p-4">
+                        <p class="text-2xl font-black">7</p>
+                        <p class="mono font-bold">0111</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 9: Conversor Interativo -->
+    <section class="slide bg-orange-400 flex-col justify-center items-center" id="slide9">
+        <div class="max-w-5xl mx-auto text-center">
+            <div class="flex justify-center items-center gap-4 mb-6">
+                <h2 class="text-5xl font-black neo-box bg-white p-6 inline-block">CONVERSOR INTERATIVO</h2>
+                <button onclick="openAsciiModal()" class="neo-btn bg-gray-200 px-4 py-3 text-sm font-bold" title="Ver tabela ASCII">📋 ASCII</button>
+            </div>
+            
+            <div class="neo-box bg-white p-6 mb-6">
+                <p class="text-xl font-bold mb-4">Clique nos bits para formar um número:</p>
+                <div class="flex justify-center gap-3 mb-6" id="bitContainer">
+                    <div class="bit-box bit-0 flex items-center justify-center mono" onclick="toggleBit(0)">0</div>
+                    <div class="bit-box bit-0 flex items-center justify-center mono" onclick="toggleBit(1)">0</div>
+                    <div class="bit-box bit-0 flex items-center justify-center mono" onclick="toggleBit(2)">0</div>
+                    <div class="bit-box bit-0 flex items-center justify-center mono" onclick="toggleBit(3)">0</div>
+                    <div class="bit-box bit-0 flex items-center justify-center mono" onclick="toggleBit(4)">0</div>
+                    <div class="bit-box bit-0 flex items-center justify-center mono" onclick="toggleBit(5)">0</div>
+                    <div class="bit-box bit-0 flex items-center justify-center mono" onclick="toggleBit(6)">0</div>
+                    <div class="bit-box bit-0 flex items-center justify-center mono" onclick="toggleBit(7)">0</div>
+                </div>
+                <div class="flex justify-center gap-3 text-sm font-bold">
+                    <span class="w-20">128</span>
+                    <span class="w-20">64</span>
+                    <span class="w-20">32</span>
+                    <span class="w-20">16</span>
+                    <span class="w-20">8</span>
+                    <span class="w-20">4</span>
+                    <span class="w-20">2</span>
+                    <span class="w-20">1</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6">
+                <div class="neo-box bg-black text-white p-6">
+                    <p class="text-lg font-bold">Valor em DECIMAL:</p>
+                    <p class="text-6xl font-black mono text-green-400" id="decimalValue">0</p>
+                </div>
+                <div class="neo-box bg-black text-white p-6">
+                    <p class="text-lg font-bold">Caractere ASCII:</p>
+                    <p class="text-6xl font-black text-yellow-300" id="asciiChar">NUL</p>
+                </div>
+            </div>
+
+            <button onclick="randomBits()" class="neo-btn bg-red-500 text-white px-8 py-4 text-2xl font-black mt-6">
+                🎲 NÚMERO ALEATÓRIO
+            </button>
+        </div>
+    </section>
+
+    <!-- Slide 10: O que é ASCII? -->
+    <section class="slide bg-pink-400 flex-col justify-center items-center" id="slide10">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-5xl font-black mb-6 neo-box bg-white p-6 inline-block">TEXTO EM BINÁRIO: ASCII</h2>
+            
+            <div class="neo-box bg-white p-8 mb-8">
+                <p class="text-2xl font-bold mb-4">Cada letra/símbolo tem um número único!</p>
+                <p class="text-xl">ASCII = American Standard Code for Information Interchange</p>
+            </div>
+
+            <div class="grid grid-cols-3 gap-6 mb-8">
+                <div class="neo-box bg-yellow-300 p-6">
+                    <p class="text-6xl font-black">A</p>
+                    <p class="text-2xl font-bold mt-2">= 65</p>
+                    <p class="mono text-lg">01000001</p>
+                </div>
+                <div class="neo-box bg-cyan-300 p-6">
+                    <p class="text-6xl font-black">B</p>
+                    <p class="text-2xl font-bold mt-2">= 66</p>
+                    <p class="mono text-lg">01000010</p>
+                </div>
+                <div class="neo-box bg-green-300 p-6">
+                    <p class="text-6xl font-black">C</p>
+                    <p class="text-2xl font-bold mt-2">= 67</p>
+                    <p class="mono text-lg">01000011</p>
+                </div>
+            </div>
+
+            <div class="neo-box bg-black text-white p-8">
+                <p class="text-2xl font-bold mb-4">Exemplo: A palavra "OI" em binário:</p>
+                <div class="flex justify-center gap-8 items-center">
+                    <div>
+                        <p class="text-4xl font-black text-yellow-300">O</p>
+                        <p class="mono text-xl">01001111</p>
+                        <p class="text-lg">(79)</p>
+                    </div>
+                    <span class="text-4xl">+</span>
+                    <div>
+                        <p class="text-4xl font-black text-yellow-300">I</p>
+                        <p class="mono text-xl">01001001</p>
+                        <p class="text-lg">(73)</p>
+                    </div>
+                    <span class="text-4xl">=</span>
+                    <div class="neo-box bg-red-500 p-4">
+                        <p class="mono text-xl">01001111 01001001</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 11: Tabela ASCII -->
+    <section class="slide bg-lime-400 flex-col justify-center items-center" id="slide11">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-4xl font-black mb-4 neo-box bg-white p-4 inline-block">TABELA ASCII</h2>
+            
+            <div class="neo-box bg-white p-4 overflow-auto max-h-[60vh]">
+                <table class="ascii-table w-full">
+                    <thead>
+                        <tr class="bg-black text-white">
+                            <th>Dec</th>
+                            <th>Bin</th>
+                            <th>Char</th>
+                            <th>Dec</th>
+                            <th>Bin</th>
+                            <th>Char</th>
+                            <th>Dec</th>
+                            <th>Bin</th>
+                            <th>Char</th>
+                        </tr>
+                    </thead>
+                    <tbody id="asciiTable">
+                        <!-- Preenchido por JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="neo-box bg-yellow-300 p-4 mt-4 inline-block">
+                <p class="text-xl font-bold">💡 Com 8 bits (1 byte) podemos representar 256 caracteres diferentes!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 12: Codificador de Mensagem -->
+    <section class="slide bg-violet-400 flex-col justify-center items-center" id="slide12">
+        <div class="max-w-5xl mx-auto text-center">
+            <h2 class="text-5xl font-black mb-6 neo-box bg-white p-6 inline-block">CODIFIQUE SUA MENSAGEM!</h2>
+            
+            <div class="neo-box bg-white p-6 mb-6">
+                <label class="text-xl font-bold block mb-3">Digite um texto:</label>
+                <input type="text" id="textInput" placeholder="Digite aqui..." 
+                    class="neo-box text-2xl p-3 w-full text-center mono" 
+                    maxlength="20"
+                    oninput="encodeText()">
+            </div>
+
+            <div class="neo-box bg-black text-white p-6">
+                <p class="text-lg font-bold mb-3">Representação em Binário:</p>
+                <div class="mono text-lg text-green-400 break-all" id="binaryOutput">
+                    Digite algo acima para ver o binário
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6 mt-6">
+                <div class="neo-box bg-yellow-300 p-4">
+                    <p class="text-lg font-bold">Total de bits:</p>
+                    <p class="text-4xl font-black mono" id="bitCount">0</p>
+                </div>
+                <div class="neo-box bg-red-500 text-white p-4">
+                    <p class="text-lg font-bold">Total de bytes:</p>
+                    <p class="text-4xl font-black mono" id="byteCount">0</p>
+                </div>
+            </div>
+
+            <div class="neo-box bg-white p-4 mt-6">
+                <p class="text-lg font-bold">🤔 VOCÊ SABIA?</p>
+                <p class="text-base mt-2">Uma foto de celular tem cerca de <strong>3 MILHÕES</strong> de bytes!</p>
+                <p class="text-base">Isso é <strong>24 MILHÕES</strong> de 0s e 1s!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 13: Como o processador entende instruções -->
+    <section class="slide bg-slate-700 flex-col justify-center items-center" id="slide13">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-4xl font-black mb-6 neo-box bg-white p-5 inline-block">O PROCESSADOR É UMA CALCULADORA!</h2>
+            
+            <div class="neo-box bg-white p-6 mb-6">
+                <p class="text-2xl font-bold mb-4">O processador só sabe fazer 3 coisas:</p>
+                <div class="flex justify-center gap-6">
+                    <div class="neo-box bg-green-400 p-4 w-48">
+                        <p class="text-4xl">➕</p>
+                        <p class="text-xl font-black">SOMAR</p>
+                    </div>
+                    <div class="neo-box bg-red-400 p-4 w-48">
+                        <p class="text-4xl">➖</p>
+                        <p class="text-xl font-black">SUBTRAIR</p>
+                    </div>
+                    <div class="neo-box bg-blue-400 p-4 w-48">
+                        <p class="text-4xl">📦</p>
+                        <p class="text-xl font-black">GUARDAR</p>
+                    </div>
+                </div>
+                <p class="text-lg mt-4">Com apenas isso, ele faz TUDO: jogos, vídeos, internet...</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6">
+                <div class="neo-box bg-yellow-300 p-6">
+                    <h3 class="text-2xl font-black mb-4">📦 O QUE SÃO REGISTRADORES?</h3>
+                    <p class="text-lg font-bold mb-2">São "gavetas" onde o processador guarda números!</p>
+                    <div class="grid grid-cols-3 gap-2 mt-4">
+                        <div class="neo-box bg-white p-2 text-center">
+                            <p class="font-black">Gaveta 1</p>
+                            <p class="mono text-2xl">5</p>
+                        </div>
+                        <div class="neo-box bg-white p-2 text-center">
+                            <p class="font-black">Gaveta 2</p>
+                            <p class="mono text-2xl">3</p>
+                        </div>
+                        <div class="neo-box bg-white p-2 text-center">
+                            <p class="font-black">Gaveta 3</p>
+                            <p class="mono text-2xl">?</p>
+                        </div>
+                    </div>
+                    <p class="text-sm mt-3">No código, chamamos de $1, $2, $3...</p>
+                </div>
+                
+                <div class="neo-box bg-cyan-300 p-6">
+                    <h3 class="text-2xl font-black mb-4">📝 O QUE É UMA INSTRUÇÃO?</h3>
+                    <p class="text-lg font-bold mb-2">Uma ordem para o processador!</p>
+                    <div class="neo-box bg-black text-white p-4 mt-4">
+                        <p class="mono text-xl text-green-400">ADD $3, $1, $2</p>
+                        <p class="text-lg mt-2">"Pegue o valor da gaveta 1,<br>some com a gaveta 2,<br>guarde na gaveta 3"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 14: Simulador de Processador MIPS -->
+    <section class="slide bg-gray-900 flex-col justify-center items-center" id="slide14">
+        <div class="max-w-6xl mx-auto text-center w-full">
+            <h2 class="text-3xl font-black mb-3 neo-box bg-white p-4 inline-block">🖥️ SIMULADOR DE PROCESSADOR</h2>
+            
+            <div class="grid grid-cols-3 gap-3">
+                <!-- Painel de Código -->
+                <div class="neo-box bg-gray-800 p-4 text-left">
+                    <h3 class="text-lg font-black text-yellow-300 mb-2">📝 PROGRAMA (Lista de Ordens)</h3>
+                    <div id="programList" class="space-y-2 text-sm">
+                        <div class="p-2 bg-gray-700 rounded" id="instr0">
+                            <p class="text-green-400 mono">ADDI $1, $0, 5</p>
+                            <p class="text-gray-300 text-xs">→ Coloca 5 na gaveta 1</p>
+                        </div>
+                        <div class="p-2 bg-gray-700 rounded" id="instr1">
+                            <p class="text-green-400 mono">ADDI $2, $0, 3</p>
+                            <p class="text-gray-300 text-xs">→ Coloca 3 na gaveta 2</p>
+                        </div>
+                        <div class="p-2 bg-gray-700 rounded" id="instr2">
+                            <p class="text-green-400 mono">ADD $3, $1, $2</p>
+                            <p class="text-gray-300 text-xs">→ Soma gaveta1 + gaveta2, guarda na 3</p>
+                        </div>
+                        <div class="p-2 bg-gray-700 rounded" id="instr3">
+                            <p class="text-green-400 mono">SUB $4, $1, $2</p>
+                            <p class="text-gray-300 text-xs">→ Subtrai gaveta1 - gaveta2, guarda na 4</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registradores -->
+                <div class="neo-box bg-white p-4">
+                    <h3 class="text-lg font-black mb-2">📦 GAVETAS (Registradores)</h3>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div class="neo-box bg-gray-300 p-2" id="reg0">
+                            <span class="font-bold">Gaveta 0:</span> <span class="mono text-xl" id="r0">0</span>
+                            <p class="text-xs text-gray-500">sempre zero</p>
+                        </div>
+                        <div class="neo-box bg-blue-200 p-2" id="reg1">
+                            <span class="font-bold">Gaveta 1:</span> <span class="mono text-xl" id="r1">0</span>
+                        </div>
+                        <div class="neo-box bg-blue-200 p-2" id="reg2">
+                            <span class="font-bold">Gaveta 2:</span> <span class="mono text-xl" id="r2">0</span>
+                        </div>
+                        <div class="neo-box bg-green-200 p-2" id="reg3">
+                            <span class="font-bold">Gaveta 3:</span> <span class="mono text-xl" id="r3">0</span>
+                            <p class="text-xs text-gray-500">resultado soma</p>
+                        </div>
+                        <div class="neo-box bg-red-200 p-2" id="reg4">
+                            <span class="font-bold">Gaveta 4:</span> <span class="mono text-xl" id="r4">0</span>
+                            <p class="text-xs text-gray-500">resultado sub</p>
+                        </div>
+                        <div class="neo-box bg-yellow-300 p-2">
+                            <span class="font-bold">Passo:</span> <span class="mono text-xl" id="pc">0</span>
+                            <p class="text-xs">qual instrução</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <h4 class="font-black text-sm mb-1">🔧 Executando:</h4>
+                        <div class="neo-box bg-black text-green-400 p-2 mono text-sm" id="currentInstr">Clique em PASSO para começar</div>
+                    </div>
+                </div>
+
+                <!-- Binário -->
+                <div class="neo-box bg-black p-4 text-left">
+                    <h3 class="text-lg font-black text-yellow-300 mb-2">💾 VISÃO DO PROCESSADOR</h3>
+                    <p class="text-xs text-gray-400 mb-2">O processador só vê números binários!</p>
+                    <div class="space-y-2 text-xs">
+                        <div>
+                            <p class="text-gray-400">Instrução atual (32 zeros e uns):</p>
+                            <p class="mono text-green-400 break-all text-xs" id="binInstr">00000000000000000000000000000000</p>
+                        </div>
+                        <div class="border-t border-gray-600 pt-2">
+                            <p class="text-gray-400">Valores nas gavetas em binário:</p>
+                            <p class="mono text-cyan-400">Gaveta 1: <span id="binR1">00000000</span> = <span id="decR1">0</span></p>
+                            <p class="mono text-cyan-400">Gaveta 2: <span id="binR2">00000000</span> = <span id="decR2">0</span></p>
+                            <p class="mono text-lime-400">Gaveta 3: <span id="binR3">00000000</span> = <span id="decR3">0</span></p>
+                            <p class="mono text-red-400">Gaveta 4: <span id="binR4">00000000</span> = <span id="decR4">0</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controles -->
+            <div class="flex justify-center gap-4 mt-4">
+                <button onclick="cpuReset()" class="neo-btn bg-gray-500 text-white px-6 py-3 font-bold">🔄 REINICIAR</button>
+                <button onclick="cpuStep()" class="neo-btn bg-green-500 text-white px-8 py-3 font-bold text-lg">▶️ EXECUTAR 1 PASSO</button>
+                <button onclick="cpuRun()" class="neo-btn bg-blue-500 text-white px-6 py-3 font-bold">⏩ EXECUTAR TUDO</button>
+            </div>
+
+            <div class="neo-box bg-yellow-300 p-3 mt-3 inline-block">
+                <p class="text-sm font-bold">💡 Clique em "EXECUTAR 1 PASSO" para ver o processador executando cada instrução!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 15: Resumo Final -->
+    <section class="slide bg-red-500 flex-col justify-center items-center" id="slide15">
+        <div class="max-w-5xl mx-auto text-center">
+            <h2 class="text-5xl font-black mb-6 neo-box bg-white p-6 inline-block">RESUMO</h2>
+            
+            <div class="grid grid-cols-3 gap-4">
+                <div class="neo-box bg-white p-4">
+                    <div class="text-4xl mb-2">💡</div>
+                    <h3 class="text-lg font-black">COMPUTADORES</h3>
+                    <p class="text-sm font-bold mt-1">Trabalham com eletricidade: liga/desliga = 1/0</p>
+                </div>
+                <div class="neo-box bg-white p-4">
+                    <div class="text-4xl mb-2">🔢</div>
+                    <h3 class="text-lg font-black">BINÁRIO</h3>
+                    <p class="text-sm font-bold mt-1">Sistema de numeração com apenas 2 dígitos</p>
+                </div>
+                <div class="neo-box bg-white p-4">
+                    <div class="text-4xl mb-2">📝</div>
+                    <h3 class="text-lg font-black">ASCII</h3>
+                    <p class="text-sm font-bold mt-1">Tabela que converte letras em números</p>
+                </div>
+                <div class="neo-box bg-white p-4">
+                    <div class="text-4xl mb-2">📦</div>
+                    <h3 class="text-lg font-black">BYTE</h3>
+                    <p class="text-sm font-bold mt-1">8 bits = 1 caractere = 256 possibilidades</p>
+                </div>
+                <div class="neo-box bg-white p-4">
+                    <div class="text-4xl mb-2">🧠</div>
+                    <h3 class="text-lg font-black">PROCESSADOR</h3>
+                    <p class="text-sm font-bold mt-1">Executa instruções em binário</p>
+                </div>
+                <div class="neo-box bg-white p-4">
+                    <div class="text-4xl mb-2">⚙️</div>
+                    <h3 class="text-lg font-black">INSTRUÇÕES</h3>
+                    <p class="text-sm font-bold mt-1">Operações como ADD, SUB, LOAD...</p>
+                </div>
+            </div>
+
+            <div class="neo-box bg-yellow-300 p-6 mt-6">
+                <p class="text-3xl font-black">TUDO é 0 e 1!</p>
+                <p class="text-lg font-bold mt-3">Fotos, vídeos, músicas, jogos, mensagens, programas...</p>
+                <p class="text-2xl font-black mt-3 mono">01010100 01010101 01000100 01001111</p>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 15;
+        const bits = [0, 0, 0, 0, 0, 0, 0, 0];
+        const lamps = [0, 0, 0, 0];
+
+        // ========== SIMULADOR MIPS ==========
+        const mipsProgram = [
+            { op: 'ADDI', rd: 1, rs: 0, imm: 5, text: 'ADDI $1, $0, 5', desc: 'Carrega 5 no $1' },
+            { op: 'ADDI', rd: 2, rs: 0, imm: 3, text: 'ADDI $2, $0, 3', desc: 'Carrega 3 no $2' },
+            { op: 'ADD', rd: 3, rs: 1, rt: 2, text: 'ADD $3, $1, $2', desc: 'Soma $1 + $2 → $3' },
+            { op: 'SUB', rd: 4, rs: 1, rt: 2, text: 'SUB $4, $1, $2', desc: 'Subtrai $1 - $2 → $4' }
+        ];
+
+        let mipsRegs = [0, 0, 0, 0, 0];
+        let mipsPC = 0;
+        let mipsRunning = false;
+
+        function cpuReset() {
+            mipsRegs = [0, 0, 0, 0, 0];
+            mipsPC = 0;
+            updateMipsDisplay();
+            highlightInstruction(-1);
+            document.getElementById('currentInstr').textContent = 'Clique em PASSO para começar';
+            document.getElementById('binInstr').textContent = '00000000000000000000000000000000';
+        }
+
+        function cpuStep() {
+            if (mipsPC >= mipsProgram.length) {
+                document.getElementById('currentInstr').textContent = '✅ PROGRAMA FINALIZADO! Gaveta 3 = 8 (5+3), Gaveta 4 = 2 (5-3)';
+                return;
+            }
+
+            const instr = mipsProgram[mipsPC];
+            highlightInstruction(mipsPC);
+            document.getElementById('currentInstr').textContent = instr.desc;
+
+            // Executar instrução
+            if (instr.op === 'ADDI') {
+                mipsRegs[instr.rd] = mipsRegs[instr.rs] + instr.imm;
+            } else if (instr.op === 'ADD') {
+                mipsRegs[instr.rd] = mipsRegs[instr.rs] + mipsRegs[instr.rt];
+            } else if (instr.op === 'SUB') {
+                mipsRegs[instr.rd] = mipsRegs[instr.rs] - mipsRegs[instr.rt];
+            }
+
+            // Atualizar binário
+            updateBinaryDisplay(instr);
+            
+            mipsPC++;
+            updateMipsDisplay();
+        }
+
+        function cpuRun() {
+            cpuReset();
+            let delay = 0;
+            for (let i = 0; i < mipsProgram.length; i++) {
+                setTimeout(() => cpuStep(), delay);
+                delay += 1000;
+            }
+        }
+
+        function highlightInstruction(index) {
+            for (let i = 0; i < mipsProgram.length; i++) {
+                const el = document.getElementById('instr' + i);
+                if (i === index) {
+                    el.classList.add('bg-yellow-500');
+                    el.classList.remove('bg-gray-700');
+                } else {
+                    el.classList.remove('bg-yellow-500');
+                    el.classList.add('bg-gray-700');
+                }
+            }
+        }
+
+        function updateMipsDisplay() {
+            for (let i = 0; i < 5; i++) {
+                document.getElementById('r' + i).textContent = mipsRegs[i];
+                if (i > 0) {
+                    document.getElementById('binR' + i).textContent = (mipsRegs[i] >>> 0).toString(2).padStart(8, '0');
+                    document.getElementById('decR' + i).textContent = mipsRegs[i];
+                }
+            }
+            document.getElementById('pc').textContent = mipsPC;
+
+            // Highlight registrador modificado
+            for (let i = 1; i < 5; i++) {
+                const regEl = document.getElementById('reg' + i);
+                if (mipsRegs[i] !== 0) {
+                    regEl.classList.add('bg-green-300');
+                    regEl.classList.remove('bg-blue-200', 'bg-green-200', 'bg-red-200');
+                }
+            }
+        }
+
+        function updateBinaryDisplay(instr) {
+            let binary = '';
+
+            if (instr.op === 'ADD') {
+                binary = '000000' + (instr.rs).toString(2).padStart(5, '0') + (instr.rt).toString(2).padStart(5, '0') + (instr.rd).toString(2).padStart(5, '0') + '00000100000';
+            } else if (instr.op === 'SUB') {
+                binary = '000000' + (instr.rs).toString(2).padStart(5, '0') + (instr.rt).toString(2).padStart(5, '0') + (instr.rd).toString(2).padStart(5, '0') + '00000100010';
+            } else if (instr.op === 'ADDI') {
+                binary = '001000' + (instr.rs).toString(2).padStart(5, '0') + (instr.rd).toString(2).padStart(5, '0') + (instr.imm).toString(2).padStart(16, '0');
+            }
+
+            document.getElementById('binInstr').textContent = binary;
+        }
+
+        // Tela Cheia
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log('Erro ao entrar em tela cheia:', err);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            const btn = document.getElementById('fullscreenBtn');
+            if (document.fullscreenElement) {
+                btn.textContent = '⛶';
+                btn.title = 'Sair da Tela Cheia (ESC)';
+            } else {
+                btn.textContent = '⛶';
+                btn.title = 'Tela Cheia (F11)';
+            }
+        });
+
+        // Navegação
+        function showSlide(n) {
+            if (n < 1) n = 1;
+            if (n > totalSlides) n = totalSlides;
+            
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            document.getElementById(`slide${n}`).classList.add('active');
+            document.getElementById('slideCounter').textContent = `${n}/${totalSlides}`;
+            document.getElementById('progressBar').style.width = `${(n / totalSlides) * 100}%`;
+            currentSlide = n;
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        // Teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT') return; // Não navegar quando digitando
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+            if (e.key === 'Escape') closeAsciiModal();
+            if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+        });
+
+        // Modal ASCII
+        function openAsciiModal() {
+            document.getElementById('asciiModal').classList.add('active');
+        }
+
+        function closeAsciiModal(event) {
+            if (event && event.target !== document.getElementById('asciiModal')) return;
+            document.getElementById('asciiModal').classList.remove('active');
+        }
+
+        function generateModalAsciiTable() {
+            const table = document.getElementById('modalAsciiTable');
+            let html = '';
+            
+            for (let i = 32; i < 56; i++) {
+                html += '<tr>';
+                for (let j = 0; j < 4; j++) {
+                    const code = i + j * 24;
+                    if (code <= 126) {
+                        const char = String.fromCharCode(code);
+                        const bgClass = (code >= 65 && code <= 90) || (code >= 97 && code <= 122) ? 'bg-yellow-200' : '';
+                        html += `<td class="${bgClass} font-bold">${code}</td>`;
+                        html += `<td class="${bgClass} text-xl font-black">${char}</td>`;
+                    } else {
+                        html += '<td></td><td></td>';
+                    }
+                }
+                html += '</tr>';
+            }
+            
+            table.innerHTML = html;
+        }
+
+        // Lâmpadas
+        function toggleLamp(index) {
+            lamps[index] = lamps[index] ? 0 : 1;
+            const lampEl = document.getElementById(`lamp${index}`);
+            const valEl = document.getElementById(`lampVal${index}`);
+            
+            if (lamps[index]) {
+                lampEl.classList.remove('lamp-off');
+                lampEl.classList.add('lamp-on');
+                valEl.textContent = '1';
+            } else {
+                lampEl.classList.remove('lamp-on');
+                lampEl.classList.add('lamp-off');
+                valEl.textContent = '0';
+            }
+            
+            updateLampResults();
+        }
+
+        function updateLampResults() {
+            const binary = lamps.join('');
+            const decimal = lamps[0] * 8 + lamps[1] * 4 + lamps[2] * 2 + lamps[3] * 1;
+            document.getElementById('binaryResult').textContent = binary;
+            document.getElementById('decimalResult').textContent = decimal;
+        }
+
+        // Bits interativos
+        function toggleBit(index) {
+            bits[index] = bits[index] ? 0 : 1;
+            const container = document.getElementById('bitContainer');
+            const bitBox = container.children[index];
+            
+            bitBox.textContent = bits[index];
+            bitBox.classList.toggle('bit-0');
+            bitBox.classList.toggle('bit-1');
+            
+            updateValues();
+        }
+
+        function updateValues() {
+            const decimal = bits.reduce((acc, bit, i) => acc + bit * Math.pow(2, 7 - i), 0);
+            document.getElementById('decimalValue').textContent = decimal;
+            
+            let char = 'NUL';
+            if (decimal >= 32 && decimal <= 126) {
+                char = String.fromCharCode(decimal);
+            } else if (decimal === 0) {
+                char = 'NUL';
+            } else if (decimal < 32) {
+                char = 'CTRL';
+            } else {
+                char = 'EXT';
+            }
+            document.getElementById('asciiChar').textContent = char;
+        }
+
+        function randomBits() {
+            const container = document.getElementById('bitContainer');
+            for (let i = 0; i < 8; i++) {
+                bits[i] = Math.round(Math.random());
+                const bitBox = container.children[i];
+                bitBox.textContent = bits[i];
+                bitBox.className = `bit-box flex items-center justify-center mono ${bits[i] ? 'bit-1' : 'bit-0'}`;
+            }
+            updateValues();
+        }
+
+        // Tabela ASCII
+        function generateAsciiTable() {
+            const table = document.getElementById('asciiTable');
+            let html = '';
+            
+            for (let i = 32; i < 48; i++) {
+                html += '<tr>';
+                for (let j = 0; j < 3; j++) {
+                    const code = i + j * 32;
+                    if (code <= 126) {
+                        const char = String.fromCharCode(code);
+                        const bin = code.toString(2).padStart(8, '0');
+                        const bgClass = (code >= 65 && code <= 90) || (code >= 97 && code <= 122) ? 'bg-yellow-200' : '';
+                        html += `<td class="${bgClass}">${code}</td>`;
+                        html += `<td class="${bgClass} mono">${bin}</td>`;
+                        html += `<td class="${bgClass} text-2xl font-bold">${char}</td>`;
+                    } else {
+                        html += '<td></td><td></td><td></td>';
+                    }
+                }
+                html += '</tr>';
+            }
+            
+            table.innerHTML = html;
+        }
+
+        // Codificador de texto
+        function encodeText() {
+            const text = document.getElementById('textInput').value.toUpperCase();
+            let binary = '';
+            
+            for (let i = 0; i < text.length; i++) {
+                binary += text.charCodeAt(i).toString(2).padStart(8, '0') + ' ';
+            }
+            
+            document.getElementById('binaryOutput').textContent = binary || 'Digite algo acima para ver o binário';
+            document.getElementById('bitCount').textContent = text.length * 8;
+            document.getElementById('byteCount').textContent = text.length;
+        }
+
+        // Inicialização
+        generateAsciiTable();
+        generateModalAsciiTable();
+        showSlide(1);
+    </script>
+</body>
+</html>
