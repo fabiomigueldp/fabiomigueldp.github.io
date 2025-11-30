@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direito Empresarial - O Cheque</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;700;900&family=Reenie+Beanie&display=swap');
+        
+        * { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'Space Mono', monospace; }
+        .handwriting { font-family: 'Reenie Beanie', cursive; }
+
+        /* Estilo Neobrutalista Base */
+        .neo-box {
+            border: 4px solid #000;
+            box-shadow: 8px 8px 0px #000;
+            transition: all 0.2s ease;
+        }
+        .neo-box:hover {
+            box-shadow: 12px 12px 0px #000;
+            transform: translate(-2px, -2px);
+        }
+        
+        .neo-btn {
+            border: 3px solid #000;
+            box-shadow: 5px 5px 0px #000;
+            transition: all 0.1s ease;
+            cursor: pointer;
+        }
+        .neo-btn:hover {
+            box-shadow: 7px 7px 0px #000;
+            transform: translate(-2px, -2px);
+        }
+        .neo-btn:active {
+            box-shadow: 2px 2px 0px #000;
+            transform: translate(3px, 3px);
+        }
+
+        /* Slides */
+        .slide {
+            display: none;
+            min-height: 100vh;
+            padding: 2rem;
+            padding-bottom: 100px;
+        }
+        .slide.active { display: flex; }
+
+        /* Elementos Específicos do Cheque */
+        .cheque-paper {
+            background-color: #fdfbf7;
+            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 10px 10px;
+            border: 4px solid #000;
+            position: relative;
+        }
+        
+        .cruzamento {
+            position: absolute;
+            top: 0;
+            left: 50px;
+            width: 60px;
+            height: 100px;
+            border-left: 3px solid #000;
+            border-right: 3px solid #000;
+            transform: skew(-20deg);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-align: center;
+            writing-mode: vertical-rl;
+        }
+        .cruzamento.active { display: flex; }
+
+        .magnetic-line {
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        /* Animações */
+        .bounce { animation: bounce 2s ease infinite alternate; }
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-5px); }
+        }
+
+        /* Utilitários */
+        .highlight-row { background-color: #FFDE59 !important; }
+        
+        .progress-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-bottom: 3px solid #000;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #00C853; /* Verde Dinheiro */
+            transition: width 0.3s ease;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: white;
+            max-width: 800px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            border: 4px solid #000;
+            box-shadow: 12px 12px 0px #fff;
+        }
+
+        .hotspot {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: #FF0000;
+            border: 2px solid #000;
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-black">
+
+    <div class="fixed top-0 left-0 w-full z-50 progress-bar">
+        <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+    </div>
+
+    <div class="fixed bottom-0 left-0 w-full z-50 bg-white border-t-4 border-black py-3">
+        <div class="flex justify-center items-center gap-4">
+            <button onclick="toggleFullscreen()" class="neo-btn bg-gray-800 text-white px-3 py-2 font-bold text-sm" title="Tela Cheia">⛶</button>
+            <button onclick="prevSlide()" class="neo-btn bg-white px-6 py-2 font-bold text-lg">← Voltar</button>
+            <span class="neo-box bg-green-400 px-4 py-2 font-bold text-lg mono" id="slideCounter">1/18</span>
+            <button onclick="nextSlide()" class="neo-btn bg-white px-6 py-2 font-bold text-lg">Avançar →</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="infoModal" onclick="closeModal(event)">
+        <div class="modal-content p-6" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4 border-b-4 border-black pb-2">
+                <h3 class="text-2xl font-black uppercase" id="modalTitle">Título</h3>
+                <button onclick="closeModal()" class="neo-btn bg-red-500 text-white px-3 py-1 font-bold">✕</button>
+            </div>
+            <div id="modalBody" class="text-lg leading-relaxed"></div>
+        </div>
+    </div>
+
+    <section class="slide active bg-green-500 flex-col justify-center items-center" id="slide1">
+        <div class="text-center relative">
+            <div class="neo-box bg-white p-12 relative z-10">
+                <h2 class="text-2xl font-bold mb-2 tracking-widest">DIREITO EMPRESARIAL</h2>
+                <h1 class="text-8xl font-black mb-4 tracking-tighter text-green-600">O CHEQUE</h1>
+                <p class="text-xl font-bold mt-4">Lei nº 7.357/1985</p>
+                <div class="mt-8 border-t-4 border-black pt-4">
+                    <p class="mono text-sm">TÍTULO DE CRÉDITO • ORDEM DE PAGAMENTO • TÍTULO EXECUTIVO</p>
+                </div>
+            </div>
+            <div class="absolute -top-10 -left-10 w-32 h-32 bg-yellow-300 border-4 border-black z-0"></div>
+            <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-blue-400 border-4 border-black z-0 rounded-full"></div>
+        </div>
+    </section>
+
+    <section class="slide bg-yellow-100 flex-col justify-center items-center" id="slide2">
+        <div class="max-w-5xl mx-auto text-center">
+            <h2 class="text-5xl font-black mb-8 neo-box bg-white p-6 inline-block">O QUE É O CHEQUE?</h2>
+            
+            <div class="grid grid-cols-2 gap-8 mt-6">
+                <div class="neo-box bg-white p-8 text-left">
+                    <h3 class="text-2xl font-black mb-4 bg-green-300 inline-block px-2">DEFINIÇÃO</h3>
+                    <p class="text-xl font-medium mb-4">É uma ordem de pagamento <span class="text-red-600 font-black">À VISTA</span>, emitida contra um banco, baseada em fundos disponíveis.</p>
+                    <ul class="list-disc pl-6 space-y-2 text-lg">
+                        <li><strong>Título de Crédito:</strong> Representa um valor monetário.</li>
+                        <li><strong>Modelo Vinculado:</strong> Deve seguir padrões do Banco Central.</li>
+                        <li><strong>Natureza:</strong> "Solvendi" (feito para pagar) e não "Credendi" (embora usado para crédito na prática).</li>
+                    </ul>
+                </div>
+                
+                <div class="neo-box bg-blue-200 p-8 flex flex-col justify-center items-center">
+                    <div class="text-6xl mb-4">🏦 ↔️ 👤</div>
+                    <p class="text-2xl font-black text-center">"Pague-se por este cheque a..."</p>
+                    <p class="mt-4 text-center text-sm font-bold bg-white p-2 border-2 border-black">Art. 32 da Lei 7.357/85: "O cheque é pagável à vista."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide bg-blue-600 flex-col justify-center items-center" id="slide3">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-4xl font-black mb-10 neo-box bg-white p-5 inline-block">A RELAÇÃO JURÍDICA (A TRÍADE)</h2>
+            
+            <div class="relative flex justify-center items-center gap-12 mt-8">
+                
+                <div class="neo-box bg-yellow-300 p-6 w-64 h-64 flex flex-col items-center justify-center relative z-10">
+                    <div class="text-5xl mb-2">👤</div>
+                    <h3 class="text-2xl font-black">EMITENTE</h3>
+                    <p class="text-sm font-bold">(Sacador)</p>
+                    <p class="text-xs mt-2">Quem assina e dá a ordem.</p>
+                </div>
+
+                <div class="text-white text-4xl font-black bounce">➔</div>
+
+                <div class="neo-box bg-white p-6 w-64 h-64 flex flex-col items-center justify-center relative z-10">
+                    <div class="text-5xl mb-2">🏦</div>
+                    <h3 class="text-2xl font-black">SACADO</h3>
+                    <p class="text-sm font-bold">(Banco)</p>
+                    <p class="text-xs mt-2">Quem recebe a ordem para pagar.</p>
+                    <div class="absolute -top-6 bg-red-500 text-white px-2 py-1 text-xs border-2 border-black font-bold">Sempre um Banco!</div>
+                </div>
+
+                <div class="text-white text-4xl font-black bounce">➔</div>
+
+                <div class="neo-box bg-green-300 p-6 w-64 h-64 flex flex-col items-center justify-center relative z-10">
+                    <div class="text-5xl mb-2">🤝</div>
+                    <h3 class="text-2xl font-black">BENEFICIÁRIO</h3>
+                    <p class="text-sm font-bold">(Tomador)</p>
+                    <p class="text-xs mt-2">Quem recebe o dinheiro.</p>
+                </div>
+            </div>
+            
+            <div class="neo-box bg-black text-white p-4 mt-12 inline-block">
+                <p class="text-lg">O Emitente tem um contrato prévio com o Sacado (Conta Corrente + Saldo).</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide bg-purple-500 flex-col justify-center items-center" id="slide4">
+        <div class="max-w-5xl mx-auto text-center">
+            <h2 class="text-4xl font-black mb-6 neo-box bg-white p-5 inline-block">REQUISITOS ESSENCIAIS (ART. 1º)</h2>
+            <p class="text-white font-bold mb-6 text-xl">A falta de qualquer um descaracteriza o cheque!</p>
+
+            <div class="grid grid-cols-3 gap-4 text-left">
+                <div class="neo-box bg-white p-4 hover:bg-yellow-200 cursor-help" onclick="showInfo('A Palavra CHEQUE', 'A palavra CHEQUE deve estar inscrita no próprio texto do título, na língua empregada para a sua redação.')">
+                    <span class="text-2xl font-black">1.</span>
+                    <p class="font-bold">A palavra "CHEQUE"</p>
+                </div>
+                <div class="neo-box bg-white p-4 hover:bg-yellow-200 cursor-help" onclick="showInfo('Ordem Pura e Simples', 'A ordem de pagar deve ser incondicional. Não pode ser: Pague se chover amanhã.')">
+                    <span class="text-2xl font-black">2.</span>
+                    <p class="font-bold">Ordem de pagar quantia determinada</p>
+                </div>
+                <div class="neo-box bg-white p-4 hover:bg-yellow-200 cursor-help" onclick="showInfo('Nome do Sacado', 'O nome do Banco ou Instituição Financeira que deve pagar.')">
+                    <span class="text-2xl font-black">3.</span>
+                    <p class="font-bold">Nome do Sacado (Banco)</p>
+                </div>
+                <div class="neo-box bg-white p-4 hover:bg-yellow-200 cursor-help" onclick="showInfo('Data e Lugar', 'Indicação do lugar de emissão e a data (dia, mês e ano). Essencial para contagem de prazos.')">
+                    <span class="text-2xl font-black">4.</span>
+                    <p class="font-bold">Data e Lugar de emissão</p>
+                </div>
+                <div class="neo-box bg-white p-4 hover:bg-yellow-200 cursor-help" onclick="showInfo('Assinatura', 'Assinatura do emitente (sacador) ou de seu mandatário com poderes especiais.')">
+                    <span class="text-2xl font-black">5.</span>
+                    <p class="font-bold">Assinatura do Emitente</p>
+                </div>
+                <div class="neo-box bg-white p-4 hover:bg-yellow-200 cursor-help" onclick="showInfo('Lugar de Pagamento', 'O local onde o pagamento deve ser efetuado. Se não houver, considera-se o designado junto ao nome do sacado.')">
+                    <span class="text-2xl font-black">6.</span>
+                    <p class="font-bold">Lugar de Pagamento</p>
+                </div>
+            </div>
+            <div class="mt-6">
+                <p class="text-white font-mono text-sm">Clique nos itens para ver a explicação jurídica.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide bg-gray-200 flex-col justify-center items-center" id="slide5">
+        <div class="w-full max-w-6xl text-center">
+            <h2 class="text-4xl font-black mb-6 neo-box bg-black text-white p-4 inline-block">ANATOMIA DO CHEQUE</h2>
+            
+            <div class="relative w-full max-w-4xl mx-auto">
+                <div class="cheque-paper p-6 h-96 text-left relative shadow-2xl">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="flex items-center gap-2">
+                            <div class="w-12 h-12 bg-black rounded-full flex items-center justify-center text-white font-bold text-xs">LOGO</div>
+                            <div>
+                                <h3 class="font-bold text-lg leading-none">BANCO NEO</h3>
+                                <p class="text-xs">Ag. 0001 | Conta 12345-6</p>
+                            </div>
+                        </div>
+                        <div class="neo-box bg-white p-2 w-64 flex items-center gap-2">
+                            <span class="font-bold text-lg">R$</span>
+                            <span class="mono text-2xl w-full text-right bg-gray-100 px-2">1.500,00</span>
+                            <div class="hotspot" style="top: -10px; right: -10px;" onclick="showInfo('Valor Numérico', 'Deve coincidir com o extenso. Se houver divergência, prevalece o extenso (Lei 7.357, art. 12).')">?</div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6 mt-8">
+                        <div class="relative">
+                            <p class="text-lg">Pague por este <span class="font-black">CHEQUE</span> a quantia de</p>
+                            <p class="handwriting text-3xl border-b-2 border-black leading-loose text-blue-900">Um mil e quinhentos reais -----------------------------------</p>
+                            <div class="hotspot" style="top: 20px; right: 50%;" onclick="showInfo('Valor por Extenso', 'Prevalece sobre o numérico em caso de divergência. Escrita deve ser clara para evitar adulterações.')">?</div>
+                        </div>
+                        
+                        <div class="relative">
+                            <p class="text-lg">a <span class="handwriting text-2xl border-b-2 border-black px-4 w-2/3 inline-block text-blue-900">Fulano de Tal (Nominal)</span> ou à sua ordem.</p>
+                            <div class="hotspot" style="top: 0px; right: 10px;" onclick="showInfo('Cláusula À Ordem', 'Indica o beneficiário. Se for acima de R$ 100,00, é OBRIGATÓRIA a identificação do beneficiário (fim do cheque ao portador).')">?</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-10 flex justify-between items-end">
+                        <div class="text-center relative">
+                            <p class="handwriting text-2xl border-b-2 border-black w-48 text-blue-900">São Paulo</p>
+                            <p class="text-xs font-bold mt-1">Cidade</p>
+                            <div class="hotspot" style="top: -10px; left: -10px;" onclick="showInfo('Praça de Emissão', 'Define se o cheque é da mesma praça (30 dias) ou praça diferente (60 dias) para apresentação.')">?</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="flex gap-2 items-end">
+                                <span class="handwriting text-2xl border-b-2 border-black w-12 text-blue-900">15</span>
+                                <span>de</span>
+                                <span class="handwriting text-2xl border-b-2 border-black w-32 text-blue-900">Outubro</span>
+                                <span>de</span>
+                                <span class="handwriting text-2xl border-b-2 border-black w-16 text-blue-900">2025</span>
+                            </div>
+                        </div>
+                        <div class="text-center relative">
+                            <p class="handwriting text-4xl mb-1 text-blue-900 transform -rotate-3">Assinatura do Cliente</p>
+                            <div class="w-64 border-t-2 border-black"></div>
+                            <p class="text-xs font-bold mt-1">EMITENTE</p>
+                            <div class="hotspot" style="top: -20px; right: 0;" onclick="showInfo('Assinatura', 'Requisito vital. O banco confere a firma (assinatura) com o cartão de autógrafos.')">?</div>
+                        </div>
+                    </div>
+
+                    <div class="absolute bottom-2 left-6 right-6 text-center">
+                        <p class="magnetic-line text-sm text-gray-600"><span class="font-black"><</span> 001 1234 567890 12345 6 <span class="font-black">></span></p>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-6 text-gray-500 font-bold">Clique nos pontos vermelhos (?) para detalhes jurídicos.</p>
+        </div>
+    </section>
+
+    <section class="slide bg-red-400 flex-col justify-center items-center" id="slide6">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-4xl font-black mb-8 neo-box bg-white p-5 inline-block">PRINCÍPIOS DOS TÍTULOS DE CRÉDITO</h2>
+            
+            <div class="grid grid-cols-3 gap-6">
+                <div class="neo-box bg-white p-6 h-full flex flex-col">
+                    <div class="text-5xl mb-4">📄</div>
+                    <h3 class="text-2xl font-black mb-2">CARTULARIDADE</h3>
+                    <p class="text-sm flex-grow">O direito está materializado no papel. Para exercer o direito (cobrar), você precisa ter a <strong>cártula</strong> (o documento físico) em mãos.</p>
+                    <p class="mt-4 text-xs font-bold bg-gray-200 p-2">Exceção moderna: Cheque digitalizado.</p>
+                </div>
+
+                <div class="neo-box bg-white p-6 h-full flex flex-col">
+                    <div class="text-5xl mb-4">🔤</div>
+                    <h3 class="text-2xl font-black mb-2">LITERALIDADE</h3>
+                    <p class="text-sm flex-grow">Só vale o que está <strong>escrito</strong> no título. Acordos verbais fora do cheque não afetam terceiros de boa-fé.</p>
+                </div>
+
+                <div class="neo-box bg-white p-6 h-full flex flex-col">
+                    <div class="text-5xl mb-4">✂️</div>
+                    <h3 class="text-2xl font-black mb-2">AUTONOMIA</h3>
+                    <p class="text-sm flex-grow">O cheque se desvincula da causa que o originou (abstração). Se A paga B com cheque, e B passa para C... C não tem nada a ver se o produto de A estava com defeito.</p>
+                    <p class="mt-4 text-xs font-bold bg-yellow-200 p-2">Inoponibilidade das exceções pessoais.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide bg-indigo-500 flex-col justify-center items-center" id="slide7">
+        <div class="max-w-5xl mx-auto text-center">
+            <h2 class="text-4xl font-black mb-6 neo-box bg-white p-5 inline-block">CIRCULAÇÃO (QUEM RECEBE?)</h2>
+            
+            <div class="space-y-6 w-full">
+                <div class="neo-box bg-white p-6 flex items-center gap-6 opacity-75">
+                    <div class="bg-gray-800 text-white p-4 font-black text-xl w-40">AO PORTADOR</div>
+                    <div class="text-left">
+                        <h3 class="text-xl font-bold">Sem nome do beneficiário</h3>
+                        <p>Quem estiver com o cheque, recebe.</p>
+                        <p class="text-red-600 font-black mt-2">⚠️ LIMITE LEGAL: R$ 100,00</p>
+                        <p class="text-xs">Acima disso, o banco devolve se não tiver nome.</p>
+                    </div>
+                </div>
+
+                <div class="neo-box bg-yellow-300 p-6 flex items-center gap-6">
+                    <div class="bg-black text-white p-4 font-black text-xl w-40">NOMINAL</div>
+                    <div class="text-left">
+                        <h3 class="text-xl font-bold">Com nome do beneficiário</h3>
+                        <p>Só aquela pessoa pode receber (ou quem ela indicar).</p>
+                        <div class="grid grid-cols-2 gap-4 mt-3">
+                            <div class="bg-white p-2 border-2 border-black">
+                                <p class="font-bold text-sm">À ORDEM</p>
+                                <p class="text-xs">Pode ser endossado (passado pra frente). É a regra.</p>
+                            </div>
+                            <div class="bg-red-100 p-2 border-2 border-red-500">
+                                <p class="font-bold text-sm text-red-600">NÃO À ORDEM</p>
+                                <p class="text-xs">Não pode ser endossado. Só transfere via Cessão Civil.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide bg-white flex-col justify-center items-center" id="slide8">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-4xl font-black mb-6 neo-box bg-black text-white p-5 inline-block">CHEQUE CRUZADO</h2>
+            <p class="text-xl mb-8">O cruzamento transforma o cheque em "dinheiro de plástico": só entra em conta.</p>
+
+            <div class="grid grid-cols-2 gap-12">
+                <div class="neo-box bg-gray-100 p-8 relative">
+                    <h3 class="text-2xl font-black mb-4">CRUZAMENTO GERAL</h3>
+                    <div class="w-full h-32 bg-white border-2 border-gray-300 relative mb-4">
+                        <div class="absolute top-0 left-10 w-12 h-full border-l-4 border-r-4 border-black transform skew-x-[-20deg]"></div>
+                    </div>
+                    <p class="font-bold">Apenas dois traços paralelos.</p>
+                    <p class="mt-2 text-sm">O cheque só pode ser pago a um banco ou a um cliente do banco. Na prática: <strong>TEM QUE DEPOSITAR</strong> em qualquer banco.</p>
+                </div>
+
+                <div class="neo-box bg-gray-100 p-8 relative">
+                    <h3 class="text-2xl font-black mb-4">CRUZAMENTO ESPECIAL</h3>
+                    <div class="w-full h-32 bg-white border-2 border-gray-300 relative mb-4">
+                        <div class="absolute top-0 left-10 w-24 h-full border-l-4 border-r-4 border-black transform skew-x-[-20deg] flex items-center justify-center">
+                            <span class="font-bold transform skew-x-[20deg] rotate-[-70deg] text-lg">BANCO ITAÚ</span>
+                        </div>
+                    </div>
+                    <p class="font-bold">Nome do banco entre os traços.</p>
+                    <p class="mt-2 text-sm">Só pode ser depositado no <strong>BANCO INDICADO</strong> entre as linhas.</p>
+                </div>
+            </div>
+            
+            <div class="mt-8 neo-box bg-yellow-300 p-4 inline-block">
+                <p class="font-black text-lg">Art. 45: O cruzamento não pode ser anulado (riscado).</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide bg-orange-400 flex-col justify-center items-center" id="slide9">
+        <div class="max-w-5xl mx-auto text-center">
+            <h2 class="text-4xl font-black mb-6 neo-box bg-white p-5 inline-block">ENDOSSO (Transferência)</h2>
+            <p class="text-white font-bold mb-8 text-xl">Como passar o "papagaio" pra frente.</p>
+
+            <div class="neo-box bg-white p-8 relative">
+                <p class="absolute top-0 right-0 bg-black text-white px-2 font-bold text-xs">VERSO DO CHEQUE</p>
+                
+                <div class="flex gap-8">
+                    <div class="flex-1 border-r-4 border-dashed border-gray-300 pr-8">
+                        <h3 class="text-2xl font-black mb-4 text-orange-600">EM BRANCO</h3>
+                        <div class="bg-gray-100 h-32 p-4 font-handwriting text-2xl text-blue-900 border-2 border-gray-300 relative">
+                            <p class="transform rotate-[-5deg] mt-8 text-center">Assinatura do Endossante</p>
+                        </div>
+                        <ul class="mt-4 text-left text-sm space-y-2">
+                            <li>✔️ Só assina no verso.</li>
+                            <li>✔️ Transforma em título <strong>ao portador</strong>.</li>
+                            <li>✔️ Qualquer um que pegar, pode cobrar.</li>
+                        </ul>
+                    </div>
+
+                    <div class="flex-1 pl-8">
+                        <h3 class="text-2xl font-black mb-4 text-black">EM PRETO</h3>
+                        <div class="bg-gray-100 h-32 p-4 font-handwriting text-xl text-blue-900 border-2 border-gray-300 text-left">
+                            <p>Pague-se a <br><strong>Beltrano da Silva</strong></p>
+                            <p class="mt-2 text-center transform rotate-[-2deg]">Assinatura do Endossante</p>
+                        </div>
+                        <ul class="mt-4 text-left text-sm space-y-2">
+                            <li>✔️ Identifica quem recebe.</li>
+                            <li>✔️ Beltrano precisa assinar para passar adiante.</li>
+                            <li>✔️ Mais seguro.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="neo-box bg-black text-white p-4 mt-6">
+                <p class="text-lg font-bold">⚠️ Responsabilidade Solidária</p>
+                <p class="text-sm">Quem endossa vira GARANTIDOR do pagamento, salvo cláusula "sem garantia".</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide bg-cyan-600 flex-col justify-center items-center" id="slide10">
+        <div class="max-w-6xl mx-auto text-center w-full">
+            <h2 class="text-4xl font-black mb-10 neo-box bg-white p-5 inline-block">PRAZOS DE APRESENTAÇÃO</h2>
+            
+            <div class="relative py-10 w-full">
+                <div class="absolute top-1/2 left-0 w-full h-2 bg-black transform -translate-y-1/2"></div>
+                
+                <div class="flex justify-between relative z-10 w-full px-10">
+                    
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 bg-black rounded-full border-4 border-white"></div>
+                        <div class="neo-box bg-white p-3 mt-4 w-40">
+                            <p class="font-black">EMISSÃO</p>
+                            <p class="text-xs">Data escrita no cheque</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 bg-yellow-400 rounded-full border-4 border-black"></div>
+                        <div class="neo-box bg-yellow-300 p-3 mt-4 w-48">
+                            <p class="font-black text-2xl">30 DIAS</p>
+                            <p class="font-bold text-sm">Mesma Praça</p>
+                            <p class="text-xs mt-1">Emitido em SP, pago em SP</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 bg-orange-400 rounded-full border-4 border-black"></div>
+                        <div class="neo-box bg-orange-300 p-3 mt-4 w-48">
+                            <p class="font-black text-2xl">60 DIAS</p>
+                            <p class="font-bold text-sm">Praça Diferente</p>
+                            <p class="text-xs mt-1">Emitido em SP, pago no RJ</p>
+                        </div>
+                        <div class="absolute -top-16 bg-white border-2 border-black p-2 font-bold text-sm">
+                            ⚠️ FIM DO PRAZO DE APRESENTAÇÃO
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 bg-red-600 rounded-full border-4 border-black"></div>
+                        <div class="neo-box bg-red-500 text-white p-3 mt-4 w-48">
+                            <p class="font-black text-2xl">+ 6 MESES</p>
+                            <p class="font-bold text-sm">Prescrição</p>
+                            <p class="text-xs mt-1">Perde força executiva</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="mt-20 neo-box bg-white p-6 text-left max-w-2xl mx-auto">
+                <h3 class="font-black text-xl mb-2">O que acontece se perder o prazo de 30/60 dias?</h3>
+                <ol class="list-decimal pl-5 font-medium space-y-1">
+                    <li>O cheque <strong>ainda pode ser pago</strong> pelo banco (se tiver fundos e não estiver prescrito).</li>
+                    <li>Perde-se o direito de cobrar os <strong>endossantes</strong> (coobrigados).</li>
+                    <li>Se não tiver fundos, e o emitente provar que tinha fundos na época e o banco quebrou... o emitente se livra (raro).</li>
+                </ol>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide bg-pink-500 flex-col justify-center items-center" id="slide11">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl font-black mb-6 neo-box bg-white p-5 inline-block">MOTIVOS DE DEVOLUÇÃO</h2>
+            <p class="text-white text-lg font-bold mb-6">Digite o código do motivo (ex: 11, 21) para ver a explicação.</p>
+
+            <div class="flex gap-4 mb-8 justify-center">
+                <input type="number" id="codeReason" placeholder="Cod" class="neo-box p-4 text-4xl w-32 text-center font-mono font-bold">
+                <button onclick="checkReason()" class="neo-btn bg-black text-white px-6 py-4 font-bold text-xl">CONSULTAR</button>
+            </div>
+
+            <div id="reasonResult" class="neo-box bg-white p-8 min-h-[200px] flex flex-col justify-center items-center">
+                <p class="text-gray-400 text-xl font-bold">Aguardando código...</p>
+            </div>
+
+            <div class="grid grid-cols-4 gap-4 mt-8">
+                <button onclick="setInputReason(11)" class="neo-btn bg-yellow-300 p-2 font-bold">11 (1ª S/ Fundo)</button>
+                <button onclick="setInputReason(12)" class="neo-btn bg-red-400 p-2 font-bold">12 (2ª S/ Fundo)</button>
+                <button onclick="setInputReason(21)" class="neo-btn bg-blue-300 p-2 font-bold">21 (Sustado)</button>
+                <button onclick="setInputReason(44)" class="neo-btn bg-gray-300 p-2 font-bold">44 (Prescrito)</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide bg-gray-800 flex-col justify-center items-center" id="slide12">
+        <div class="max-w-7xl mx-auto text-center w-full">
+            <h2 class="text-3xl font-black mb-4 neo-box bg-white p-3 inline-block">✍️ SIMULADOR DE PREENCHIMENTO</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="neo-box bg-gray-200 p-6 text-left space-y-4">
+                    <h3 class="font-black text-xl mb-4 border-b-2 border-black pb-2">DADOS DO CHEQUE</h3>
+                    
+                    <div>
+                        <label class="font-bold text-sm block">Valor (R$):</label>
+                        <input type="number" id="simAmount" class="w-full border-2 border-black p-2 font-mono" oninput="updateCheque()" value="1000">
+                    </div>
+                    
+                    <div>
+                        <label class="font-bold text-sm block">Beneficiário:</label>
+                        <input type="text" id="simBeneficiary" class="w-full border-2 border-black p-2" oninput="updateCheque()" value="Loja de Roupas LTDA">
+                    </div>
+
+                    <div>
+                        <label class="font-bold text-sm block">Cidade:</label>
+                        <input type="text" id="simCity" class="w-full border-2 border-black p-2" oninput="updateCheque()" value="Curitiba">
+                    </div>
+
+                    <div>
+                        <label class="font-bold text-sm block">Data:</label>
+                        <input type="date" id="simDate" class="w-full border-2 border-black p-2" oninput="updateCheque()">
+                    </div>
+
+                    <div class="flex items-center gap-2 mt-4">
+                        <input type="checkbox" id="simCrossed" class="w-6 h-6 border-2 border-black" onchange="updateCheque()">
+                        <label class="font-bold cursor-pointer" for="simCrossed">Cruzar Cheque</label>
+                    </div>
+
+                    <div class="bg-yellow-100 p-2 border border-yellow-500 text-xs mt-4">
+                        <strong>Dica:</strong> Valores acima de R$ 100 exigem beneficiário.
+                    </div>
+                </div>
+
+                <div class="col-span-2 flex flex-col justify-center">
+                    <div class="cheque-paper p-6 h-80 text-left relative bg-white shadow-xl transform scale-100 origin-top-left w-full">
+                        
+                        <div id="renderCross" class="cruzamento text-gray-800">CRUZAMENTO</div>
+
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-2">
+                                <div class="font-bold text-xl">BANCO SIMULADOR</div>
+                            </div>
+                            <div class="neo-box bg-white p-1 w-56 flex items-center gap-2">
+                                <span class="font-bold">R$</span>
+                                <span class="mono text-xl w-full text-right bg-gray-50 px-2" id="renderAmountNum">1.000,00</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 mt-6">
+                            <div class="relative">
+                                <p class="text-sm">Pague por este CHEQUE a quantia de</p>
+                                <p class="handwriting text-2xl border-b border-black text-blue-900 leading-normal" id="renderAmountExt">Um mil reais (Simulado) ----------------</p>
+                            </div>
+                            
+                            <div class="relative">
+                                <p class="text-sm">a <span class="handwriting text-xl border-b border-black px-2 w-3/4 inline-block text-blue-900" id="renderBeneficiary">Loja de Roupas LTDA</span> ou à sua ordem.</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 flex justify-between items-end">
+                            <div class="text-center">
+                                <div class="flex gap-1 items-end text-sm">
+                                    <span class="handwriting text-xl border-b border-black text-blue-900" id="renderCity">Curitiba</span>
+                                    <span>,</span>
+                                    <span class="handwriting text-xl border-b border-black text-blue-900 w-8" id="renderDay">--</span>
+                                    <span>de</span>
+                                    <span class="handwriting text-xl border-b border-black text-blue-900 w-20" id="renderMonth">--</span>
+                                    <span>de</span>
+                                    <span class="handwriting text-xl border-b border-black text-blue-900 w-12" id="renderYear">--</span>
+                                </div>
+                            </div>
+                            <div class="text-center relative">
+                                <p class="handwriting text-2xl mb-1 text-blue-900">Assinado Digitalmente</p>
+                                <div class="w-48 border-t border-black"></div>
+                                <p class="text-xs font-bold mt-1">EMITENTE</p>
+                            </div>
+                        </div>
+
+                        <div class="absolute bottom-1 left-4 right-4 text-center">
+                            <p class="magnetic-line text-xs text-gray-500">< 001 9999 999999 99999 9 ></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide bg-emerald-700 flex-col justify-center items-center" id="slide13">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-4xl font-black mb-8 neo-box bg-white p-5 inline-block">O CHEQUE NÃO COMPENSOU. E AGORA?</h2>
+            
+            <div class="flex justify-center items-start gap-4">
+                
+                <div class="w-64">
+                    <div class="neo-box bg-yellow-300 p-4 h-40 flex flex-col justify-center items-center">
+                        <p class="text-4xl mb-2">🏦</p>
+                        <h3 class="font-black text-xl">REAPRESENTAÇÃO</h3>
+                    </div>
+                    <div class="h-10 border-l-4 border-white mx-auto"></div>
+                    <p class="text-white text-sm bg-black p-2">Tentar depositar de novo (Motivo 11 -> 12).</p>
+                </div>
+
+                <div class="w-64 mt-12">
+                    <div class="neo-box bg-orange-400 p-4 h-40 flex flex-col justify-center items-center">
+                        <p class="text-4xl mb-2">📜</p>
+                        <h3 class="font-black text-xl">PROTESTO</h3>
+                    </div>
+                    <div class="h-10 border-l-4 border-white mx-auto"></div>
+                    <p class="text-white text-sm bg-black p-2">Cartório. Suja o nome do devedor.</p>
+                </div>
+
+                <div class="w-64 mt-24">
+                    <div class="neo-box bg-red-500 text-white p-4 h-40 flex flex-col justify-center items-center">
+                        <p class="text-4xl mb-2">⚖️</p>
+                        <h3 class="font-black text-xl">AÇÃO DE EXECUÇÃO</h3>
+                    </div>
+                    <div class="h-10 border-l-4 border-white mx-auto"></div>
+                    <p class="text-white text-sm bg-black p-2">Prazo: 6 meses após expirar apresentação.</p>
+                </div>
+
+                <div class="w-64 mt-36">
+                    <div class="neo-box bg-purple-500 text-white p-4 h-40 flex flex-col justify-center items-center">
+                        <p class="text-4xl mb-2">🐢</p>
+                        <h3 class="font-black text-xl">AÇÃO MONITÓRIA</h3>
+                    </div>
+                    <div class="h-10 border-l-4 border-white mx-auto"></div>
+                    <p class="text-white text-sm bg-black p-2">Cheque prescrito (até 5 anos). Prova escrita sem força executiva.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="slide bg-black text-white flex-col justify-center items-center" id="slide14">
+        <div class="max-w-5xl mx-auto text-center">
+            <h2 class="text-5xl font-black mb-8 text-yellow-300">O FIM DO CHEQUE?</h2>
+            
+            <div class="grid grid-cols-2 gap-12 items-center">
+                <div>
+                    <p class="text-8xl mb-4">📉</p>
+                    <p class="text-2xl font-bold">Uso caiu 95% desde 1995.</p>
+                </div>
+                <div class="text-left space-y-6">
+                    <div class="neo-box bg-green-500 text-black p-4">
+                        <h3 class="font-black text-xl">PIX & CARTÕES</h3>
+                        <p>Imediatos, garantidos e sem papel.</p>
+                    </div>
+                    <div class="neo-box bg-gray-700 text-white p-4 border-white">
+                        <h3 class="font-black text-xl">AINDA É USADO?</h3>
+                        <p>Sim! Em:</p>
+                        <ul class="list-disc pl-5 mt-2">
+                            <li>Setor imobiliário (caução).</li>
+                            <li>Atacado / Grandes volumes B2B.</li>
+                            <li>Cidades do interior / Setor agrícola (Cheque pré-datado).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <p class="mt-12 text-xl text-gray-400 font-mono">"O cheque é um dinossauro que se recusa a morrer."</p>
+        </div>
+    </section>
+
+    <script>
+        // --- NAVEGAÇÃO ---
+        let currentSlide = 1;
+        const totalSlides = 14;
+
+        function showSlide(n) {
+            if (n < 1) n = 1;
+            if (n > totalSlides) n = totalSlides;
+            
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            document.getElementById(`slide${n}`).classList.add('active');
+            
+            document.getElementById('slideCounter').textContent = `${n}/${totalSlides}`;
+            document.getElementById('progressBar').style.width = `${(n / totalSlides) * 100}%`;
+            
+            currentSlide = n;
+        }
+
+        function nextSlide() { showSlide(currentSlide + 1); }
+        function prevSlide() { showSlide(currentSlide - 1); }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT') return;
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        // --- MODAL INFO ---
+        function showInfo(title, text) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalBody').textContent = text;
+            document.getElementById('infoModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('infoModal').classList.remove('active');
+        }
+
+        // --- LOOKUP MOTIVOS ---
+        const reasons = {
+            11: { t: "Cheque sem fundos - 1ª apresentação", d: "O banco devolve porque não tem saldo. O portador pode reapresentar." },
+            12: { t: "Cheque sem fundos - 2ª apresentação", d: "Devolvido de novo. Nome vai para o CCF (Cadastro de Emitentes de Cheques sem Fundos)." },
+            13: { t: "Conta encerrada", d: "A conta não existe mais." },
+            20: { t: "Folha cancelada", d: "Por solicitação do cliente." },
+            21: { t: "Contra-ordem (Sustação)", d: "O emitente cancelou o pagamento (ex: desacordo comercial ou perda/roubo)." },
+            22: { t: "Divergência de assinatura", d: "A assinatura não bate com o cartão do banco." },
+            31: { t: "Erro formal", d: "Falta data, valor numérico diferente do extenso, sem assinatura, etc." },
+            44: { t: "Cheque prescrito", d: "Passou o prazo de prescrição (6 meses após prazo de apresentação)." }
+        };
+
+        function checkReason() {
+            const code = document.getElementById('codeReason').value;
+            const resDiv = document.getElementById('reasonResult');
+            
+            if (reasons[code]) {
+                resDiv.innerHTML = `
+                    <h3 class="text-3xl font-black text-black mb-2">${code}: ${reasons[code].t}</h3>
+                    <p class="text-xl text-gray-700">${reasons[code].d}</p>
+                `;
+                resDiv.className = "neo-box bg-green-200 p-8 min-h-[200px] flex flex-col justify-center items-center";
+            } else {
+                resDiv.innerHTML = `<h3 class="text-3xl font-black text-red-600">Código não encontrado ou não cadastrado neste demo.</h3>`;
+                resDiv.className = "neo-box bg-white p-8 min-h-[200px] flex flex-col justify-center items-center";
+            }
+        }
+
+        function setInputReason(code) {
+            document.getElementById('codeReason').value = code;
+            checkReason();
+        }
+
+        // --- SIMULADOR DE CHEQUE ---
+        function updateCheque() {
+            const amount = parseFloat(document.getElementById('simAmount').value) || 0;
+            const ben = document.getElementById('simBeneficiary').value;
+            const city = document.getElementById('simCity').value;
+            const dateVal = document.getElementById('simDate').value;
+            const crossed = document.getElementById('simCrossed').checked;
+
+            // Update DOM
+            document.getElementById('renderAmountNum').textContent = amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            document.getElementById('renderBeneficiary').textContent = ben || "----------------";
+            document.getElementById('renderCity').textContent = city || "Cidade";
+
+            // Extenso Simples (Para fins de demo - em prod usaria lib completa)
+            document.getElementById('renderAmountExt').textContent = `(Valor de R$ ${amount} por extenso) ----------------`;
+
+            // Data
+            if (dateVal) {
+                const date = new Date(dateVal);
+                const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+                document.getElementById('renderDay').textContent = date.getUTCDate();
+                document.getElementById('renderMonth').textContent = months[date.getUTCMonth()];
+                document.getElementById('renderYear').textContent = date.getUTCFullYear();
+            } else {
+                document.getElementById('renderDay').textContent = "--";
+                document.getElementById('renderMonth').textContent = "--";
+                document.getElementById('renderYear').textContent = "--";
+            }
+
+            // Cruzamento
+            const crossEl = document.getElementById('renderCross');
+            if (crossed) crossEl.classList.add('active');
+            else crossEl.classList.remove('active');
+        }
+
+        // TELA CHEIA
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Init
+        document.getElementById('simDate').valueAsDate = new Date();
+        updateCheque();
+        showSlide(1);
+
+    </script>
+</body>
+</html>
