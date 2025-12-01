@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner Builder</title>
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --text-color: #e5e5e5;
+            --text-muted: #a0a0a0;
+            --glass-bg: rgba(20, 20, 20, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent-color: #3b82f6; /* Blue accent */
+            --accent-hover: #2563eb;
+            --danger-color: #ef4444;
+            --tag-bg: rgba(255, 255, 255, 0.1);
+            --tag-hover: rgba(255, 255, 255, 0.15);
+            --radius: 12px;
+            --transition: 0.2s ease;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 60px 20px 120px; /* Bottom padding for floating menu */
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.08) 0%, transparent 25%),
+                radial-gradient(circle at 85% 85%, rgba(59, 130, 246, 0.05) 0%, transparent 25%);
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 40px;
+        }
+
+        /* Layout */
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Tag Input Component */
+        .tag-input-container {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-height: 50px;
+            transition: var(--transition);
+        }
+
+        .tag-input-container:focus-within {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .tag {
+            background: var(--tag-bg);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #e0e0e0;
+            transition: var(--transition);
+            user-select: none;
+        }
+
+        .tag:hover {
+            background: var(--tag-hover);
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            color: #888;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .tag-remove:hover {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+
+        .tag-input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 0.9rem;
+            padding: 6px;
+            flex: 1;
+            min-width: 120px;
+            outline: none;
+        }
+
+        .tag-input::placeholder {
+            color: #555;
+        }
+
+        /* Numeric Inputs */
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        input[type="number"] {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 12px;
+            color: #fff;
+            font-family: 'Consolas', monospace;
+            transition: var(--transition);
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        /* Floating Menu */
+        .floating-menu {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a1a;
+            border: 1px solid var(--glass-border);
+            border-radius: 100px;
+            padding: 8px 12px;
+            display: flex;
+            gap: 8px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            z-index: 100;
+        }
+
+        .menu-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 10px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .menu-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 2;
+        }
+
+        .menu-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .menu-btn.primary {
+            background: #fff;
+            color: #000;
+        }
+
+        .menu-btn.primary:hover {
+            background: #e0e0e0;
+            transform: translateY(-1px);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: #1a1a1a;
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Code Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1500;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: #0a0a0a;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 900px;
+            height: 85vh;
+            max-height: 800px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .modal-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modal-title {
+            font-weight: 500;
+            color: #fff;
+            font-size: 0.9rem;
+            letter-spacing: -0.01em;
+        }
+
+        .modal-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: 'Consolas', monospace;
+        }
+
+        .modal-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .modal-btn {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 12px;
+            min-width: 36px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.15s ease;
+            overflow: hidden;
+        }
+
+        .modal-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0);
+            transition: background 0.3s ease;
+        }
+
+        .modal-btn:hover {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .modal-btn:hover::before {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .modal-btn:active {
+            transform: scale(0.97);
+        }
+
+        .modal-btn.copied {
+            animation: copyFlash 0.6s ease;
+        }
+
+        @keyframes copyFlash {
+            0% {
+                background: rgba(255, 255, 255, 0);
+            }
+            20% {
+                background: rgba(255, 255, 255, 0.2);
+                border-color: rgba(255, 255, 255, 0.3);
+                color: #fff;
+            }
+            100% {
+                background: rgba(255, 255, 255, 0);
+            }
+        }
+
+        .modal-btn svg {
+            position: relative;
+            z-index: 1;
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .modal-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .close-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 6px;
+            margin-left: 4px;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+        
+        .close-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .close-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .code-textarea {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+            color: #a0a0a0;
+            font-family: 'SF Mono', 'Consolas', 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            line-height: 1.7;
+            padding: 20px;
+            resize: none;
+            outline: none;
+            tab-size: 4;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+
+        .code-textarea::selection {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Custom Scrollbar */
+        .code-textarea::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .code-textarea::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .code-textarea::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .code-textarea::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .code-textarea::-webkit-scrollbar-corner {
+            background: transparent;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header style="text-align: center;">
+        <h1>Scanner Builder</h1>
+        <p class="subtitle">Customize and generate your project snapshot script</p>
+    </header>
+
+    <div class="container">
+        
+        <!-- Directories -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">Ignored Directories</div>
+                    <div class="card-desc">Folders that will be completely skipped.</div>
+                </div>
+            </div>
+            <div id="ignoreDirsInput" class="tag-input-container"></div>
+        </div>
+
+        <!-- Files -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">Ignored Files</div>
+                    <div class="card-desc">Specific filenames to exclude.</div>
+                </div>
+            </div>
+            <div id="ignoreFilesInput" class="tag-input-container"></div>
+        </div>
+
+        <!-- Extensions -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">Ignored Extensions</div>
+                    <div class="card-desc">File types to exclude from the tree.</div>
+                </div>
+            </div>
+            <div id="ignoreExtsInput" class="tag-input-container"></div>
+        </div>
+
+        <!-- Binary Extensions -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">Binary Extensions</div>
+                    <div class="card-desc">Files shown in tree but content is skipped (images, zips, etc).</div>
+                </div>
+            </div>
+            <div id="binaryExtsInput" class="tag-input-container"></div>
+        </div>
+
+        <!-- Always Include -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">Always Include</div>
+                    <div class="card-desc">Force include these files even if they match ignore rules.</div>
+                </div>
+            </div>
+            <div id="alwaysIncludeInput" class="tag-input-container"></div>
+        </div>
+
+        <!-- Settings -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Size Limits</div>
+            </div>
+            <div class="input-row">
+                <div class="form-group">
+                    <label>Max File Size (Bytes)</label>
+                    <input type="number" id="maxSize" value="102400">
+                </div>
+                <div class="form-group">
+                    <label>Min File Size (Bytes)</label>
+                    <input type="number" id="minSize" value="1">
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Floating Menu -->
+    <div class="floating-menu">
+        <button class="menu-btn" onclick="resetConfig()" title="Reset to Defaults">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Reset
+        </button>
+        <button class="menu-btn" onclick="loadConfig()" title="Load Saved Config">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Load
+        </button>
+        <button class="menu-btn" onclick="saveConfig()" title="Save Config Locally">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save
+        </button>
+        <button class="menu-btn primary" onclick="generateScript()" title="Generate Script">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            Generate
+        </button>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span id="toastMsg">Action successful</span>
+    </div>
+
+    <!-- Code Output Modal -->
+    <div class="modal-overlay" id="codeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span class="modal-title">scanner.py</span>
+                    <span class="modal-subtitle" id="codeStats"></span>
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn" onclick="copyCode()" id="copyBtn" title="Copy to clipboard">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    </button>
+                    <button class="modal-btn" onclick="downloadCode()" title="Download file">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    </button>
+                    <button class="close-btn" onclick="closeCodeModal()" title="Close">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <textarea class="code-textarea" id="codeOutput" readonly spellcheck="false" wrap="off"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Data & State ---
+        const defaultData = {
+            ignoreDirs: [
+                "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache", ".tox", ".nox", ".eggs", "*.egg-info", ".venv", "venv", "env", ".env", "site-packages", ".ipynb_checkpoints",
+                ".git", ".svn", ".hg", ".bzr",
+                ".vscode", ".idea", ".vs", ".fleet", ".zed",
+                "node_modules", ".npm", ".yarn", ".pnpm-store", "bower_components",
+                "dist", "build", "out", "target", "_build", ".build", "public/build", ".next", ".nuxt", ".output", ".svelte-kit", ".parcel-cache", ".turbo",
+                "coverage", "htmlcov", ".coverage", ".nyc_output", ".hypothesis",
+                ".cache", ".sass-cache", ".eslintcache", ".stylelintcache", "tmp", "temp", ".temp", ".tmp",
+                "__MACOSX", ".Trash-*"
+            ],
+            ignoreFiles: [
+                ".DS_Store", ".AppleDouble", ".LSOverride", "Thumbs.db", "ehthumbs.db", "Desktop.ini", ".directory",
+                ".gitignore", ".gitattributes", ".gitmodules", ".gitkeep", ".keep", ".hgignore", ".svnignore",
+                "package-lock.json", "yarn.lock", "pnpm-lock.yaml", "poetry.lock", "Pipfile.lock", "composer.lock", "Gemfile.lock", "Cargo.lock", "flake.lock", "bun.lockb",
+                ".editorconfig", ".prettierrc", ".prettierrc.json", ".prettierrc.yml", ".prettierrc.yaml", ".prettierrc.js", ".prettierignore", ".eslintrc", ".eslintrc.json", ".eslintrc.js", ".eslintrc.yml", ".eslintrc.yaml", ".eslintignore", ".stylelintrc", ".stylelintrc.json", ".stylelintignore", ".browserslistrc", "browserslist", ".nvmrc", ".npmrc", ".yarnrc", ".yarnrc.yml", ".node-version", ".python-version", ".ruby-version", ".tool-versions",
+                ".travis.yml", "azure-pipelines.yml", "netlify.toml", "vercel.json", "render.yaml", "fly.toml", "railway.json", "Procfile",
+                "pytest.ini", "setup.cfg", "tox.ini", "noxfile.py", ".coveragerc", "jest.config.js", "jest.config.ts", "vitest.config.ts", "playwright.config.ts", "cypress.json",
+                ".npmignore", "CODEOWNERS", ".mailmap", "LICENSE", "LICENSE.md", "LICENSE.txt", "CHANGELOG.md", "CHANGELOG", "CHANGES.md", "CHANGES", "AUTHORS", "CONTRIBUTORS"
+            ],
+            ignoreExts: [
+                ".pyc", ".pyo", ".pyd",
+                ".o", ".obj", ".so", ".dll", ".dylib", ".a", ".lib", ".class", ".jar", ".war", ".ear",
+                ".log",
+                ".bak", ".swp", ".swo", ".swn", ".tmp", "~"
+            ],
+            alwaysInclude: [
+                ".env", ".env.local", ".env.example", ".env.sample", ".env.template", ".env.development", ".env.production", ".env.staging", ".env.test"
+            ],
+            binaryExts: [
+                ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".icns", ".svg", ".webp", ".avif", ".heic", ".heif", ".tiff", ".tif", ".psd", ".ai", ".eps", ".raw", ".cr2", ".nef", ".orf", ".sr2",
+                ".mp3", ".wav", ".ogg", ".flac", ".aac", ".wma", ".m4a", ".opus", ".aiff", ".mid", ".midi",
+                ".mp4", ".avi", ".mov", ".mkv", ".webm", ".wmv", ".flv", ".m4v", ".mpeg", ".mpg", ".3gp", ".3g2",
+                ".zip", ".tar", ".gz", ".bz2", ".xz", ".lz", ".7z", ".rar", ".tgz", ".tbz2", ".lzma", ".zst", ".lz4", ".cab",
+                ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".odt", ".ods", ".odp", ".pages", ".numbers", ".key", ".epub", ".mobi",
+                ".ttf", ".otf", ".woff", ".woff2", ".eot",
+                ".db", ".sqlite", ".sqlite3", ".mdb", ".accdb",
+                ".pickle", ".pkl", ".npy", ".npz", ".h5", ".hdf5", ".hdf", ".mat", ".parquet", ".feather", ".arrow", ".tfrecord", ".onnx", ".pt", ".pth", ".safetensors", ".gguf", ".ggml", ".bin", ".model", ".weights",
+                ".exe", ".msi", ".app", ".dmg", ".deb", ".rpm", ".snap", ".flatpak", ".apk", ".ipa", ".aab", ".iso", ".img",
+                ".pem", ".crt", ".cer", ".key", ".p12", ".pfx",
+                ".wasm", ".blend", ".unity", ".unitypackage", ".fbx", ".obj", ".stl", ".gltf", ".glb"
+            ],
+            maxSize: 102400,
+            minSize: 1
+        };
+
+        // State to hold current values
+        let currentConfig = JSON.parse(JSON.stringify(defaultData));
+
+        // --- Tag Input Component Logic ---
+        function createTagInput(containerId, dataKey) {
+            const container = document.getElementById(containerId);
+            
+            function render() {
+                container.innerHTML = '';
+                const list = currentConfig[dataKey];
+                
+                // Render tags
+                list.forEach((item, index) => {
+                    const tag = document.createElement('div');
+                    tag.className = 'tag';
+                    tag.innerHTML = `
+                        <span>${item}</span>
+                        <span class="tag-remove" onclick="removeTag('${dataKey}', ${index})">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </span>
+                    `;
+                    container.appendChild(tag);
+                });
+
+                // Render input
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'tag-input';
+                input.placeholder = '+ Add item...';
+                
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const val = input.value.trim();
+                        if (val && !list.includes(val)) {
+                            currentConfig[dataKey].push(val);
+                            render();
+                            // Keep focus on new input
+                            setTimeout(() => {
+                                container.querySelector('input').focus();
+                            }, 0);
+                        }
+                        input.value = '';
+                    }
+                    if (e.key === 'Backspace' && input.value === '' && list.length > 0) {
+                        currentConfig[dataKey].pop();
+                        render();
+                        setTimeout(() => {
+                            container.querySelector('input').focus();
+                        }, 0);
+                    }
+                });
+
+                container.appendChild(input);
+            }
+
+            // Initial render
+            render();
+            
+            // Expose render function globally if needed, or just rely on state updates re-calling render
+            // For simplicity, we'll attach it to the container
+            container._render = render;
+        }
+
+        // Global function for onclick handler
+        window.removeTag = function(dataKey, index) {
+            currentConfig[dataKey].splice(index, 1);
+            const containerId = dataKey + 'Input'; // Convention: key + 'Input'
+            document.getElementById(containerId)._render();
+        };
+
+        // --- Initialization ---
+        window.onload = function() {
+            loadConfig();
+        };
+
+        function initUI() {
+            createTagInput('ignoreDirsInput', 'ignoreDirs');
+            createTagInput('ignoreFilesInput', 'ignoreFiles');
+            createTagInput('ignoreExtsInput', 'ignoreExts');
+            createTagInput('binaryExtsInput', 'binaryExts');
+            createTagInput('alwaysIncludeInput', 'alwaysInclude');
+            
+            document.getElementById('maxSize').value = currentConfig.maxSize;
+            document.getElementById('minSize').value = currentConfig.minSize;
+            
+            // Bind number inputs
+            document.getElementById('maxSize').onchange = (e) => currentConfig.maxSize = parseInt(e.target.value);
+            document.getElementById('minSize').onchange = (e) => currentConfig.minSize = parseInt(e.target.value);
+        }
+
+        // --- Actions ---
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function saveConfig() {
+            localStorage.setItem('scannerConfig_v2', JSON.stringify(currentConfig));
+            showToast('Configuration saved!');
+        }
+
+        function loadConfig() {
+            const saved = localStorage.getItem('scannerConfig_v2');
+            if (saved) {
+                try {
+                    currentConfig = JSON.parse(saved);
+                } catch(e) {
+                    console.error("Error loading config", e);
+                    currentConfig = JSON.parse(JSON.stringify(defaultData));
+                }
+            } else {
+                currentConfig = JSON.parse(JSON.stringify(defaultData));
+            }
+            initUI();
+            showToast('Configuration loaded');
+        }
+
+        function resetConfig() {
+            if(confirm('Are you sure you want to reset to default settings?')) {
+                currentConfig = JSON.parse(JSON.stringify(defaultData));
+                initUI();
+                showToast('Reset to defaults');
+            }
+        }
+
+        // --- Generator Logic ---
+
+        const scriptTemplate = `#!/usr/bin/env python3
+"""
+scanner.py - Project Snapshot Tool for LLM Context
+
+Captures a complete snapshot of a directory structure and file contents,
+optimized for feeding into Large Language Models.
+
+Usage: python scanner.py [directory]
+       If no directory specified, uses current working directory.
+"""
+
+import os
+import sys
+import subprocess
+from pathlib import Path
+from typing import Set, List, Tuple, Optional
+
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║                              CONFIGURATION                                    ║
+# ╠══════════════════════════════════════════════════════════════════════════════╣
+# ║  Customize these settings according to your project needs                     ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# DIRECTORIES TO IGNORE (will not appear in tree or have files scanned)
+# ─────────────────────────────────────────────────────────────────────────────────
+IGNORE_DIRS: Set[str] = {
+{{IGNORE_DIRS}}
+}
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# FILES TO IGNORE (exact name match - will not appear in tree)
+# ─────────────────────────────────────────────────────────────────────────────────
+IGNORE_FILES: Set[str] = {
+{{IGNORE_FILES}}
+}
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# FILE EXTENSIONS TO IGNORE (will not appear in tree)
+# ─────────────────────────────────────────────────────────────────────────────────
+IGNORE_EXTENSIONS: Set[str] = {
+{{IGNORE_EXTENSIONS}}
+}
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# FILES TO ALWAYS INCLUDE (even if they match ignore patterns)
+# ─────────────────────────────────────────────────────────────────────────────────
+ALWAYS_INCLUDE: Set[str] = {
+{{ALWAYS_INCLUDE}}
+}
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# BINARY EXTENSIONS (appear in tree with [binary] marker, content NOT captured)
+# ─────────────────────────────────────────────────────────────────────────────────
+BINARY_EXTENSIONS: Set[str] = {
+{{BINARY_EXTENSIONS}}
+}
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# SIZE LIMITS
+# ─────────────────────────────────────────────────────────────────────────────────
+
+# Maximum file size to include content (in bytes)
+# Files larger than this appear in tree with [large] marker
+MAX_FILE_SIZE: int = {{MAX_FILE_SIZE}}
+
+# Files smaller than this are considered empty
+MIN_FILE_SIZE: int = {{MIN_FILE_SIZE}}
+
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║                           END OF CONFIGURATION                                ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+class Scanner:
+    """Directory scanner that creates snapshots for LLM context."""
+    
+    def __init__(self, root: Path):
+        self.root = root.resolve()
+        self.self_name = Path(__file__).name
+        self.tree_lines: List[str] = []
+        self.files_to_include: List[Tuple[Path, str]] = []  # (filepath, relative_path)
+        self.stats = {"dirs": 0, "files": 0, "included": 0, "binary": 0, "large": 0, "empty": 0}
+    
+    def should_ignore_dir(self, name: str) -> bool:
+        """Check if directory should be completely ignored."""
+        # Check exact match
+        if name in IGNORE_DIRS:
+            return True
+        # Check pattern match (e.g., *.egg-info)
+        for pattern in IGNORE_DIRS:
+            if "*" in pattern:
+                if pattern.startswith("*") and name.endswith(pattern[1:]):
+                    return True
+                elif pattern.endswith("*") and name.startswith(pattern[:-1]):
+                    return True
+        # Ignore hidden dirs except those in ALWAYS_INCLUDE
+        if name.startswith(".") and name not in ALWAYS_INCLUDE:
+            return True
+        return False
+    
+    def should_ignore_file(self, name: str, ext: str) -> bool:
+        """Check if file should be completely ignored (not even in tree)."""
+        # Always include priority files
+        if name in ALWAYS_INCLUDE:
+            return False
+        # Ignore self
+        if name == self.self_name:
+            return True
+        # Check exact name match
+        if name in IGNORE_FILES:
+            return True
+        # Check extension
+        if ext in IGNORE_EXTENSIONS:
+            return True
+        return False
+    
+    def get_file_status(self, filepath: Path) -> Tuple[bool, str]:
+        """
+        Determine if file content should be included.
+        Returns: (should_include, status_marker)
+        
+        Status markers:
+        - "" : include content
+        - "binary" : binary file
+        - "large" : file too large
+        - "empty" : empty file
+        """
+        ext = filepath.suffix.lower()
+        
+        # Check if binary
+        if ext in BINARY_EXTENSIONS:
+            return False, "binary"
+        
+        # Check size
+        try:
+            size = filepath.stat().st_size
+        except OSError:
+            return False, "error"
+        
+        if size < MIN_FILE_SIZE:
+            return False, "empty"
+        
+        if size > MAX_FILE_SIZE:
+            return False, "large"
+        
+        return True, ""
+    
+    def scan(self) -> None:
+        """Scan the directory tree."""
+        self.tree_lines = [f"{self.root.name}/"]
+        self._scan_recursive(self.root, "")
+    
+    def _scan_recursive(self, current: Path, prefix: str) -> None:
+        """Recursively scan directory."""
+        try:
+            entries = sorted(
+                current.iterdir(),
+                key=lambda p: (p.is_file(), p.name.lower())
+            )
+        except PermissionError:
+            return
+        
+        # Separate and filter
+        dirs = []
+        files = []
+        
+        for entry in entries:
+            if entry.is_dir():
+                if not self.should_ignore_dir(entry.name):
+                    dirs.append(entry)
+                    self.stats["dirs"] += 1
+            elif entry.is_file():
+                ext = entry.suffix.lower()
+                if not self.should_ignore_file(entry.name, ext):
+                    files.append(entry)
+                    self.stats["files"] += 1
+        
+        # Process all entries
+        all_entries = dirs + files
+        total = len(all_entries)
+        
+        for i, entry in enumerate(all_entries):
+            is_last = (i == total - 1)
+            connector = "└── " if is_last else "├── "
+            child_prefix = prefix + ("    " if is_last else "│   ")
+            
+            if entry.is_dir():
+                self.tree_lines.append(f"{prefix}{connector}{entry.name}/")
+                self._scan_recursive(entry, child_prefix)
+            else:
+                should_include, status = self.get_file_status(entry)
+                
+                # Add to tree
+                marker = f" [{status}]" if status else ""
+                self.tree_lines.append(f"{prefix}{connector}{entry.name}{marker}")
+                
+                # Track stats
+                if status == "binary":
+                    self.stats["binary"] += 1
+                elif status == "large":
+                    self.stats["large"] += 1
+                elif status == "empty":
+                    self.stats["empty"] += 1
+                
+                # Add to files list if content should be included
+                if should_include:
+                    rel_path = str(entry.relative_to(self.root))
+                    self.files_to_include.append((entry, rel_path))
+                    self.stats["included"] += 1
+    
+    def read_file(self, filepath: Path) -> str:
+        """Read file content with encoding fallback."""
+        encodings = ["utf-8", "utf-8-sig", "latin-1", "cp1252", "ascii"]
+        
+        for encoding in encodings:
+            try:
+                return filepath.read_text(encoding=encoding)
+            except UnicodeDecodeError:
+                continue
+            except Exception as e:
+                return f"[Error reading file: {e}]"
+        
+        return "[Unable to decode file]"
+    
+    def get_lang_hint(self, filepath: Path) -> str:
+        """Get markdown code block language hint."""
+        ext_to_lang = {
+            # Python
+            ".py": "python", ".pyw": "python", ".pyx": "python", ".pxd": "python",
+            ".pyi": "python",
+            # JavaScript / TypeScript
+            ".js": "javascript", ".mjs": "javascript", ".cjs": "javascript",
+            ".ts": "typescript", ".mts": "typescript", ".cts": "typescript",
+            ".jsx": "jsx", ".tsx": "tsx",
+            # Web
+            ".html": "html", ".htm": "html", ".xhtml": "html",
+            ".css": "css", ".scss": "scss", ".sass": "sass", ".less": "less",
+            ".vue": "vue", ".svelte": "svelte", ".astro": "astro",
+            # Data
+            ".json": "json", ".jsonc": "jsonc", ".json5": "json5",
+            ".xml": "xml", ".xsl": "xml", ".xslt": "xml",
+            ".yaml": "yaml", ".yml": "yaml",
+            ".toml": "toml",
+            ".csv": "csv",
+            ".ini": "ini", ".cfg": "ini", ".conf": "ini",
+            # Shell
+            ".sh": "bash", ".bash": "bash", ".zsh": "zsh", ".fish": "fish",
+            ".ps1": "powershell", ".psm1": "powershell", ".psd1": "powershell",
+            ".bat": "batch", ".cmd": "batch",
+            # Documentation
+            ".md": "markdown", ".markdown": "markdown", ".mdx": "mdx",
+            ".rst": "rst", ".txt": "text",
+            # Systems
+            ".c": "c", ".h": "c",
+            ".cpp": "cpp", ".cc": "cpp", ".cxx": "cpp",
+            ".hpp": "cpp", ".hxx": "cpp", ".hh": "cpp",
+            ".cs": "csharp",
+            ".go": "go",
+            ".rs": "rust",
+            ".java": "java",
+            ".kt": "kotlin", ".kts": "kotlin",
+            ".scala": "scala", ".sc": "scala",
+            ".swift": "swift",
+            ".m": "objectivec", ".mm": "objectivec",
+            # Scripting
+            ".rb": "ruby", ".rake": "ruby", ".gemspec": "ruby",
+            ".php": "php",
+            ".pl": "perl", ".pm": "perl",
+            ".lua": "lua",
+            ".r": "r", ".R": "r",
+            # Functional
+            ".ex": "elixir", ".exs": "elixir",
+            ".erl": "erlang", ".hrl": "erlang",
+            ".clj": "clojure", ".cljs": "clojure", ".cljc": "clojure", ".edn": "clojure",
+            ".hs": "haskell", ".lhs": "haskell",
+            ".ml": "ocaml", ".mli": "ocaml",
+            ".fs": "fsharp", ".fsx": "fsharp", ".fsi": "fsharp",
+            ".elm": "elm",
+            ".nim": "nim",
+            ".zig": "zig",
+            # Query
+            ".sql": "sql", ".mysql": "sql", ".pgsql": "sql",
+            ".graphql": "graphql", ".gql": "graphql",
+            # Config / DevOps
+            ".dockerfile": "dockerfile",
+            ".tf": "terraform", ".tfvars": "terraform",
+            ".hcl": "hcl",
+            ".nix": "nix",
+            ".dhall": "dhall",
+            # Other
+            ".proto": "protobuf",
+            ".prisma": "prisma",
+            ".vim": "vim", ".vimrc": "vim",
+            ".tex": "latex", ".latex": "latex",
+            ".env": "bash",
+            ".gitignore": "gitignore",
+            ".editorconfig": "editorconfig",
+            ".htaccess": "apacheconf",
+        }
+        
+        name_to_lang = {
+            "Dockerfile": "dockerfile",
+            "Containerfile": "dockerfile",
+            "Makefile": "makefile",
+            "GNUmakefile": "makefile",
+            "makefile": "makefile",
+            "Justfile": "just",
+            "justfile": "just",
+            "Jenkinsfile": "groovy",
+            "Vagrantfile": "ruby",
+            "Gemfile": "ruby",
+            "Rakefile": "ruby",
+            "Guardfile": "ruby",
+            "Podfile": "ruby",
+            "Brewfile": "ruby",
+            "CMakeLists.txt": "cmake",
+            "meson.build": "meson",
+            "BUILD": "python",
+            "BUILD.bazel": "python",
+            "WORKSPACE": "python",
+            "requirements.txt": "text",
+            "constraints.txt": "text",
+            "pyproject.toml": "toml",
+            "setup.py": "python",
+            "setup.cfg": "ini",
+            "Cargo.toml": "toml",
+            "go.mod": "go",
+            "go.sum": "text",
+            "package.json": "json",
+            "tsconfig.json": "jsonc",
+            "jsconfig.json": "jsonc",
+            "deno.json": "jsonc",
+            "composer.json": "json",
+            ".babelrc": "json",
+            ".swcrc": "json",
+        }
+        
+        name = filepath.name
+        if name in name_to_lang:
+            return name_to_lang[name]
+        
+        ext = filepath.suffix.lower()
+        return ext_to_lang.get(ext, "")
+    
+    def generate_snapshot(self) -> str:
+        """Generate the complete snapshot string."""
+        parts: List[str] = []
+        
+        # Header
+        parts.append(f"# {self.root.name}")
+        parts.append("")
+        
+        # Tree structure
+        parts.append("## Structure")
+        parts.append("")
+        parts.append("\`\`\`")
+        parts.extend(self.tree_lines)
+        parts.append("\`\`\`")
+        parts.append("")
+        
+        # File contents
+        if self.files_to_include:
+            parts.append("## Files")
+            parts.append("")
+            
+            for filepath, rel_path in self.files_to_include:
+                content = self.read_file(filepath).rstrip()
+                lang = self.get_lang_hint(filepath)
+                
+                parts.append(f"### {rel_path}")
+                parts.append(f"\`\`\`{lang}")
+                parts.append(content)
+                parts.append("\`\`\`")
+                parts.append("")
+        
+        return "\n".join(parts)
+
+
+def copy_to_clipboard(text: str) -> bool:
+    """Copy text to clipboard. Cross-platform support."""
+    try:
+        if sys.platform == "darwin":
+            # macOS
+            process = subprocess.Popen(
+                ["pbcopy"],
+                stdin=subprocess.PIPE,
+                stderr=subprocess.DEVNULL
+            )
+            process.communicate(text.encode("utf-8"))
+            return process.returncode == 0
+        
+        elif sys.platform == "win32":
+            # Windows - use clip.exe with UTF-16LE encoding (native Windows Unicode)
+            process = subprocess.Popen(
+                ["clip.exe"],
+                stdin=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0
+            )
+            # clip.exe expects UTF-16LE encoding for proper Unicode support
+            process.communicate(text.encode("utf-16le"))
+            return process.returncode == 0
+        
+        else:
+            # Linux - try xclip, then xsel, then wl-copy (Wayland)
+            clipboard_commands = [
+                ["xclip", "-selection", "clipboard"],
+                ["xsel", "--clipboard", "--input"],
+                ["wl-copy"],
+            ]
+            
+            for cmd in clipboard_commands:
+                try:
+                    process = subprocess.Popen(
+                        cmd,
+                        stdin=subprocess.PIPE,
+                        stderr=subprocess.DEVNULL
+                    )
+                    process.communicate(text.encode("utf-8"))
+                    if process.returncode == 0:
+                        return True
+                except FileNotFoundError:
+                    continue
+            
+            return False
+            
+    except Exception:
+        return False
+
+
+def format_size(size: int) -> str:
+    """Format byte size to human readable."""
+    for unit in ["B", "KB", "MB", "GB"]:
+        if size < 1024:
+            return f"{size:.1f} {unit}" if unit != "B" else f"{size} {unit}"
+        size /= 1024
+    return f"{size:.1f} TB"
+
+
+def estimate_tokens(text: str) -> int:
+    """Rough estimate of tokens (chars / 4 is a common approximation)."""
+    return len(text) // 4
+
+
+def main():
+    """Main entry point."""
+    # Determine target directory
+    if len(sys.argv) > 1:
+        target = Path(sys.argv[1])
+        if not target.exists():
+            print(f"❌ Error: Path does not exist: {target}")
+            sys.exit(1)
+        if not target.is_dir():
+            print(f"❌ Error: Path is not a directory: {target}")
+            sys.exit(1)
+        root = target.resolve()
+    else:
+        root = Path.cwd()
+    
+    # Banner
+    print("┌─────────────────────────────────────────┐")
+    print("│      📸 Project Snapshot Scanner        │")
+    print("└─────────────────────────────────────────┘")
+    print()
+    print(f"📂 Target: {root}")
+    print()
+    
+    # Scan
+    scanner = Scanner(root)
+    scanner.scan()
+    
+    # Generate snapshot
+    snapshot = scanner.generate_snapshot()
+    
+    # Stats
+    char_count = len(snapshot)
+    line_count = snapshot.count("\n") + 1
+    token_estimate = estimate_tokens(snapshot)
+    
+    print("📊 Statistics:")
+    print(f"   ├── Directories:   {scanner.stats['dirs']}")
+    print(f"   ├── Files found:   {scanner.stats['files']}")
+    print(f"   ├── Files included:{scanner.stats['included']}")
+    print(f"   ├── Binary files:  {scanner.stats['binary']}")
+    print(f"   ├── Large files:   {scanner.stats['large']}")
+    print(f"   └── Empty files:   {scanner.stats['empty']}")
+    print()
+    print("📄 Snapshot:")
+    print(f"   ├── Lines:         {line_count:,}")
+    print(f"   ├── Characters:    {char_count:,}")
+    print(f"   ├── Size:          {format_size(char_count)}")
+    print(f"   └── Est. tokens:   ~{token_estimate:,}")
+    print()
+    
+    # Copy to clipboard
+    if copy_to_clipboard(snapshot):
+        print("✅ Snapshot copied to clipboard!")
+    else:
+        print("⚠️  Could not copy to clipboard.")
+        print("   Saving to 'snapshot.md' instead...")
+        try:
+            output_file = root / "snapshot.md"
+            output_file.write_text(snapshot, encoding="utf-8")
+            print(f"   ✅ Saved to: {output_file}")
+        except Exception as e:
+            print(f"   ❌ Error saving file: {e}")
+            print()
+            print("─" * 50)
+            print("Snapshot output:")
+            print("─" * 50)
+            print(snapshot)
+
+
+if __name__ == "__main__":
+    main()
+`;
+
+        function formatSet(list) {
+            if (list.length === 0) return "";
+            return list.map(item => `    "${item}",`).join('\n');
+        }
+
+        function buildScript() {
+            let script = scriptTemplate;
+            script = script.replace('{{IGNORE_DIRS}}', formatSet(currentConfig.ignoreDirs));
+            script = script.replace('{{IGNORE_FILES}}', formatSet(currentConfig.ignoreFiles));
+            script = script.replace('{{IGNORE_EXTENSIONS}}', formatSet(currentConfig.ignoreExts));
+            script = script.replace('{{ALWAYS_INCLUDE}}', formatSet(currentConfig.alwaysInclude));
+            script = script.replace('{{BINARY_EXTENSIONS}}', formatSet(currentConfig.binaryExts));
+            script = script.replace('{{MAX_FILE_SIZE}}', currentConfig.maxSize);
+            script = script.replace('{{MIN_FILE_SIZE}}', currentConfig.minSize);
+            return script;
+        }
+
+        function generateScript() {
+            const script = buildScript();
+            const lines = script.split('\n').length;
+            const chars = script.length;
+            
+            document.getElementById('codeOutput').value = script;
+            document.getElementById('codeStats').textContent = `${lines.toLocaleString()} lines · ${chars.toLocaleString()} chars`;
+            document.getElementById('codeModal').classList.add('active');
+        }
+
+        function closeCodeModal() {
+            document.getElementById('codeModal').classList.remove('active');
+        }
+
+        function copyCode() {
+            const textarea = document.getElementById('codeOutput');
+            const copyBtn = document.getElementById('copyBtn');
+            
+            navigator.clipboard.writeText(textarea.value).then(() => {
+                // Trigger flash animation
+                copyBtn.classList.remove('copied');
+                void copyBtn.offsetWidth; // Force reflow
+                copyBtn.classList.add('copied');
+            }).catch(() => {
+                // Fallback for older browsers
+                textarea.select();
+                textarea.setSelectionRange(0, 99999999);
+                document.execCommand('copy');
+                copyBtn.classList.add('copied');
+            });
+        }
+
+        function downloadCode() {
+            const script = document.getElementById('codeOutput').value;
+            const blob = new Blob([script], { type: 'text/x-python' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'scanner.py';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            showToast('Script downloaded!');
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeCodeModal();
+            }
+        });
+
+        // Close modal on overlay click
+        document.getElementById('codeModal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                closeCodeModal();
+            }
+        });
+
+    </script>
+</body>
+</html>
