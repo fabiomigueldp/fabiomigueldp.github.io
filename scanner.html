@@ -1184,7 +1184,7 @@ class Scanner:
                 parts.append("\`\`\`")
                 parts.append("")
         
-        return "\n".join(parts)
+        return "\\n".join(parts)
 
 
 def copy_to_clipboard(text: str) -> bool:
@@ -1285,7 +1285,7 @@ def main():
     
     # Stats
     char_count = len(snapshot)
-    line_count = snapshot.count("\n") + 1
+    line_count = snapshot.count("\\n") + 1
     token_estimate = estimate_tokens(snapshot)
     
     print("📊 Statistics:")
@@ -1328,7 +1328,7 @@ if __name__ == "__main__":
 
         function formatSet(list) {
             if (list.length === 0) return "";
-            return list.map(item => `    "${item}",`).join('\n');
+            return list.map(item => `    "${item.replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t')}",`).join('\n');
         }
 
         function buildScript() {
