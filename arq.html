@@ -1,0 +1,5560 @@
+<!-- Changes: refined pathfinding (weights/overlays/prereq warnings), hardened env switching + hotkeys, and tightened maze/grid behaviors. -->
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Visualizador de Algoritmos</title>
+  <style>
+    :root {
+      /* UI (strictly monochrome) */
+      --ui-bg: #050505;
+      --ui-surface: #0b0b0b;
+      --ui-surface-2: #141414;
+      --ui-border: #232323;
+      --ui-border-strong: #3a3a3a;
+      --ui-text: #e8e8e8;
+      --ui-text-muted: #8b8b8b;
+      --ui-text-dim: #5a5a5a;
+      --ui-focus: rgba(232, 232, 232, 0.22);
+      --ui-primary: #f2f2f2;
+      --ui-on-primary: #050505;
+
+      --radius: 8px;
+      --radius-sm: 6px;
+      --shadow: 0 10px 40px rgba(0, 0, 0, .55);
+      --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      --font-mono: SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+      /* Back-compat tokens (avoid editing visualization/layout rules) */
+      --bg-app: var(--ui-bg);
+      --bg-panel: var(--ui-surface);
+      --bg-element: var(--ui-surface-2);
+      --border: var(--ui-border);
+      --border-light: rgba(255, 255, 255, 0.06);
+      --border-hover: var(--ui-border-strong);
+      --text-main: var(--ui-text);
+      --text-muted: var(--ui-text-muted);
+      --text-dim: var(--ui-text-dim);
+
+      /* legacy tokens for JS helpers */
+      --txt: var(--text-main);
+      --mut: var(--text-muted);
+      --bg2: var(--bg-element);
+
+      /* Visualization-only colors (UI stays monochrome) */
+      --a1: #00E5FF;
+      --a2: #B6FF5C;
+      --a3: #FF3D81;
+      --a4: #FFD84D;
+      --bar: rgba(255, 255, 255, .22);
+      --barDim: rgba(255, 255, 255, .14);
+      --barEdge: rgba(255, 255, 255, .10);
+    }
+
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg-app);
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      letter-spacing: .2px;
+      overflow: hidden;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition: none !important;
+        animation: none !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+      color: inherit;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .app {
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    /* Sidebar UI (cards) */
+    .sidebar {
+      width: 320px;
+      max-width: 36vw;
+      border-right: 1px solid var(--ui-border);
+      background: var(--ui-bg);
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+      min-height: 0; /* allow inner scroll in flex layouts */
+    }
+
+    .sidebarHeader {
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--ui-border);
+      background: var(--ui-bg);
+    }
+
+    .appTitle {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      color: var(--ui-text);
+      line-height: 1.2;
+    }
+
+    .modeSwitch {
+      margin-top: 10px;
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .segBtn {
+      height: 36px;
+      border-radius: var(--radius);
+      border: 1px solid var(--ui-border);
+      background: var(--ui-surface);
+      color: var(--ui-text-muted);
+      font-size: 12px;
+      letter-spacing: 0.2px;
+      cursor: pointer;
+      transition: border-color .15s ease, background .15s ease, color .15s ease;
+    }
+
+    .segBtn:hover {
+      border-color: var(--ui-border-strong);
+      color: var(--ui-text);
+    }
+
+    .segBtn[aria-pressed="true"] {
+      background: var(--ui-primary);
+      border-color: var(--ui-primary);
+      color: var(--ui-on-primary);
+    }
+
+    .sidebarScroll {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 14px 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 0; /* critical: prevents clipping, enables scrolling */
+    }
+
+    /* Prevent cards from shrinking to fit viewport (enables scrolling instead of clipping). */
+    .sidebarScroll>.card {
+      flex: 0 0 auto;
+    }
+
+    .card {
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .cardHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 12px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      gap: 10px;
+    }
+
+    .cardTitle {
+      margin: 0;
+      font-size: 12px;
+      letter-spacing: 0.45px;
+      text-transform: uppercase;
+      color: var(--ui-text-muted);
+      line-height: 1.2;
+    }
+
+    .iconBtn {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius);
+      border: 1px solid var(--ui-border);
+      background: var(--ui-surface);
+      color: var(--ui-text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color .15s ease, background .15s ease, color .15s ease;
+    }
+
+    .iconBtn:hover {
+      border-color: var(--ui-border-strong);
+      color: var(--ui-text);
+    }
+
+    .iconBtn svg {
+      transition: transform .15s ease;
+      transform-origin: 50% 50%;
+    }
+
+    .card[data-collapsed="true"] .cardBody {
+      display: none;
+    }
+
+    .card[data-collapsed="true"] .iconBtn svg {
+      transform: rotate(-90deg);
+    }
+
+    .cardBody {
+      padding: 12px 12px 14px;
+    }
+
+    .subhead {
+      margin: 0 0 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ui-text);
+      letter-spacing: 0.2px;
+    }
+
+    .field {
+      margin-top: 10px;
+    }
+
+    .labelRow {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .labelRow label {
+      display: block;
+      font-size: 12px;
+      color: var(--ui-text);
+      margin: 0;
+    }
+
+    .labelRow .val {
+      font-size: 12px;
+      color: var(--ui-text-muted);
+    }
+
+    .control {
+      width: 100%;
+      height: 38px;
+      padding: 8px 10px;
+      border-radius: var(--radius);
+      border: 1px solid var(--ui-border);
+      background: var(--ui-surface-2);
+      color: var(--ui-text);
+      font-size: 13px;
+      outline: none;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .control:focus-visible {
+      border-color: var(--ui-border-strong);
+      box-shadow: 0 0 0 3px var(--ui-focus);
+    }
+
+    /* Range + number controls */
+    input.control[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 38px;
+      padding: 0;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    input.control[type="range"]::-webkit-slider-runnable-track {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.14);
+      border-radius: 999px;
+    }
+
+    input.control[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 10px;
+      background: var(--ui-primary);
+      border: 1px solid var(--ui-primary);
+      margin-top: -6px;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.10);
+    }
+
+    input.control[type="range"]:hover::-webkit-slider-runnable-track {
+      background: rgba(255, 255, 255, 0.22);
+    }
+
+    input.control[type="range"]::-moz-range-track {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.14);
+      border-radius: 999px;
+    }
+
+    input.control[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 10px;
+      background: var(--ui-primary);
+      border: 1px solid var(--ui-primary);
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.10);
+    }
+
+    input.control[type="range"]:hover::-moz-range-track {
+      background: rgba(255, 255, 255, 0.22);
+    }
+
+    input.control[type="number"] {
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+
+    input.control[type="number"]::-webkit-outer-spin-button,
+    input.control[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .row2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .btnRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .btn {
+      height: 38px;
+      padding: 0 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--ui-border);
+      background: var(--ui-surface-2);
+      color: var(--ui-text);
+      font-size: 13px;
+      line-height: 1;
+      cursor: pointer;
+      transition: border-color .15s ease, background .15s ease, color .15s ease;
+    }
+
+    .btn:hover {
+      border-color: var(--ui-border-strong);
+      background: #1a1a1a;
+    }
+
+    .btn.primary {
+      background: var(--ui-primary);
+      border-color: var(--ui-primary);
+      color: var(--ui-on-primary);
+    }
+
+    .btn.primary:hover {
+      background: #ffffff;
+      border-color: #ffffff;
+    }
+
+    .btn.destructive {
+      border-color: var(--ui-border-strong);
+      background: transparent;
+      color: var(--ui-text);
+    }
+
+    .btn.destructive:hover {
+      background: var(--ui-primary);
+      border-color: var(--ui-primary);
+      color: var(--ui-on-primary);
+    }
+
+    .btn:disabled,
+    .iconBtn:disabled,
+    .segBtn:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .segBtn[aria-disabled="true"] {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .btn:focus-visible,
+    .segBtn:focus-visible,
+    .iconBtn:focus-visible,
+    .linkBtn:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px var(--ui-focus);
+      border-color: var(--ui-border-strong);
+    }
+
+    .toggleRow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 8px;
+      border-radius: var(--radius);
+      border: 1px solid var(--ui-border);
+      background: var(--ui-surface-2);
+      cursor: pointer;
+      user-select: none;
+      min-height: 38px;
+    }
+
+    .toggleRow:hover {
+      border-color: var(--ui-border-strong);
+    }
+
+    .toggleRow input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1px solid var(--ui-border-strong);
+      background: transparent;
+      display: grid;
+      place-items: center;
+      margin: 0;
+      flex: 0 0 auto;
+    }
+
+    .toggleRow input[type="checkbox"]::before {
+      content: "";
+      width: 10px;
+      height: 6px;
+      border-left: 2px solid transparent;
+      border-bottom: 2px solid transparent;
+      transform: rotate(-45deg);
+      transform-origin: center;
+    }
+
+    .toggleRow input[type="checkbox"]:checked {
+      background: var(--ui-primary);
+      border-color: var(--ui-primary);
+    }
+
+    .toggleRow input[type="checkbox"]:checked::before {
+      border-left-color: var(--ui-on-primary);
+      border-bottom-color: var(--ui-on-primary);
+    }
+
+    .toggleRow input[type="checkbox"]:focus-visible {
+      outline: 3px solid var(--ui-focus);
+      outline-offset: 2px;
+    }
+
+    .toggleRow span {
+      font-size: 13px;
+      color: var(--ui-text);
+    }
+
+    .helperText {
+      margin-top: 8px;
+      font-size: 12px;
+      line-height: 1.35;
+      color: var(--ui-text-muted);
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .kvRow {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 10px;
+      align-items: baseline;
+    }
+
+    .kvKey {
+      font-size: 12px;
+      color: var(--ui-text-muted);
+      letter-spacing: 0.2px;
+    }
+
+    .kvVal {
+      font-size: 13px;
+      color: var(--ui-text);
+    }
+
+    .metricsGrid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metricItem {
+      padding: 10px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: transparent;
+      min-width: 0;
+    }
+
+    .metricKey {
+      font-size: 10px;
+      letter-spacing: 0.45px;
+      text-transform: uppercase;
+      color: var(--ui-text-muted);
+    }
+
+    .metricVal {
+      margin-top: 6px;
+      font-size: 13px;
+      letter-spacing: 0.2px;
+      color: var(--ui-text);
+    }
+
+    .callout {
+      margin-top: 12px;
+      border: 1px solid var(--ui-border);
+      background: #101010;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .callout h4 {
+      margin: 0 0 6px;
+      font-size: 13px;
+      color: var(--ui-text);
+      letter-spacing: 0.2px;
+    }
+
+    .callout p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--ui-text-muted);
+      line-height: 1.35;
+    }
+
+    .calloutActions {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .linkBtn {
+      height: 38px;
+      padding: 0 10px;
+      border-radius: var(--radius);
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--ui-text-muted);
+      cursor: pointer;
+    }
+
+    .linkBtn:hover {
+      color: var(--ui-text);
+      border-color: var(--ui-border);
+      background: #101010;
+    }
+
+    .stage {
+      flex: 1;
+      display: flex;
+      padding: 14px;
+      background: var(--bg-app);
+    }
+
+    .stageSurface {
+      position: relative;
+      flex: 1;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .vizContainer {
+      position: absolute;
+      inset: 0;
+      padding: 16px;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    .vizInner {
+      position: relative;
+      flex: 1;
+      background: var(--bg-element);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    canvas,
+    .gridStage {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      border: none;
+    }
+
+    canvas {
+      border-radius: 10px;
+    }
+
+    #vizCanvas,
+    .gridStage {
+      background: #0c0c0c;
+    }
+
+    .gridStage {
+      z-index: 1;
+      padding: 12px;
+      overflow: hidden;
+    }
+
+    .pathOverlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+      border-radius: 10px;
+      background: transparent;
+    }
+
+    .gridBoard {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      user-select: none;
+      touch-action: none;
+      justify-content: center;
+      align-content: center;
+    }
+
+    .cell {
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #151515;
+      transition: transform .06s ease, background .1s ease, border-color .1s ease, box-shadow .1s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cell:hover {
+      transform: translateY(-1px);
+      border-color: var(--border-hover);
+    }
+
+    .cell.wall {
+      background: #0f0f0f;
+      border-color: #2a2a2a;
+    }
+
+    .cell.visited {
+      background: rgba(0, 229, 255, .14);
+      border-color: rgba(0, 229, 255, .30);
+      box-shadow: inset 0 0 0 1px rgba(0, 229, 255, .12);
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    .cell.frontier {
+      background: rgba(255, 216, 77, .14);
+      border-color: rgba(255, 216, 77, .28);
+    }
+
+    .cell.visitedA {
+      background: rgba(0, 229, 255, .16);
+      border-color: rgba(0, 229, 255, .36);
+      box-shadow: inset 0 0 0 1px rgba(0, 229, 255, .10);
+    }
+
+    .cell.frontierA {
+      background: rgba(0, 229, 255, .10);
+      border-color: rgba(0, 229, 255, .28);
+    }
+
+    .cell.visitedB {
+      background: rgba(255, 61, 129, .14);
+      border-color: rgba(255, 61, 129, .30);
+      box-shadow: inset 0 0 0 1px rgba(255, 61, 129, .10);
+    }
+
+    .cell.frontierB {
+      background: rgba(255, 61, 129, .10);
+      border-color: rgba(255, 61, 129, .26);
+    }
+
+    .cell.meet {
+      background: rgba(255, 216, 77, .20);
+      border-color: rgba(255, 216, 77, .45);
+      box-shadow: 0 0 12px rgba(255, 216, 77, .22);
+    }
+
+    .cell.jump {
+      background: rgba(182, 255, 92, .10);
+      border-color: rgba(182, 255, 92, .24);
+    }
+
+    .cell.scan {
+      background: rgba(255, 255, 255, .08);
+      border-color: rgba(255, 255, 255, .16);
+    }
+
+    .cell.path {
+      background: rgba(182, 255, 92, .16);
+      border-color: rgba(182, 255, 92, .28);
+      box-shadow: 0 0 12px rgba(182, 255, 92, .18);
+      animation: pathFlash 0.4s ease-out forwards;
+      z-index: 2; /* Caminho fica acima das outras células */
+    }
+
+    .cell.start {
+      background: rgba(182, 255, 92, .18);
+      border-color: rgba(182, 255, 92, .32);
+      box-shadow: 0 0 14px rgba(182, 255, 92, .16);
+    }
+
+    .cell.end {
+      background: rgba(255, 61, 129, .18);
+      border-color: rgba(255, 61, 129, .32);
+      box-shadow: 0 0 14px rgba(255, 61, 129, .16);
+    }
+
+    .cell.weighted {
+      background:
+        repeating-linear-gradient(135deg,
+          rgba(0, 229, 255, .08) 0px,
+          rgba(0, 229, 255, .08) 6px,
+          rgba(255, 255, 255, .04) 6px,
+          rgba(255, 255, 255, .04) 12px);
+      border-color: rgba(0, 229, 255, .22);
+    }
+
+    .cell .cell-weight {
+      position: absolute;
+      right: 6px;
+      bottom: 5px;
+      font-size: 10px;
+      color: var(--text-main);
+      opacity: .85;
+      pointer-events: none;
+    }
+
+    /* Add directional arrows to visualize parent/flow (via a centered span) */
+    .cell .cell-dir {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.28); /* Sutil */
+      pointer-events: none;
+      font-family: var(--font-ui); /* Usar a mesma fonte da UI */
+      font-weight: 300;
+      opacity: 0.6;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.8); opacity: 0.5; }
+      50% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes pathFlash {
+      0% { filter: brightness(1); transform: scale(1); }
+      50% { filter: brightness(1.5); transform: scale(1.05); box-shadow: 0 0 15px var(--a2); }
+      100% { filter: brightness(1); transform: scale(1); }
+    }
+
+    .cell.path .cell-dir {
+      color: #000; /* Contraste alto no caminho final */
+      font-weight: 700;
+    }
+
+    .cell.start::before,
+    .cell.end::before {
+      position: absolute;
+      left: 6px;
+      top: 5px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .4px;
+      color: var(--text-main);
+      opacity: .9;
+    }
+
+    .cell.start::before {
+      content: "S";
+    }
+
+    .cell.end::before {
+      content: "E";
+    }
+
+    .stageCaption {
+      position: absolute;
+      left: 18px;
+      top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 5;
+      max-width: 48%;
+    }
+
+    .stageCaption .kicker {
+      font-size: 11px;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .stageCaption .headline {
+      margin: 0;
+      font-size: 15px;
+      letter-spacing: .4px;
+    }
+
+    .stageCaption .stepLine {
+      font-size: 12px;
+      color: var(--text-muted);
+      min-height: 14px;
+    }
+
+    .stageHint {
+      position: absolute;
+      left: 18px;
+      bottom: 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+      max-width: 42%;
+      z-index: 4;
+    }
+
+    .statusToast {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(10, 10, 10, .85);
+      color: var(--text-main);
+      letter-spacing: .3px;
+      font-size: 12px;
+      z-index: 6;
+    }
+
+    .statusToast.live {
+      border-color: var(--border-hover);
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, .12);
+    }
+
+    .eduStep {
+      margin-bottom: 10px;
+      padding: 10px 10px;
+      border-radius: 12px;
+      border: 1px solid var(--ui-border);
+      background: var(--ui-surface-2);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.55;
+      color: var(--ui-text);
+    }
+
+    .pseudo {
+      padding: 10px 10px;
+      border-radius: 12px;
+      border: 1px solid var(--ui-border);
+      background: var(--ui-surface-2);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.55;
+      color: var(--ui-text);
+      overflow: auto;
+      max-height: 220px;
+    }
+
+    .pseudo ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .pseudo li {
+      padding: 3px 2px;
+      border-left: 2px solid transparent;
+    }
+
+    .pseudo li.active {
+      background: rgba(255, 255, 255, 0.06);
+      border-left-color: var(--ui-text);
+      color: var(--ui-text);
+    }
+
+    .tip {
+      position: fixed;
+      left: 0;
+      top: 0;
+      transform: translate(-9999px, -9999px);
+      pointer-events: none;
+      z-index: 50;
+      padding: 8px 10px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: rgba(0, 0, 0, .78);
+      color: var(--text-main);
+      font-size: 12px;
+      letter-spacing: .2px;
+      white-space: pre-line;
+      backdrop-filter: blur(8px);
+      max-width: 280px;
+      box-shadow: var(--shadow);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        max-width: none;
+        border-right: none;
+        border-bottom: 1px solid var(--ui-border);
+        max-height: 40vh;
+        order: 2;
+        /* Mobile fix: sidebar below stage */
+      }
+
+      .stage {
+        flex: 1;
+        order: 1;
+        /* Mobile fix: stage first */
+      }
+
+      .segmented {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .modeSwitch .segmented {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .vizContainer {
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebarHeader">
+        <div class="appTitle">Visualizador de Algoritmos</div>
+        <div class="modeSwitch" role="group" aria-label="Modos">
+          <div class="segmented">
+            <button class="segBtn" id="tabSort" type="button" aria-pressed="true" data-mode="sort">Ordenação</button>
+            <button class="segBtn" id="tabSearch" type="button" aria-pressed="false" data-mode="search">Busca</button>
+            <button class="segBtn" id="tabPath" type="button" aria-pressed="false" data-mode="path">Caminhos</button>
+          </div>
+        </div>
+      </div>
+      <div class="sidebarScroll">
+        <section class="card" id="panelMetrics" data-collapsed="false">
+          <div class="cardHeader">
+            <p class="cardTitle">Métricas</p>
+            <button class="iconBtn" type="button" data-collapse="panelMetrics" aria-controls="panelMetricsBody" aria-expanded="true"
+              aria-label="Minimizar">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div class="cardBody" id="panelMetricsBody">
+            <div class="metricsGrid" aria-label="Métricas">
+              <div class="metricItem">
+                <div class="metricKey">Passos</div>
+                <div class="metricVal" id="mSteps">0</div>
+              </div>
+              <div class="metricItem">
+                <div class="metricKey">Comparações</div>
+                <div class="metricVal" id="mCmp">0</div>
+              </div>
+              <div class="metricItem">
+                <div class="metricKey">Escritas</div>
+                <div class="metricVal" id="mWrites">0</div>
+              </div>
+              <div class="metricItem">
+                <div class="metricKey">Tempo</div>
+                <div class="metricVal" id="mTime">0 ms</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" id="panelPseudo" data-collapsed="false">
+          <div class="cardHeader">
+            <p class="cardTitle">Pseudocódigo</p>
+            <button class="iconBtn" type="button" data-collapse="panelPseudo" aria-controls="panelPseudoBody" aria-expanded="true"
+              aria-label="Minimizar">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div class="cardBody" id="panelPseudoBody">
+            <div class="eduStep" id="eduStep">Selecione um algoritmo.</div>
+            <div class="pseudo" id="pseudoBox" aria-label="Pseudocódigo"></div>
+          </div>
+        </section>
+
+        <section class="card" id="panelControls" data-collapsed="false">
+          <div class="cardHeader">
+            <p class="cardTitle">Controles</p>
+            <button class="iconBtn" type="button" data-collapse="panelControls" aria-controls="panelControlsBody"
+              aria-expanded="true" aria-label="Minimizar">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div class="cardBody" id="panelControlsBody">
+            <div id="panelSort">
+              <p class="subhead">Algoritmo</p>
+              <div class="field">
+                <div class="labelRow">
+                  <label for="sortAlgo">Algoritmo</label>
+                </div>
+              <select class="control" id="sortAlgo">
+                <option value="bubble">Bubble Sort</option>
+                <option value="selection">Selection Sort</option>
+                <option value="insertion">Insertion Sort</option>
+                <option value="shell">Shell Sort</option>
+                <option value="merge">Merge Sort</option>
+                <option value="quick">Quick Sort</option>
+                <option value="heap">Heap Sort</option>
+                <option value="counting">Counting Sort</option>
+                <option value="radix">Radix Sort (LSD)</option>
+              </select>
+
+              </div>
+
+              <p class="subhead" style="margin-top:14px;">Dados</p>
+              <div class="field">
+                <div class="labelRow">
+                  <label for="sizeSort">Tamanho</label>
+                  <span class="val" id="sizeSortVal"></span>
+                </div>
+                <input class="control" id="sizeSort" type="range" min="16" max="160" step="1" value="64" />
+              </div>
+
+              <div class="btnRow" aria-label="Ações de dados">
+                <button class="btn" id="genSort" type="button">Gerar</button>
+                <button class="btn" id="shuffleSort" type="button">Embaralhar</button>
+              </div>
+
+              <p class="subhead" style="margin-top:14px;">Execução</p>
+              <div class="field">
+                <div class="labelRow">
+                  <label for="speedSort">Velocidade</label>
+                  <span class="val" id="speedSortVal"></span>
+                </div>
+                <input class="control" id="speedSort" type="range" min="1" max="100" step="1" value="55" />
+              </div>
+              <div class="btnRow" aria-label="Controles de execução">
+                <button class="btn primary" id="runSort" type="button">Iniciar</button>
+                <button class="btn" id="pauseSort" type="button" disabled>Pausar</button>
+                <button class="btn" id="stepSort" type="button" disabled>Passo</button>
+                <button class="btn destructive" id="stopSort" type="button" disabled>Parar</button>
+              </div>
+            </div>
+
+            <div id="panelSearch" class="hidden">
+              <p class="subhead">Algoritmo</p>
+              <div class="field">
+                <div class="labelRow">
+                  <label for="searchAlgo">Algoritmo</label>
+                </div>
+                <select class="control" id="searchAlgo">
+                  <option value="linear">Linear Search</option>
+                  <option value="binary">Binary Search</option>
+                  <option value="jump">Jump Search</option>
+                  <option value="interpolation">Interpolation Search</option>
+                  <option value="exponential">Exponential Search</option>
+                  <option value="hash">Hash Lookup (buckets)</option>
+                </select>
+              </div>
+
+              <p class="subhead" style="margin-top:14px;">Dados</p>
+              <div class="row2">
+                <div class="field">
+                  <div class="labelRow">
+                    <label for="sizeSearch">Tamanho</label>
+                    <span class="val" id="sizeSearchVal"></span>
+                  </div>
+                  <input class="control" id="sizeSearch" type="range" min="20" max="220" step="1" value="90" />
+                </div>
+                <div class="field">
+                  <div class="labelRow">
+                    <label for="targetVal">Alvo</label>
+                    <span class="val">4–160</span>
+                  </div>
+                  <input class="control" id="targetVal" type="number" min="4" max="160" value="42" />
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="labelRow">
+                  <label>Ordem</label>
+                  <span class="val" id="searchOrderLabel">Recomendado</span>
+                </div>
+                <div class="segmented" id="searchOrder" role="group" aria-label="Ordem do dataset">
+                  <button class="segBtn" type="button" data-order="recommended" aria-pressed="true">Recomendado</button>
+                  <button class="segBtn" type="button" data-order="sorted" aria-pressed="false">Ordenado</button>
+                  <button class="segBtn" type="button" data-order="unsorted" aria-pressed="false">Aleatório</button>
+                </div>
+                <div class="helperText" id="searchDataStatus">Status dos dados: —</div>
+              </div>
+
+              <div class="btnRow" aria-label="Ações de dados">
+                <button class="btn" id="genSearch" type="button">Gerar</button>
+              </div>
+
+              <p class="subhead" style="margin-top:14px;">Execução</p>
+              <div class="field">
+                <div class="labelRow">
+                  <label for="speedSearch">Velocidade</label>
+                  <span class="val" id="speedSearchVal"></span>
+                </div>
+                <input class="control" id="speedSearch" type="range" min="1" max="100" step="1" value="60" />
+              </div>
+              <div class="btnRow" aria-label="Controles de execução">
+                <button class="btn primary" id="runSearch" type="button">Buscar</button>
+                <button class="btn" id="pauseSearch" type="button" disabled>Pausar</button>
+                <button class="btn" id="stepSearch" type="button" disabled>Passo</button>
+                <button class="btn destructive" id="stopSearch" type="button" disabled>Parar</button>
+              </div>
+
+              <div class="callout hidden" id="searchPrereqCallout" role="region" aria-label="Pré-requisito">
+                <h4>Dados ordenados necessários</h4>
+                <p>Este algoritmo requer ordenação crescente. Seu dataset está atualmente não ordenado.</p>
+                <div class="calloutActions">
+                  <button class="btn primary" type="button" id="searchGenSortedRun">Gerar ordenado e buscar</button>
+                  <button class="btn" type="button" id="searchRunAnyway">Buscar mesmo assim</button>
+                  <button class="linkBtn" type="button" id="searchCancelRun">Cancelar</button>
+                </div>
+              </div>
+            </div>
+            <div id="panelPath" class="hidden">
+              <p class="subhead">Ambiente</p>
+              <div class="field">
+                <div class="labelRow">
+                  <label>Ambiente</label>
+                </div>
+                <div class="segmented" id="pathEnv" role="group" aria-label="Ambiente de pathfinding">
+                  <button class="segBtn" type="button" data-env="grid" aria-pressed="true">Grade</button>
+                  <button class="segBtn" type="button" data-env="graph" aria-pressed="false">Grafo</button>
+                  <button class="segBtn" type="button" data-env="matrix" aria-pressed="false">Matriz</button>
+                </div>
+              </div>
+              <div class="callout hidden" id="pathEnvCallout" role="status" aria-live="polite">
+                <h4>Em breve</h4>
+                <p>Os ambientes Grafo e Matriz ainda não foram implementados. Por enquanto, apenas Grade está disponível.</p>
+              </div>
+
+              <p class="subhead" style="margin-top:14px;">Algoritmo</p>
+              <div class="field">
+                <div class="labelRow">
+                  <label for="pathAlgo">Algoritmo</label>
+                </div>
+                <select class="control" id="pathAlgo">
+                  <optgroup label="Essentials">
+                    <option value="bfs">BFS (Breadth-First Search)</option>
+                    <option value="dfs">DFS (Depth-First Search)</option>
+                    <option value="dijkstra">Dijkstra</option>
+                    <option value="astar">A*</option>
+                    <option value="greedy">Greedy Best-First</option>
+                    <option value="bibfs">Bidirectional BFS</option>
+                    <option value="biastar">Bidirectional A*</option>
+                  </optgroup>
+                  <optgroup label="Grid (advanced)">
+                    <option value="jps">Jump Point Search</option>
+                    <option value="theta">Theta*</option>
+                    <option value="ida">IDA*</option>
+                  </optgroup>
+                  <optgroup label="Graph">
+                    <option value="bellman">Bellman-Ford</option>
+                  </optgroup>
+                  <optgroup label="Matrix">
+                    <option value="floyd">Floyd-Warshall</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <div class="field hidden" id="idaControls">
+                <div class="labelRow">
+                  <label for="idaLimit">IDA* Max expansoes</label>
+                  <span class="val" id="idaLimitVal"></span>
+                </div>
+                <input class="control" id="idaLimit" type="range" min="200" max="12000" step="100" value="2400" />
+              </div>
+
+              <div class="callout hidden" id="pathPrereqCallout" role="region" aria-label="Pre-requisito de path">
+                <h4>Pre-requisito necessario</h4>
+                <p id="pathPrereqText">Este algoritmo requer condicoes especificas.</p>
+                <div class="calloutActions">
+                  <button class="btn primary" type="button" id="pathFixAndRun">Corrigir e executar</button>
+                  <button class="btn" type="button" id="pathRunAnyway">Executar mesmo assim</button>
+                  <button class="linkBtn" type="button" id="pathCancelRun">Cancelar</button>
+                </div>
+              </div>
+
+              <div id="gridControls">
+              <p class="subhead" style="margin-top:14px;">Dados da Grade</p>
+                <div class="row2">
+                  <div class="field">
+                    <div class="labelRow">
+                      <label for="gridCols">Colunas</label>
+                      <span class="val" id="gridColsVal"></span>
+                    </div>
+                    <input class="control" id="gridCols" type="range" min="12" max="40" step="1" value="26" />
+                  </div>
+                <div class="field">
+                  <div class="labelRow">
+                    <label for="gridRows">Linhas</label>
+                    <span class="val" id="gridRowsVal"></span>
+                  </div>
+                  <input class="control" id="gridRows" type="number" value="16" readonly />
+                </div>
+              </div>
+
+              <div class="field" style="margin-top:10px;">
+                <label class="toggleRow" for="allowDiagonal">
+                  <input id="allowDiagonal" type="checkbox" />
+                  <span>Permitir diagonal</span>
+                </label>
+              </div>
+
+              <div class="field">
+                <div class="labelRow">
+                  <label for="astarHeuristic">Heuristica</label>
+                </div>
+                <select class="control" id="astarHeuristic">
+                  <option value="manhattan">Manhattan</option>
+                  <option value="octile" selected>Octile</option>
+                  <option value="euclidean">Euclidiana</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <div class="labelRow">
+                  <label>Ferramenta</label>
+                </div>
+                <div class="segmented" id="pathTools" role="group" aria-label="Ferramentas de edicao">
+                  <button class="segBtn" type="button" data-tool="wall" aria-pressed="true">Paredes</button>
+                  <button class="segBtn" type="button" data-tool="erase" aria-pressed="false">Apagar</button>
+                  <button class="segBtn" type="button" data-tool="weight" aria-pressed="false">Peso x5</button>
+                  <button class="segBtn" type="button" data-tool="start" aria-pressed="false">Start</button>
+                  <button class="segBtn" type="button" data-tool="end" aria-pressed="false">End</button>
+                </div>
+              </div>
+
+              <div class="btnRow" aria-label="Acoes de dados">
+                <button class="btn" id="clearPath" type="button">Limpar</button>
+                <button class="btn" id="randomWalls" type="button">Ruido</button>
+              </div>
+
+              <div id="mazeControls">
+                <p class="subhead" style="margin-top:14px;">Labirinto</p>
+                <div class="field">
+                  <div class="labelRow">
+                    <label for="mazeAlgo">Algoritmo de Maze</label>
+                  </div>
+                  <select class="control" id="mazeAlgo">
+                    <option value="backtracker">Recursive Backtracker</option>
+                    <option value="prim">Prim (randomizado)</option>
+                    <option value="kruskal">Kruskal (randomizado)</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label class="toggleRow" for="mazeAnimate">
+                    <input id="mazeAnimate" type="checkbox" checked />
+                    <span>Animar geracao</span>
+                  </label>
+                </div>
+                <div class="field">
+                  <div class="labelRow">
+                    <label for="mazeComplexity">Complexidade</label>
+                    <span class="val" id="mazeComplexityVal"></span>
+                  </div>
+                  <input class="control" id="mazeComplexity" type="range" min="10" max="100" step="1" value="55" />
+                </div>
+                <div class="btnRow" aria-label="Acoes de maze">
+                  <button class="btn" id="genMaze" type="button">Gerar Maze</button>
+                </div>
+              </div>
+              <div class="callout hidden" id="mazeCallout" role="status" aria-live="polite">
+                <h4>Em breve</h4>
+                <p>Geração de labirinto ainda não implementada.</p>
+              </div>
+              </div>
+
+              <div id="graphControls" class="hidden">
+                <p class="subhead" style="margin-top:14px;">Grafo</p>
+                <div class="field">
+                  <div class="labelRow">
+                    <label for="graphNodes">Nos</label>
+                    <span class="val" id="graphNodesVal"></span>
+                  </div>
+                  <input class="control" id="graphNodes" type="range" min="8" max="20" step="1" value="12" />
+                </div>
+                <div class="field">
+                  <div class="labelRow">
+                    <label for="graphDensity">Densidade</label>
+                    <span class="val" id="graphDensityVal"></span>
+                  </div>
+                  <input class="control" id="graphDensity" type="range" min="10" max="90" step="1" value="35" />
+                </div>
+                <div class="field">
+                  <label class="toggleRow" for="graphDirected">
+                    <input id="graphDirected" type="checkbox" checked />
+                    <span>Direcionado</span>
+                  </label>
+                </div>
+                <div class="field">
+                  <label class="toggleRow" for="graphNegative">
+                    <input id="graphNegative" type="checkbox" />
+                    <span>Permitir pesos negativos</span>
+                  </label>
+                </div>
+                <div class="btnRow" aria-label="Acoes de grafo">
+                  <button class="btn" id="genGraph" type="button">Gerar Grafo</button>
+                </div>
+              </div>
+
+              <div id="matrixControls" class="hidden">
+                <p class="subhead" style="margin-top:14px;">Matriz</p>
+                <div class="field">
+                  <div class="labelRow">
+                    <label for="matrixSize">Tamanho (N)</label>
+                    <span class="val" id="matrixSizeVal"></span>
+                  </div>
+                  <input class="control" id="matrixSize" type="range" min="8" max="24" step="1" value="12" />
+                </div>
+                <div class="field">
+                  <div class="labelRow">
+                    <label for="matrixDensity">Densidade</label>
+                    <span class="val" id="matrixDensityVal"></span>
+                  </div>
+                  <input class="control" id="matrixDensity" type="range" min="10" max="90" step="1" value="40" />
+                </div>
+                <div class="field">
+                  <label class="toggleRow" for="matrixDirected">
+                    <input id="matrixDirected" type="checkbox" checked />
+                    <span>Direcionado</span>
+                  </label>
+                </div>
+                <div class="field">
+                  <label class="toggleRow" for="matrixNegative">
+                    <input id="matrixNegative" type="checkbox" />
+                    <span>Permitir pesos negativos</span>
+                  </label>
+                </div>
+                <div class="btnRow" aria-label="Acoes de matriz">
+                  <button class="btn" id="genMatrix" type="button">Gerar Matriz</button>
+                </div>
+              </div>
+
+              <p class="subhead" style="margin-top:14px;">Execucao</p>
+              <div class="field">
+                <div class="labelRow">
+                  <label for="speedPath">Velocidade</label>
+                  <span class="val" id="speedPathVal"></span>
+                </div>
+                <input class="control" id="speedPath" type="range" min="1" max="100" step="1" value="58" />
+              </div>
+              <div class="btnRow" aria-label="Controles de execucao">
+                <button class="btn primary" id="runPath" type="button">Iniciar</button>
+                <button class="btn" id="pausePath" type="button" disabled>Pausar</button>
+                <button class="btn" id="stepPath" type="button" disabled>Passo</button>
+                <button class="btn destructive" id="stopPath" type="button" disabled>Parar</button>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <section class="card" id="panelInfo" data-collapsed="false">
+          <div class="cardHeader">
+            <p class="cardTitle">Info do Algoritmo</p>
+            <button class="iconBtn" type="button" data-collapse="panelInfo" aria-controls="panelInfoBody" aria-expanded="true"
+              aria-label="Minimizar">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div class="cardBody" id="panelInfoBody">
+            <div class="kv" id="algoInfoKv" aria-label="Informações do algoritmo"></div>
+            <div class="helperText" id="algoInfoNote"></div>
+          </div>
+        </section>
+
+        <section class="card" id="panelGlobal" data-collapsed="false">
+          <div class="cardHeader">
+            <p class="cardTitle">Preferências</p>
+            <button class="iconBtn" type="button" data-collapse="panelGlobal" aria-controls="panelGlobalBody"
+              aria-expanded="true" aria-label="Minimizar">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div class="cardBody" id="panelGlobalBody">
+            <label class="toggleRow" for="soundEnabled">
+              <input id="soundEnabled" type="checkbox" />
+              <span>Som</span>
+            </label>
+            <div style="height:8px;"></div>
+            <label class="toggleRow" for="tipsEnabled">
+              <input id="tipsEnabled" type="checkbox" checked />
+              <span>Tooltips</span>
+            </label>
+            <div style="height:8px;"></div>
+            <label class="toggleRow" for="hotkeysEnabled">
+              <input id="hotkeysEnabled" type="checkbox" checked />
+              <span>Atalhos</span>
+            </label>
+            <div style="height:8px;"></div>
+            <label class="toggleRow" for="animEnabled">
+              <input id="animEnabled" type="checkbox" />
+              <span>Animações</span>
+            </label>
+          </div>
+        </section>
+      </div>
+    </aside>
+
+    <main class="stage">
+      <div class="stageSurface">
+        <div class="stageCaption">
+          <div class="kicker" id="stageKicker">sorting</div>
+          <h2 class="headline" id="stageHeadline">Visualização de Ordenação</h2>
+          <div class="stepLine" id="stepLine" aria-live="off"></div>
+        </div>
+
+        <div class="statusToast" id="statusToast" aria-live="polite">Pronto</div>
+
+        <div class="vizContainer">
+          <div class="vizInner">
+            <canvas id="vizCanvas" width="980" height="420" aria-label="Visualização principal"></canvas>
+            <canvas id="pathOverlay" class="pathOverlay hidden" width="980" height="420" aria-hidden="true"></canvas>
+            <div class="gridStage hidden" id="gridStage" aria-label="Grade de pathfinding">
+              <div class="gridBoard" id="gridBoard"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <div class="tip" id="tip" aria-hidden="true"></div>
+
+  <script>
+    // -----------------------------
+    // Premium minimal engine (single-file)
+    // -----------------------------
+    const $ = (q) => document.querySelector(q);
+    const $$ = (q) => Array.from(document.querySelectorAll(q));
+
+    // UI refs
+    const modeButtons = [$("#tabSort"), $("#tabSearch"), $("#tabPath")].filter(Boolean);
+    const statusToast = $("#statusToast");
+
+    const stageKicker = $("#stageKicker");
+    const stageHeadline = $("#stageHeadline");
+    const stepLine = $("#stepLine");
+
+    const mSteps = $("#mSteps");
+    const mCmp = $("#mCmp");
+    const mWrites = $("#mWrites");
+    const mTime = $("#mTime");
+
+    const canvas = $("#vizCanvas");
+    const ctx = canvas.getContext("2d");
+    const pathOverlay = $("#pathOverlay");
+    const pathOverlayCtx = pathOverlay?.getContext("2d");
+    const gridStage = $("#gridStage");
+    const gridBoard = $("#gridBoard");
+
+    const panelControls = $("#panelControls");
+    const panelInfo = $("#panelInfo");
+    const panelMetrics = $("#panelMetrics");
+    const panelPseudo = $("#panelPseudo");
+    const panelGlobal = $("#panelGlobal");
+    const eduStep = $("#eduStep");
+    const pseudoBox = $("#pseudoBox");
+    const tip = $("#tip");
+
+    // Panels
+    const panelSort = $("#panelSort");
+    const panelSearch = $("#panelSearch");
+    const panelPath = $("#panelPath");
+
+    // Sort controls
+    const sortAlgo = $("#sortAlgo");
+    const sizeSort = $("#sizeSort");
+    const speedSort = $("#speedSort");
+    const sizeSortVal = $("#sizeSortVal");
+    const speedSortVal = $("#speedSortVal");
+    const genSort = $("#genSort");
+    const shuffleSort = $("#shuffleSort");
+    const runSort = $("#runSort");
+    const pauseSort = $("#pauseSort");
+    const stepSort = $("#stepSort");
+    const stopSort = $("#stopSort");
+
+    // Search controls
+    const searchAlgo = $("#searchAlgo");
+    const sizeSearch = $("#sizeSearch");
+    const speedSearch = $("#speedSearch");
+    const sizeSearchVal = $("#sizeSearchVal");
+    const speedSearchVal = $("#speedSearchVal");
+    const targetVal = $("#targetVal");
+    const searchOrder = $("#searchOrder");
+    const searchOrderLabel = $("#searchOrderLabel");
+    const searchDataStatus = $("#searchDataStatus");
+    const searchPrereqCallout = $("#searchPrereqCallout");
+    const searchGenSortedRun = $("#searchGenSortedRun");
+    const searchRunAnyway = $("#searchRunAnyway");
+    const searchCancelRun = $("#searchCancelRun");
+    const genSearch = $("#genSearch");
+    const runSearch = $("#runSearch");
+    const pauseSearch = $("#pauseSearch");
+    const stepSearch = $("#stepSearch");
+    const stopSearch = $("#stopSearch");
+    const algoInfoKv = $("#algoInfoKv");
+    const algoInfoNote = $("#algoInfoNote");
+
+    // Path controls
+    const pathEnv = $("#pathEnv");
+    const pathAlgo = $("#pathAlgo");
+    const gridControls = $("#gridControls");
+    const graphControls = $("#graphControls");
+    const matrixControls = $("#matrixControls");
+    const idaControls = $("#idaControls");
+    const idaLimit = $("#idaLimit");
+    const idaLimitVal = $("#idaLimitVal");
+    const pathPrereqCallout = $("#pathPrereqCallout");
+    const pathPrereqText = $("#pathPrereqText");
+    const pathFixAndRun = $("#pathFixAndRun");
+    const pathRunAnyway = $("#pathRunAnyway");
+    const pathCancelRun = $("#pathCancelRun");
+    const gridCols = $("#gridCols");
+    const gridRows = $("#gridRows");
+    const speedPath = $("#speedPath");
+    const allowDiagonal = $("#allowDiagonal");
+    const astarHeuristic = $("#astarHeuristic");
+    const pathTools = $("#pathTools");
+    const gridColsVal = $("#gridColsVal");
+    const gridRowsVal = $("#gridRowsVal");
+    const speedPathVal = $("#speedPathVal");
+    const clearPath = $("#clearPath");
+    const randomWalls = $("#randomWalls");
+    const mazeAlgo = $("#mazeAlgo");
+    const mazeAnimate = $("#mazeAnimate");
+    const mazeComplexity = $("#mazeComplexity");
+    const mazeComplexityVal = $("#mazeComplexityVal");
+    const genMaze = $("#genMaze");
+    const mazeControls = $("#mazeControls");
+    const mazeCallout = $("#mazeCallout");
+    const graphNodes = $("#graphNodes");
+    const graphNodesVal = $("#graphNodesVal");
+    const graphDensity = $("#graphDensity");
+    const graphDensityVal = $("#graphDensityVal");
+    const graphDirected = $("#graphDirected");
+    const graphNegative = $("#graphNegative");
+    const genGraph = $("#genGraph");
+    const matrixSize = $("#matrixSize");
+    const matrixSizeVal = $("#matrixSizeVal");
+    const matrixDensity = $("#matrixDensity");
+    const matrixDensityVal = $("#matrixDensityVal");
+    const matrixDirected = $("#matrixDirected");
+    const matrixNegative = $("#matrixNegative");
+    const genMatrix = $("#genMatrix");
+    const runPath = $("#runPath");
+    const pausePath = $("#pausePath");
+    const stepPath = $("#stepPath");
+    const stopPath = $("#stopPath");
+    const pathEnvCallout = $("#pathEnvCallout");
+
+    // Global prefs
+    const soundEnabled = $("#soundEnabled");
+    const tipsEnabled = $("#tipsEnabled");
+    const hotkeysEnabled = $("#hotkeysEnabled");
+    const animEnabled = $("#animEnabled");
+
+    // Theme colors from CSS variables
+    function cssVar(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+    const COLORS = {
+      bar: cssVar("--bar"),
+      barDim: cssVar("--barDim"),
+      edge: cssVar("--barEdge"),
+      a1: cssVar("--a1"),
+      a2: cssVar("--a2"),
+      a3: cssVar("--a3"),
+      a4: cssVar("--a4"),
+      txt: cssVar("--txt"),
+      mut: cssVar("--mut"),
+      bg2: cssVar("--bg2"),
+    };
+
+
+
+    // -----------------------------
+    // Educational layer (pseudocode + narration)
+    // -----------------------------
+    const PSEUDO = {
+      sort: {
+        bubble: [
+          "for i = 0 .. n-2",
+          "  for j = 0 .. n-2-i",
+          "    if a[j] > a[j+1]: swap",
+        ],
+        selection: [
+          "for i = 0 .. n-2",
+          "  min = i",
+          "  for j = i+1 .. n-1: if a[j] < a[min] -> min=j",
+          "  swap(a[i], a[min])",
+        ],
+        insertion: [
+          "for i = 1 .. n-1",
+          "  key = a[i]",
+          "  j = i-1",
+          "  while j>=0 and a[j] > key: a[j+1]=a[j]; j--",
+          "  a[j+1] = key",
+        ],
+        shell: [
+          "gap = n/2",
+          "while gap > 0",
+          "  insertion sort com passos gap",
+          "  gap = gap/2",
+        ],
+        merge: [
+          "mergeSort(a, l, r)",
+          "  if l>=r: return",
+          "  m = (l+r)//2",
+          "  mergeSort(a,l,m); mergeSort(a,m+1,r)",
+          "  merge(a,l,m,r)",
+        ],
+        quick: [
+          "quickSort(a, lo, hi)",
+          "  if lo>=hi: return",
+          "  p = partition(a, lo, hi)",
+          "  quickSort(a, lo, p-1)",
+          "  quickSort(a, p+1, hi)",
+        ],
+        heap: [
+          "build max-heap",
+          "for end = n-1 .. 1",
+          "  swap(a[0], a[end])",
+          "  heapify(0, end)",
+        ],
+        counting: [
+          "count[0..k]=0",
+          "for v in a: count[v]++",
+          "prefix sums em count (posições finais)",
+          "for i=n-1..0: out[--count[a[i]]] = a[i]",
+          "copiar out -> a",
+        ],
+        radix: [
+          "for exp = 1; max/exp > 0; exp*=10",
+          "  contar dígitos (0..9)",
+          "  prefix sums",
+          "  distribuir estável em out",
+          "  copiar out -> a",
+        ],
+      },
+      search: {
+        linear: [
+          "for i=0..n-1",
+          "  if a[i] == target: return i",
+          "return -1",
+        ],
+        binary: [
+          "l=0; r=n-1",
+          "while l <= r",
+          "  m=(l+r)//2",
+          "  if a[m]==target: return m",
+          "  if a[m] < target: l=m+1 else r=m-1",
+        ],
+        jump: [
+          "step = floor(sqrt(n))",
+          "pular blocos até passar do target",
+          "varrer linearmente dentro do bloco",
+        ],
+        interpolation: [
+          "l=0; r=n-1",
+          "pos = l + (target-a[l])*(r-l)/(a[r]-a[l])",
+          "ajustar l/r até achar",
+        ],
+        exponential: [
+          "i=1; while i<n and a[i] < target: i*=2",
+          "binary search em [i/2, min(i,n-1)]",
+        ],
+        hash: [
+          "buckets = criar buckets",
+          "b = target % buckets",
+          "varrer buckets[b] (colisões)",
+        ],
+      },
+      path: {
+        bfs: [
+          "queue <- start",
+          "while queue não vazia",
+          "  cur = pop_front()",
+          "  para cada vizinho não visitado: marcar e enfileirar",
+        ],
+        dfs: [
+          "stack <- start",
+          "while stack não vazia",
+          "  cur = pop()",
+          "  para cada vizinho não visitado: marcar e empilhar",
+        ],
+        dijkstra: [
+          "dist[start]=0; pq <- (start,0)",
+          "while pq não vazia",
+          "  cur = pop menor distância",
+          "  relaxar vizinhos: if dist melhor, atualizar e push",
+        ],
+        astar: [
+          "g[start]=0; pq <- (start, f=g+h)",
+          "while pq não vazia",
+          "  cur = pop menor f",
+          "  relaxar vizinhos com f = g + h",
+        ],
+      },
+    };
+
+    function setPseudo(mode, algo) {
+      state.edu.mode = mode;
+      state.edu.algo = algo;
+      state.edu.line = -1;
+      const lines = PSEUDO[mode]?.[algo] || [];
+      pseudoBox.innerHTML = `<ol>${lines.map((t) => `<li>${escapeHtml(t)}</li>`).join("")}</ol>`;
+    }
+
+    function setPseudoLine(line) {
+      state.edu.line = (typeof line === "number" ? line : -1);
+      const items = pseudoBox.querySelectorAll("li");
+      items.forEach((li, i) => li.classList.toggle("active", i === state.edu.line));
+    }
+
+    function setEdu(text, line) {
+      const msg = String(text || "");
+      state.edu.text = msg;
+      eduStep.textContent = msg || " ";
+      stepLine.textContent = msg || " ";
+      setPseudoLine(line);
+    }
+
+    function clearEdu() {
+      setEdu("", -1);
+    }
+
+    function eduLine(kind) {
+      const mode = state.mode;
+      if (mode === "sort") {
+        const a = sortAlgo.value;
+        if (a === "bubble") return (kind === "loopOuter" ? 0 : kind === "loopInner" ? 1 : 2);
+        if (a === "selection") return (kind === "loopOuter" ? 0 : kind === "swap" ? 3 : 2);
+        if (a === "insertion") return (kind === "writeFinal" ? 4 : kind === "shift" ? 3 : kind === "loopOuter" ? 0 : 3);
+        if (a === "shell") return (kind === "gap" ? 0 : kind === "loopOuter" ? 1 : 2);
+        if (a === "merge") return (kind === "split" ? 2 : kind === "recurse" ? 3 : 4);
+        if (a === "quick") return (kind === "partition" ? 2 : kind === "recurse" ? 3 : 2);
+        if (a === "heap") return (kind === "build" ? 0 : kind === "extract" ? 1 : 2);
+        if (a === "counting") return (kind === "count" ? 1 : kind === "prefix" ? 2 : kind === "out" ? 3 : 4);
+        if (a === "radix") return (kind === "pass" ? 0 : kind === "count" ? 1 : kind === "prefix" ? 2 : kind === "out" ? 3 : 4);
+      }
+      if (mode === "search") {
+        const a = searchAlgo.value;
+        if (a === "linear") return (kind === "loop" ? 0 : 1);
+        if (a === "binary") return (kind === "mid" ? 2 : kind === "cmp" ? 3 : 4);
+        if (a === "jump") return (kind === "jump" ? 1 : 2);
+        if (a === "interpolation") return (kind === "probe" ? 1 : 2);
+        if (a === "exponential") return (kind === "grow" ? 0 : 1);
+        if (a === "hash") return (kind === "build" ? 0 : kind === "bucket" ? 1 : 2);
+      }
+      if (mode === "path") {
+        const a = pathAlgo.value;
+        if (a === "bfs") return (kind === "pop" ? 2 : 3);
+        if (a === "dfs") return (kind === "pop" ? 2 : 3);
+        if (a === "dijkstra") return (kind === "pop" ? 2 : 3);
+        if (a === "astar") return (kind === "pop" ? 2 : 3);
+      }
+      return -1;
+    }
+
+    function edu(kind, text) {
+      setEdu(text, eduLine(kind));
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    // Global app state
+    const state = {
+      mode: "sort",
+      runId: 0,
+      running: false,
+      paused: false,
+      pauseResolver: null,
+      stepOnce: false,
+      metrics: { steps: 0, cmp: 0, writes: 0, t0: 0, elapsed: 0 },
+
+      sortArr: [],
+      searchData: [],
+      searchView: [],
+      highlights: {},
+      aux: null,
+      lastViz: null,
+      // sorting animation support
+      sortIds: [], // identity markers for stability visualization
+      anim: null, // current animation state (swap)
+      animWrites: [], // concurrent write tweens
+      animRaf: null,
+      canvasRect: null,
+      lastCompareAt: 0,
+      lastSwapAt: 0,
+
+      // pathfinding
+      pathEnv: "grid",
+      grid: {
+        cols: +gridCols.value,
+        rows: +gridRows.value,
+        diagonal: false,
+        cells: [],
+        start: { r: 2, c: 2 },
+        end: { r: 13, c: 24 },
+        tool: "wall",
+        dragging: false,
+        dragMode: "wall",
+        inited: false
+      },
+      graph: {
+        nodes: [],
+        edges: [],
+        start: 0,
+        end: 1,
+        directed: true,
+        allowNegative: false
+      },
+      matrix: {
+        n: 12,
+        directed: true,
+        allowNegative: false,
+        dist: [],
+        next: [],
+        lastHover: null
+      },
+
+      prefs: {
+        sound: false,
+        tips: true,
+        hotkeys: true,
+        animations: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? false : true,
+      },
+
+      search: {
+        order: "recommended", // affects next generation only
+      },
+
+      edu: {
+        mode: "sort",
+        algo: "bubble",
+        line: -1,
+        text: ""
+      }
+    };
+
+    const PREFERENCES_KEY = "algoviz_prefs_v1";
+
+    function loadPrefs() {
+      try {
+        const raw = localStorage.getItem(PREFERENCES_KEY);
+        if (!raw) return;
+        const v = JSON.parse(raw);
+        state.prefs.sound = !!v.sound;
+        state.prefs.tips = v.tips !== false;
+        state.prefs.hotkeys = v.hotkeys !== false;
+        state.prefs.animations = v.animations !== false;
+        const prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (prefersReduced) {
+          state.prefs.animations = false;
+          if (typeof animEnabled !== "undefined" && animEnabled) {
+            animEnabled.checked = false;
+            animEnabled.disabled = true;
+          }
+        }
+      } catch (_) { }
+    }
+    function savePrefs() {
+      try {
+        localStorage.setItem(PREFERENCES_KEY, JSON.stringify(state.prefs));
+      } catch (_) { }
+    }
+
+    function setStatus(text, live = false) {
+      statusToast.textContent = text;
+      statusToast.classList.toggle("live", !!live);
+    }
+
+    function resetMetrics() {
+      state.metrics = { steps: 0, cmp: 0, writes: 0, t0: performance.now(), elapsed: 0 };
+      renderMetrics();
+    }
+
+    function renderMetrics() {
+      mSteps.textContent = state.metrics.steps.toString();
+      mCmp.textContent = state.metrics.cmp.toString();
+      mWrites.textContent = state.metrics.writes.toString();
+      const elapsed = state.running ? (performance.now() - state.metrics.t0) : state.metrics.elapsed;
+      mTime.textContent = `${Math.round(elapsed)} ms`;
+    }
+
+    function tick() {
+      if (state.running) renderMetrics();
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+
+    function delayFromSpeed(v) {
+      // v: 1..100 -> delay 1000..1ms (escala log)
+      const vv = Math.max(1, Math.min(100, Number(v) || 1));
+      const t = (vv - 1) / 99; // 0..1
+      const ms = Math.round(Math.pow(10, 3 * (1 - t))); // 10^3..10^0
+      return Math.max(1, Math.min(1000, ms));
+    }
+
+    function fmtDelay(ms) {
+      const v = Math.max(1, Number(ms) || 1);
+      if (v >= 1000) return "1.0 s";
+      return `${v} ms`;
+    }
+
+    function renderRangeValues() {
+      sizeSortVal.textContent = `${sizeSort.value} itens`;
+      speedSortVal.textContent = fmtDelay(delayFromSpeed(+speedSort.value));
+
+      sizeSearchVal.textContent = `${sizeSearch.value} itens`;
+      speedSearchVal.textContent = fmtDelay(delayFromSpeed(+speedSearch.value));
+
+      gridColsVal.textContent = `${gridCols.value}`;
+      gridRowsVal.textContent = `${gridRows.value}`;
+      speedPathVal.textContent = fmtDelay(delayFromSpeed(+speedPath.value));
+      if (idaLimitVal && idaLimit) idaLimitVal.textContent = `${idaLimit.value}`;
+      if (mazeComplexityVal && mazeComplexity) mazeComplexityVal.textContent = `${mazeComplexity.value}`;
+      if (graphNodesVal && graphNodes) graphNodesVal.textContent = `${graphNodes.value}`;
+      if (graphDensityVal && graphDensity) graphDensityVal.textContent = `${graphDensity.value}%`;
+      if (matrixSizeVal && matrixSize) matrixSizeVal.textContent = `${matrixSize.value}`;
+      if (matrixDensityVal && matrixDensity) matrixDensityVal.textContent = `${matrixDensity.value}%`;
+    }
+
+    async function sleep(ms) {
+      if (ms <= 0) return;
+      await new Promise(r => setTimeout(r, ms));
+    }
+
+    // -----------------------------
+    // Sonification (optional)
+    // -----------------------------
+    // -----------------------------
+    // Audio Engine (Premium)
+    // -----------------------------
+    const audio = {
+      ctx: null,
+      master: null,
+      comp: null,
+      hp: null,
+      lp: null,
+      panner: null,
+      ready: false,
+      lastTime: 0,
+    };
+
+    // Minor Pentatonic relative intervals
+    const SCALE_PENT = [0, 3, 5, 7, 10];
+
+    function quantizeHz(val, maxVal) {
+      if (!maxVal) maxVal = 100;
+      // Normalize 0-1
+      const norm = Math.max(0, Math.min(1, val / maxVal));
+
+      // Range: C4 (261.63) to approx C7 (~2093) -> 3 octaves
+      const BASE_NOTE = 60; // C4
+      const OCTAVES = 3;
+      const notesPerOctave = SCALE_PENT.length;
+      const totalNotes = notesPerOctave * OCTAVES;
+
+      // discrete step
+      const step = Math.floor(norm * totalNotes);
+      const octave = Math.floor(step / notesPerOctave);
+      const degree = step % notesPerOctave;
+
+      const midi = BASE_NOTE + (octave * 12) + SCALE_PENT[degree];
+      return 440 * Math.pow(2, (midi - 69) / 12);
+    }
+
+    function ensureAudio() {
+      if (audio.ready && audio.ctx) {
+        if (audio.ctx.state === "suspended") audio.ctx.resume().catch(() => { });
+        return true;
+      }
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return false;
+        audio.ctx = new Ctx();
+
+        // Cadeia: HP -> LP -> Panner -> Compressor -> Master
+        audio.hp = audio.ctx.createBiquadFilter();
+        audio.hp.type = "highpass";
+        audio.hp.frequency.value = 120;
+        audio.hp.Q.value = 0.707;
+
+        audio.lp = audio.ctx.createBiquadFilter();
+        audio.lp.type = "lowpass";
+        audio.lp.frequency.value = 3500;
+        audio.lp.Q.value = 0.707;
+
+        // --- NOVO: Panner para espacialização ---
+        audio.panner = audio.ctx.createStereoPanner();
+
+        audio.comp = audio.ctx.createDynamicsCompressor();
+        audio.comp.threshold.value = -20;
+        audio.comp.ratio.value = 12;
+
+        audio.master = audio.ctx.createGain();
+        audio.master.gain.value = 0.3;
+
+        // Conexões
+        audio.hp.connect(audio.lp);
+        audio.lp.connect(audio.panner); // Filtro -> Panner
+        audio.panner.connect(audio.comp); // Panner -> Comp
+        audio.comp.connect(audio.master);
+        audio.master.connect(audio.ctx.destination);
+
+        audio.ready = true;
+        return true;
+      } catch (e) {
+        console.error("Audio init failed", e);
+        return false;
+      }
+    }
+
+    function playToneFromValue(v, offsetS = 0) {
+      if (!state.prefs.sound) return;
+      if (!ensureAudio()) return;
+
+      const now = audio.ctx.currentTime;
+      const t = now + (offsetS || 0);
+
+      // Reset global panner for bar sounds to center to avoid bleed from grid panning
+      if (audio.panner && audio.panner.pan) try { audio.panner.pan.setTargetAtTime(0, t, 0.01); } catch (_) { }
+
+      // Rate limiting (max ~35/sec) to avoid machine gun artifacts
+      if (t - audio.lastTime < 0.028) return;
+      audio.lastTime = t;
+
+      const maxVal = state.lastViz ? state.lastViz.maxVal : 160;
+      const hz = quantizeHz(Number(v) || 0, maxVal);
+
+      const ctx = audio.ctx;
+      const osc = ctx.createOscillator();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(hz, t);
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(Math.min(20000, hz * 2.5), t);
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.32, t + 0.008); // clean attack
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.16); // short decay
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(audio.hp);
+
+      osc.start(t);
+      osc.stop(t + 0.2);
+
+      osc.onended = () => {
+        try { osc.disconnect(); } catch (_) { }
+        try { filter.disconnect(); } catch (_) { }
+        try { gain.disconnect(); } catch (_) { }
+      };
+    }
+
+    // Função de som específica para Grid (Sonar ping)
+    function playGridTone(c, maxC, r, maxR, isPath = false) {
+      if (!state.prefs.sound) return;
+      if (!ensureAudio()) return;
+
+      const now = audio.ctx.currentTime;
+      // Rate limiting um pouco mais solto para grid para sentir o "fluxo"
+      if (now - audio.lastTime < 0.04) return;
+      audio.lastTime = now;
+
+      const ctx = audio.ctx;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      // 1. Panning Espacial (Esquerda -> Direita)
+      // Mapeia coluna 0..(maxC-1) para -0.9 .. 0.9
+      const panVal = ((c / Math.max(1, (maxC - 1))) * 2 - 1) * 0.9;
+      if (audio.panner && audio.panner.pan) audio.panner.pan.setTargetAtTime(panVal, now, 0.01);
+
+      // 2. Pitch baseado na "Distância Manhattan" ou posição
+      const progress = (r + c);
+      const maxProgress = (maxR + maxC);
+      const hz = quantizeHz(progress, maxProgress || 100);
+
+      // 3. Timbre (Sonar vs Path)
+      if (isPath) {
+        osc.type = "square";
+        osc.frequency.setValueAtTime(hz * 2, now);
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+      } else {
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(hz, now);
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.15, now + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      }
+
+      osc.connect(gain);
+      gain.connect(audio.hp);
+      osc.start(now);
+      osc.stop(now + 0.15);
+      osc.onended = () => {
+        try { osc.disconnect(); } catch (_) { }
+        try { gain.disconnect(); } catch (_) { }
+      };
+    }
+
+    // -----------------------------
+    // Tooltips
+    // -----------------------------
+    function hideTip() {
+      tip.style.transform = "translate(-9999px, -9999px)";
+      tip.textContent = "";
+    }
+
+    function showTipAt(clientX, clientY, text) {
+      if (!state.prefs.tips) return;
+      tip.textContent = String(text || "");
+      const pad = 14;
+      const x = Math.max(8, Math.min(window.innerWidth - 8, clientX + pad));
+      const y = Math.max(8, Math.min(window.innerHeight - 8, clientY + pad));
+      tip.style.transform = `translate(${x}px, ${y}px)`;
+    }
+
+    function hideSearchPrereqCallout() {
+      if (!searchPrereqCallout) return;
+      searchPrereqCallout.classList.add("hidden");
+    }
+
+    function showSearchPrereqCallout() {
+      if (!searchPrereqCallout) return;
+      searchPrereqCallout.classList.remove("hidden");
+      // focus first action for keyboard users
+      try { searchGenSortedRun?.focus(); } catch (_) { }
+    }
+
+    function hidePathPrereqCallout() {
+      if (!pathPrereqCallout) return;
+      pathPrereqCallout.classList.add("hidden");
+    }
+
+    function showPathPrereqCallout(text, fixLabel) {
+      if (!pathPrereqCallout) return;
+      if (pathPrereqText) pathPrereqText.textContent = text || "Este algoritmo requer condicoes especificas.";
+      if (pathFixAndRun) pathFixAndRun.textContent = fixLabel || "Corrigir e executar";
+      pathPrereqCallout.classList.remove("hidden");
+      try { pathFixAndRun?.focus(); } catch (_) { }
+    }
+
+    async function waitIfPaused(myRunId) {
+      while (state.paused && state.running && myRunId === state.runId) {
+        if (state.stepOnce) {
+          state.stepOnce = false;
+          return;
+        }
+        await new Promise(res => state.pauseResolver = res);
+        state.pauseResolver = null;
+      }
+    }
+
+    function stopRun() {
+      state.runId++;
+      state.running = false;
+      state.paused = false;
+      state.stepOnce = false;
+      if (state.pauseResolver) state.pauseResolver();
+      state.metrics.elapsed = performance.now() - state.metrics.t0;
+      setStatus("Pronto", false);
+      syncButtons();
+      state.highlights = {};
+      state.aux = null;
+      clearEdu();
+      hideTip();
+      hideSearchPrereqCallout();
+      hidePathPrereqCallout();
+      // cancel any animation rafs and clear anim state
+      if (state.animRaf) {
+        cancelAnimationFrame(state.animRaf);
+        state.animRaf = null;
+      }
+      state.anim = null;
+      state.animWrites = [];
+      // keep last frame visible
+      if (state.mode !== "path") {
+        drawBarsActive();
+      } else if (state.pathEnv === "grid") {
+        clearPathStates(true);
+      } else {
+        clearCanvas();
+        clearOverlay();
+      }
+    }
+
+    function pauseRun() {
+      if (!state.running) return;
+      state.paused = true;
+      setStatus("Pausado", true);
+      syncButtons();
+    }
+
+    function resumeRun() {
+      if (!state.running) return;
+      state.paused = false;
+      setStatus("Executando", true);
+      if (state.pauseResolver) state.pauseResolver();
+      syncButtons();
+    }
+
+    function stepRun() {
+      if (!state.running || !state.paused) return;
+      state.stepOnce = true;
+      if (state.pauseResolver) state.pauseResolver();
+    }
+
+    function syncButtons() {
+      const running = state.running;
+      const paused = state.paused;
+
+      // sort
+      runSort.disabled = running;
+      pauseSort.disabled = !running;
+      stepSort.disabled = !running || !paused;
+      stopSort.disabled = !running;
+
+      // search
+      runSearch.disabled = running;
+      pauseSearch.disabled = !running;
+      stepSearch.disabled = !running || !paused;
+      stopSearch.disabled = !running;
+
+      // path
+      runPath.disabled = running;
+      pausePath.disabled = !running;
+      stepPath.disabled = !running || !paused;
+      stopPath.disabled = !running;
+
+      const pauseLabel = paused ? "Retomar" : "Pausar";
+      pauseSort.textContent = pauseLabel;
+      pauseSearch.textContent = pauseLabel;
+      pausePath.textContent = pauseLabel;
+
+      // Disable controls while running to prevent state skew
+      const disable = running;
+      // sorting controls (except playback buttons handled above)
+      [sortAlgo, sizeSort, speedSort, genSort, shuffleSort].forEach((el) => { if (el) el.disabled = disable; });
+      // search controls
+      [searchAlgo, sizeSearch, targetVal, speedSearch, genSearch].forEach((el) => { if (el) el.disabled = disable; });
+      if (searchOrder) {
+        searchOrder.querySelectorAll("button[data-order]").forEach((b) => b.disabled = disable);
+      }
+      // path controls
+      [pathAlgo, gridCols, allowDiagonal, astarHeuristic, speedPath, clearPath, randomWalls, mazeAlgo, mazeAnimate, mazeComplexity].forEach((el) => { if (el) el.disabled = disable; });
+      if (genMaze) genMaze.disabled = disable || state.pathEnv !== "grid";
+      if (pathTools) {
+        pathTools.querySelectorAll("button[data-tool]").forEach((b) => b.disabled = disable);
+      }
+
+      const pathAllowed = state.pathEnv === "grid" && !!PATH_ENV_ALGOS[state.pathEnv]?.has(pathAlgo.value);
+      if (!pathAllowed) {
+        runPath.disabled = true;
+        pausePath.disabled = true;
+        stepPath.disabled = true;
+        stopPath.disabled = true;
+      }
+    }
+
+    // -----------------------------
+    // Canvas sizing (crisp)
+    // -----------------------------
+    function fitCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      const w = Math.max(200, Math.round(rect.width));
+      const h = Math.max(200, Math.round(rect.height));
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // cache canvas layout to avoid repeated getBoundingClientRect() calls
+      state.canvasRect = { width: w, height: h };
+      drawBarsActive();
+    }
+
+    function fitOverlay() {
+      if (!pathOverlay || !pathOverlayCtx) return;
+      const dpr = window.devicePixelRatio || 1;
+      const rect = pathOverlay.getBoundingClientRect();
+      const w = Math.max(1, Math.round(rect.width));
+      const h = Math.max(1, Math.round(rect.height));
+      pathOverlay.width = Math.round(w * dpr);
+      pathOverlay.height = Math.round(h * dpr);
+      pathOverlayCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      pathOverlayCtx.clearRect(0, 0, w, h);
+    }
+
+    function clearOverlay() {
+      if (!pathOverlay || !pathOverlayCtx) return;
+      pathOverlayCtx.setTransform(1, 0, 0, 1, 0, 0);
+      pathOverlayCtx.clearRect(0, 0, pathOverlay.width, pathOverlay.height);
+    }
+    window.addEventListener("resize", () => {
+      if (state.mode !== "path") {
+        fitCanvas();
+      } else if (state.pathEnv === "grid") {
+        renderGrid();
+        fitOverlay();
+      } else {
+        fitCanvas();
+      }
+      renderRangeValues();
+    });
+    // Call after layout settles
+    setTimeout(fitCanvas, 50);
+
+    canvas.addEventListener("mousemove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const v = state.lastViz;
+      if (!v || x < v.pad || x > v.pad + v.innerW) {
+        hideTip();
+        return;
+      }
+      const i = Math.floor((x - v.pad) / v.barW);
+      if (i < 0 || i >= v.n) {
+        hideTip();
+        return;
+      }
+      const arr = (state.mode === "sort") ? state.sortArr : (state.mode === "search" ? (state.searchView || state.searchData) : null);
+      if (!arr) return;
+      const val = arr[i];
+      let msg = `índice ${i}\nvalor ${val}`;
+      const isHashView = (state.mode === "search" && searchAlgo.value === "hash" && state.searchView && state.searchView !== state.searchData);
+      if (isHashView) {
+        const bucketCount = 14;
+        const target = Number(targetVal.value);
+        const b = (target % bucketCount + bucketCount) % bucketCount;
+        msg = `bucket ${i}\naltura ${val}\nhash: ${target} % ${bucketCount} = ${b}`;
+      }
+      showTipAt(e.clientX, e.clientY, msg);
+    });
+    canvas.addEventListener("mouseleave", hideTip);
+
+    // -----------------------------
+    // Data generation
+    // -----------------------------
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function genArray(n, maxVal = 120, opts = { withIds: false }) {
+      const arr = new Array(n);
+      for (let i = 0; i < n; i++) {
+        arr[i] = randInt(4, maxVal);
+      }
+      // cache max value and optionally initialize identity markers when generating
+      arr._maxVal = maxVal;
+      if (opts && opts.withIds) state.sortIds = arr.map((_, i) => i);
+      return arr;
+    }
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function shufflePair(arr, ids) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+        if (ids && ids.length === arr.length) [ids[i], ids[j]] = [ids[j], ids[i]];
+      }
+      return arr;
+    }
+
+    // -----------------------------
+    // Drawing (bars)
+    // -----------------------------
+    function clearCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+    }
+
+    function drawBars(arr, h = {}) {
+      const rectObj = state.canvasRect || { width: canvas.clientWidth, height: canvas.clientHeight };
+      const W = rectObj.width;
+      const H = rectObj.height;
+
+      ctx.clearRect(0, 0, W, H);
+
+      // soft frame
+      ctx.fillStyle = "rgba(0,0,0,.18)";
+      ctx.fillRect(0, 0, W, H);
+
+      const n = arr.length;
+      if (n === 0) return;
+
+      const maxVal = (arr && typeof arr._maxVal !== 'undefined') ? arr._maxVal : Math.max(...arr);
+      const pad = 16;
+      const innerW = W - pad * 2;
+      const aux = (state.mode === "sort" ? state.aux : null);
+      const auxReserved = aux ? 120 : 0;
+      const innerH = (H - pad * 2) - auxReserved;
+      const barW = innerW / n;
+
+      // highlights
+      const compare = new Set(h.compare || []);
+      const swap = new Set(h.swap || []);
+      const pivot = h.pivot ?? -1;
+      const found = h.found ?? -1;
+      const range = h.range || null; // [l,r]
+      const pointer = h.pointer ?? -1;
+      state.lastViz = { W, H, pad, innerW, innerH, barW, n, maxVal, range };
+
+      // range overlay for searches
+      if (range && range[0] <= range[1]) {
+        const l = range[0], r = range[1];
+        const x = pad + l * barW;
+        const w = (r - l + 1) * barW;
+        ctx.fillStyle = "rgba(0,229,255,.06)";
+        ctx.fillRect(x, pad, w, innerH);
+        // edges
+        ctx.strokeStyle = "rgba(0,229,255,.18)";
+        ctx.strokeRect(x + 0.5, pad + 0.5, w - 1, innerH - 1);
+      }
+
+      const now = performance.now();
+      const comparePulseDur = 90; // ms
+      const swapPulseDur = 160; // ms
+
+      // animation state
+      const animSwap = state.anim && state.anim.type === 'swap';
+      let swapProgress = 0;
+      let si = -1, sj = -1;
+      if (animSwap) {
+        si = state.anim.i; sj = state.anim.j;
+        swapProgress = Math.min(1, (now - state.anim.start) / state.anim.dur);
+      }
+
+      // handle write tweens map by index
+      const writeMap = new Map();
+      if (state.animWrites && state.animWrites.length) {
+        for (const wA of state.animWrites) {
+          const p = Math.min(1, (now - wA.start) / wA.dur);
+          writeMap.set(wA.i, { from: wA.from, to: wA.to, p });
+        }
+        // purge finished writes
+        state.animWrites = state.animWrites.filter(wA => (now - wA.start) < wA.dur);
+        if (state.animWrites.length === 0 && animSwap === false && !state.animRaf) {
+          // ensure final draw
+          // drawBars will be called by loop or caller
+        }
+      }
+
+      for (let i = 0; i < n; i++) {
+        const v = arr[i];
+        const x = pad + i * barW;
+        const bh = Math.max(2, (v / maxVal) * innerH);
+        const y = pad + (innerH - bh);
+
+        // base
+        let fill = COLORS.bar;
+        let edge = COLORS.edge;
+
+        // dim outside range (search)
+        if (range && (i < range[0] || i > range[1])) fill = COLORS.barDim;
+
+        // focus layers
+        if (i === pivot) {
+          fill = "rgba(255,61,129,.38)";
+          edge = "rgba(255,61,129,.55)";
+        }
+        if (compare.has(i)) {
+          fill = "rgba(255,216,77,.38)";
+          edge = "rgba(255,216,77,.55)";
+        }
+        if (swap.has(i)) {
+          fill = "rgba(0,229,255,.40)";
+          edge = "rgba(0,229,255,.58)";
+        }
+        if (i === pointer) {
+          fill = "rgba(182,255,92,.36)";
+          edge = "rgba(182,255,92,.52)";
+        }
+        if (i === found) {
+          fill = "rgba(182,255,92,.46)";
+          edge = "rgba(182,255,92,.70)";
+        }
+
+        // skip drawing bars that are part of an active swap animation; draw them after loop
+        if (animSwap && (i === si || i === sj)) continue;
+
+        // apply write tween if present for this index
+        const wTween = writeMap.get(i);
+        let drawBh = bh;
+        let drawY = y;
+        if (wTween && wTween.p < 1) {
+          const interp = wTween.from + (wTween.to - wTween.from) * wTween.p;
+          drawBh = Math.max(2, (interp / maxVal) * innerH);
+          drawY = pad + (innerH - drawBh);
+        }
+
+        // bar
+        ctx.fillStyle = fill;
+        const rx = Math.max(2, Math.min(10, barW * 0.35));
+        roundRect(ctx, x + 1, drawY, Math.max(2, barW - 2), drawBh, rx);
+        ctx.fill();
+
+        // edge
+        ctx.strokeStyle = edge;
+        ctx.globalAlpha = 0.9;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+
+        // identity marker (tiny dot) for stability visualization
+        if (state.sortIds && state.sortIds.length === n) {
+          const id = state.sortIds[i];
+          const dotX = x + Math.max(6, Math.min(12, barW * 0.12));
+          const dotY = drawY + 6 + (id % 6);
+          ctx.fillStyle = "rgba(255,255,255,.18)";
+          ctx.fillRect(dotX, dotY, 2, 2);
+        }
+
+        // compare pulse overlay
+        if (compare.has(i)) {
+          const elapsed = now - state.lastCompareAt;
+          if (elapsed < comparePulseDur) {
+            const pulse = 1 - (elapsed / comparePulseDur);
+            ctx.fillStyle = `rgba(255,255,255,${0.12 * pulse})`;
+            roundRect(ctx, x + 1, drawY, Math.max(2, barW - 2), drawBh, rx);
+            ctx.fill();
+          }
+        }
+      }
+
+      // draw swap-in-motion bars if animating
+      if (animSwap) {
+        const i0 = si, j0 = sj;
+        const vi = state.anim.vi, vj = state.anim.vj;
+        const xi0 = pad + i0 * barW;
+        const xj0 = pad + j0 * barW;
+        const xi = xi0 + (j0 - i0) * barW * swapProgress;
+        const xj = xj0 + (i0 - j0) * barW * swapProgress;
+
+        const bhi = Math.max(2, (vi / maxVal) * innerH);
+        const bhj = Math.max(2, (vj / maxVal) * innerH);
+        const yi = pad + (innerH - bhi) - Math.max(0, 6 * (1 - Math.abs(0.5 - swapProgress))); // subtle lift
+        const yj = pad + (innerH - bhj) - Math.max(0, 6 * (1 - Math.abs(0.5 - swapProgress)));
+
+        ctx.save();
+        ctx.globalAlpha = 1;
+        // i bar
+        ctx.fillStyle = "rgba(0,229,255,.40)";
+        roundRect(ctx, xi + 1, yi, Math.max(2, barW - 2), bhi, Math.max(2, Math.min(10, barW * 0.35)));
+        ctx.fill();
+        ctx.strokeStyle = "rgba(0,229,255,.58)";
+        ctx.stroke();
+        // j bar
+        ctx.fillStyle = "rgba(0,229,255,.40)";
+        roundRect(ctx, xj + 1, yj, Math.max(2, barW - 2), bhj, Math.max(2, Math.min(10, barW * 0.35)));
+        ctx.fill();
+        ctx.strokeStyle = "rgba(0,229,255,.58)";
+        ctx.stroke();
+        ctx.restore();
+
+        // if swap finished, clear anim
+        if (swapProgress >= 1) {
+          state.anim = null;
+        }
+      }
+
+      // top micro legend (only when there is highlight)
+      const any = (compare.size || swap.size || pivot >= 0 || found >= 0 || (range && range[0] !== 0));
+      // top micro legend removed
+
+      if (aux) {
+        const top = pad + innerH + 12;
+        const h2 = Math.max(60, H - top - pad);
+        drawAux(ctx, aux, pad, top, innerW, h2);
+      }
+
+      // pointer markers: support object { i: idx, j: idx, p: idx } or single number
+      if (h && h.pointer != null) {
+        if (typeof h.pointer === 'object') {
+          for (const [label, idx] of Object.entries(h.pointer)) {
+            if (typeof idx !== 'number' || idx < 0 || idx >= n) continue;
+            const x = pad + idx * barW + Math.floor(barW / 2);
+            ctx.strokeStyle = 'rgba(255,255,255,.08)';
+            ctx.beginPath();
+            ctx.moveTo(x + 0.5, pad + 0.5);
+            ctx.lineTo(x + 0.5, pad + innerH - 8);
+            ctx.stroke();
+            ctx.font = '11px ui-sans-serif, system-ui';
+            ctx.fillStyle = 'rgba(215,222,234,.75)';
+            ctx.fillText(String(label), x - 6, pad + 12);
+          }
+        } else if (typeof h.pointer === 'number' && h.pointer >= 0 && h.pointer < n) {
+          const idx = h.pointer;
+          const x = pad + idx * barW + Math.floor(barW / 2);
+          ctx.strokeStyle = 'rgba(182,255,92,.18)';
+          ctx.beginPath();
+          ctx.moveTo(x + 0.5, pad + 0.5);
+          ctx.lineTo(x + 0.5, pad + innerH - 8);
+          ctx.stroke();
+        }
+      }
+    }
+
+    function drawAux(ctx, aux, x, y, w, h) {
+      // background
+      ctx.fillStyle = "rgba(0,0,0,.20)";
+      roundRect(ctx, x, y, w, h, 14);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,.08)";
+      ctx.stroke();
+
+      ctx.save();
+      ctx.beginPath();
+      roundRect(ctx, x, y, w, h, 14);
+      ctx.clip();
+
+      const pad = 10;
+      const titleY = y + 16;
+      ctx.font = "11px ui-sans-serif, system-ui";
+      ctx.fillStyle = "rgba(215,222,234,.72)";
+      const title =
+        aux.kind === "counting" ? `Counting Sort — buckets (k=${aux.buckets.length})` :
+          aux.kind === "radix" ? `Radix Sort — contagem (exp=${aux.exp})` :
+            "Buckets";
+      ctx.fillText(title, x + pad, titleY);
+
+      const buckets = aux.buckets || [];
+      const n = buckets.length;
+      if (n === 0) {
+        ctx.restore();
+        return;
+      }
+      const max = Math.max(1, ...buckets);
+      const plotX = x + pad;
+      const plotY = y + 24;
+      const plotW = w - pad * 2;
+      const plotH = h - 34;
+      const bw = plotW / n;
+
+      for (let i = 0; i < n; i++) {
+        const v = buckets[i] || 0;
+        const bh = Math.max(1, (v / max) * plotH);
+        const xx = plotX + i * bw;
+        const yy = plotY + (plotH - bh);
+        const isActive =
+          (aux.kind === "counting" && i === aux.active) ||
+          (aux.kind === "radix" && i === aux.activeDigit);
+        ctx.fillStyle = isActive ? "rgba(255,216,77,.45)" : "rgba(255,255,255,.10)";
+        ctx.fillRect(xx + 0.5, yy, Math.max(1, bw - 1.2), bh);
+      }
+
+      // small axis labels for radix
+      if (aux.kind === "radix") {
+        ctx.font = "10px ui-sans-serif, system-ui";
+        ctx.fillStyle = "rgba(215,222,234,.55)";
+        for (let i = 0; i < 10; i++) {
+          const xx = plotX + i * bw + 2;
+          ctx.fillText(String(i), xx, y + h - 8);
+        }
+      }
+
+      ctx.restore();
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+      const rr = Math.min(r, w / 2, h / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + rr, y);
+      ctx.arcTo(x + w, y, x + w, y + h, rr);
+      ctx.arcTo(x + w, y + h, x, y + h, rr);
+      ctx.arcTo(x, y + h, x, y, rr);
+      ctx.arcTo(x, y, x + w, y, rr);
+      ctx.closePath();
+    }
+
+    function drawBarsActive() {
+      if (state.mode === "sort") drawBars(state.sortArr, state.highlights);
+      if (state.mode === "search") drawBars(state.searchView || state.searchData, state.highlights);
+      if (state.mode === "path") {
+        // canvas hidden; no-op
+      }
+    }
+
+    // -----------------------------
+    // Badges (complexidade / propriedades)
+    // -----------------------------
+    const SORT_META = {
+      bubble: { bigO: "O(n²)", stable: "Sim", inplace: "Sim", note: "Simples; ótimo para visualização de trocas locais." },
+      selection: { bigO: "O(n²)", stable: "Não", inplace: "Sim", note: "Poucas trocas; muitas comparações." },
+      insertion: { bigO: "O(n²)", stable: "Sim", inplace: "Sim", note: "Excelente em quase-ordenado." },
+      shell: { bigO: "~O(n^1.3)", stable: "Não", inplace: "Sim", note: "Gaps reduzem movimentação; bom intermediário." },
+      merge: { bigO: "O(n log n)", stable: "Sim", inplace: "Não", note: "Estável e previsível; usa memória extra." },
+      quick: { bigO: "O(n log n) avg", stable: "Não", inplace: "Sim", note: "Rápido na prática; depende do pivô." },
+      heap: { bigO: "O(n log n)", stable: "Não", inplace: "Sim", note: "Performance consistente; padrão de swaps amplo." },
+      counting: { bigO: "O(n + k)", stable: "Sim", inplace: "Não", note: "Inteiros em faixa limitada (k). Ultra eficiente." },
+      radix: { bigO: "O(d·(n+k))", stable: "Sim", inplace: "Não", note: "Ordena por dígitos; excelente para inteiros." },
+    };
+
+    const SEARCH_META = {
+      linear: { req: "nenhum", bigO: "O(n)", note: "Varre; melhor para dados não-ordenados." },
+      binary: { req: "ordenado", bigO: "O(log n)", note: "Divide e conquista; ponteiros low/high/mid." },
+      jump: { req: "ordenado", bigO: "O(√n)", note: "Saltos + varredura local." },
+      interpolation: { req: "ordenado", bigO: "O(log log n) avg", note: "Assume distribuição uniforme; pode degradar." },
+      exponential: { req: "ordenado", bigO: "O(log n)", note: "Encontra faixa e aplica busca binária." },
+      hash: { req: "nenhum", bigO: "O(1) avg", note: "Buckets mostram colisões e dispersão." },
+    };
+
+    const PATH_META = {
+      bfs: { complete: "Sim", optimal: "Sim (pesos uniformes)", note: "Ótimo para caminhos curtos em grafos não ponderados." },
+      dfs: { complete: "Depende", optimal: "Não", note: "Explora em profundidade; bom para exploração, não para menor caminho." },
+      dijkstra: { complete: "Sim", optimal: "Sim", note: "Menor caminho com pesos não-negativos; bom baseline." },
+      astar: { complete: "Sim", optimal: "Sim (com heurística admissível)", note: "Direciona a busca com heurística; geralmente mais rápido que Dijkstra." },
+    };
+
+    // Apenas Grade + BFS/DFS/Dijkstra/A* estao implementados no momento.
+    const PATH_ENV_ALGOS = {
+      grid: new Set(["bfs", "dfs", "dijkstra", "astar"]),
+      graph: new Set(["bellman"]),
+      matrix: new Set(["floyd"]),
+    };
+
+    const PATH_ENV_DEFAULT = {
+      grid: "astar",
+      graph: "bellman",
+      matrix: "floyd",
+    };
+
+    const HEURISTIC_ALGOS = new Set(["astar", "greedy", "biastar", "jps", "theta", "ida"]);
+
+    function setPathEnv(nextEnv) {
+      const allowed = new Set(Object.keys(PATH_ENV_ALGOS));
+      const env = allowed.has(nextEnv) ? nextEnv : "grid";
+      state.pathEnv = env;
+      const allowedAlgos = PATH_ENV_ALGOS[env] || new Set();
+      if (allowedAlgos.size && !allowedAlgos.has(pathAlgo.value)) {
+        const def = PATH_ENV_DEFAULT[env] || "astar";
+        pathAlgo.value = def;
+      }
+    }
+
+    function syncPathEnvUI() {
+      if (!pathEnv) return;
+      setPathEnv(state.pathEnv || "grid");
+      const env = state.pathEnv || "grid";
+
+      // segmented buttons
+      pathEnv.querySelectorAll("button[data-env]").forEach((b) => {
+        const btnEnv = b.dataset.env;
+        const active = btnEnv === env;
+        b.setAttribute("aria-pressed", active ? "true" : "false");
+        b.disabled = false;
+        b.setAttribute("aria-disabled", "false");
+        b.title = btnEnv === "grid" ? "" : "Em breve";
+      });
+
+      // control groups
+      if (gridControls) gridControls.classList.toggle("hidden", env !== "grid");
+      if (graphControls) graphControls.classList.add("hidden");
+      if (matrixControls) matrixControls.classList.add("hidden");
+
+      // stage surface
+      const showGrid = env === "grid";
+      canvas.classList.toggle("hidden", showGrid);
+      gridStage.classList.toggle("hidden", !showGrid);
+      if (pathOverlay) pathOverlay.classList.toggle("hidden", !showGrid);
+
+      // headline
+      stageHeadline.textContent =
+        env === "graph" ? "Visualização de Busca em Grafo" :
+          env === "matrix" ? "Visualização de Busca em Matriz" :
+            "Visualização de Busca em Grade";
+      if (pathEnvCallout) pathEnvCallout.classList.toggle("hidden", env === "grid");
+
+      if (showGrid) {
+        if (!state.grid.inited) initGrid();
+        else renderGrid();
+        fitOverlay();
+      } else {
+        fitCanvas();
+        clearCanvas();
+        clearOverlay();
+      }
+    }
+
+    function syncPathAlgoUI() {
+      const env = state.pathEnv || "grid";
+      const allowedAlgos = PATH_ENV_ALGOS[env] || new Set();
+
+      Array.from(pathAlgo.options).forEach((opt) => {
+        if (!opt.value) return;
+        // Desabilita algoritmos nao implementados (ver PATH_ENV_ALGOS).
+        opt.disabled = !allowedAlgos.has(opt.value);
+      });
+
+      if (!allowedAlgos.has(pathAlgo.value)) {
+        const def = PATH_ENV_DEFAULT[env] || "astar";
+        pathAlgo.value = def;
+      }
+
+      const isHeuristic = HEURISTIC_ALGOS.has(pathAlgo.value);
+      astarHeuristic.disabled = !isHeuristic;
+      astarHeuristic.style.opacity = isHeuristic ? "1" : "0.55";
+
+      if (idaControls) idaControls.classList.toggle("hidden", pathAlgo.value !== "ida");
+
+      if (pathPrereqCallout) pathPrereqCallout.classList.add("hidden");
+
+      const showMaze = state.pathEnv === "grid";
+      if (mazeControls) mazeControls.classList.toggle("hidden", !showMaze);
+      if (mazeCallout) mazeCallout.classList.toggle("hidden", showMaze);
+      if (genMaze) genMaze.disabled = !showMaze;
+      if (genGraph) genGraph.disabled = true;
+      if (genMatrix) genMatrix.disabled = true;
+
+      if (state.mode === "path" && (state.pathEnv !== "grid" || !allowedAlgos.has(pathAlgo.value))) {
+        setStatus("Não implementado ainda", false);
+      }
+      syncButtons();
+      renderAlgoInfo();
+    }
+
+    function renderAlgoInfo() {
+      if (!algoInfoKv || !algoInfoNote) return;
+      const rows = [];
+      let note = "";
+
+      if (state.mode === "sort") {
+        const a = sortAlgo.value;
+        const m = SORT_META[a];
+        rows.push(["Algoritmo", sortAlgo.options[sortAlgo.selectedIndex]?.textContent || a]);
+        rows.push(["Complexidade", m?.bigO || "—"]);
+        rows.push(["Estável", m?.stable || "—"]);
+        rows.push(["In-place", m?.inplace || "—"]);
+        note = m?.note || "";
+      } else if (state.mode === "search") {
+        const a = searchAlgo.value;
+        const m = SEARCH_META[a];
+        rows.push(["Algoritmo", searchAlgo.options[searchAlgo.selectedIndex]?.textContent || a]);
+        rows.push(["Requer", m?.req || "—"]);
+        rows.push(["Complexidade", m?.bigO || "—"]);
+        note = m?.note || "";
+      } else if (state.mode === "path") {
+        const a = pathAlgo.value;
+        const m = PATH_META[a];
+        rows.push(["Algoritmo", pathAlgo.options[pathAlgo.selectedIndex]?.textContent || a]);
+        rows.push(["Completo", m?.complete || "—"]);
+        rows.push(["Ótimo", m?.optimal || "—"]);
+        note = m?.note || "";
+      }
+
+      algoInfoKv.innerHTML = "";
+      for (const [k, v] of rows) {
+        const row = document.createElement("div");
+        row.className = "kvRow";
+        const kk = document.createElement("div");
+        kk.className = "kvKey";
+        kk.textContent = k;
+        const vv = document.createElement("div");
+        vv.className = "kvVal";
+        vv.textContent = v;
+        row.appendChild(kk);
+        row.appendChild(vv);
+        algoInfoKv.appendChild(row);
+      }
+      algoInfoNote.textContent = note ? `Notas: ${note}` : "";
+    }
+
+    sortAlgo.addEventListener("change", () => {
+      setPseudo("sort", sortAlgo.value);
+      clearEdu();
+      state.aux = null;
+      renderAlgoInfo();
+      drawBarsActive();
+    });
+    searchAlgo.addEventListener("change", () => {
+      setPseudo("search", searchAlgo.value);
+      clearEdu();
+      state.searchView = state.searchData;
+      hideSearchPrereqCallout();
+      if (state.search.order === "recommended") setSearchOrderSelection("recommended");
+      renderSearchDataStatus();
+      renderAlgoInfo();
+      drawBarsActive();
+    });
+    pathAlgo.addEventListener("change", () => {
+      setPseudo("path", pathAlgo.value);
+      clearEdu();
+      syncPathAlgoUI();
+    });
+
+    // -----------------------------
+    // Sorting implementations (async)
+    // -----------------------------
+    function markStep(cmp = 0, writes = 0) {
+      state.metrics.steps++;
+      state.metrics.cmp += cmp;
+      state.metrics.writes += writes;
+    }
+
+    function maybeSonify(h) {
+      if (!state.prefs.sound) return;
+      const arr =
+        (state.mode === "sort") ? state.sortArr :
+          (state.mode === "search") ? (state.searchView || state.searchData) :
+            null;
+      if (!arr || !arr.length) return;
+
+      const idxs = [];
+      if (Array.isArray(h?.swap)) idxs.push(...h.swap);
+      else if (Array.isArray(h?.compare)) idxs.push(...h.compare);
+      else if (typeof h?.pointer === "number" && h.pointer >= 0) idxs.push(h.pointer);
+
+      const uniq = Array.from(new Set(idxs.filter(i => Number.isFinite(i))));
+      uniq.slice(0, 2).forEach((i, k) => {
+        const v = arr[i];
+        playToneFromValue(v, k * 0.03);
+      });
+    }
+
+    function setHighlights(h) {
+      state.highlights = h || {};
+      // timestamp highlights for micro-animations
+      if (h?.compare) state.lastCompareAt = performance.now();
+      if (h?.swap) state.lastSwapAt = performance.now();
+      maybeSonify(state.highlights);
+      drawBarsActive();
+      // run an animation frame loop briefly to show pulses/markers
+      if (h?.compare || h?.swap || h?.pointer) startAnimLoop();
+    }
+
+    // Animation loop helpers
+    function startAnimLoop() {
+      if (state.animRaf) return;
+      function loop() {
+        state.animRaf = requestAnimationFrame(loop);
+        // draw appropriately for current mode (sort or search)
+        drawBarsActive();
+        // stop when no anims and no recent highlight pulses
+        const now = performance.now();
+        const comparePulseDur = 90;
+        const swapPulseDur = 160;
+        const recentCompare = (now - (state.lastCompareAt || 0)) < comparePulseDur;
+        const recentSwap = (now - (state.lastSwapAt || 0)) < swapPulseDur;
+        if (!state.anim && (!state.animWrites || state.animWrites.length === 0) && !recentCompare && !recentSwap) {
+          cancelAnimationFrame(state.animRaf);
+          state.animRaf = null;
+        }
+      }
+      loop();
+    }
+
+    function waitForAnimEnd(type) {
+      return new Promise((resolve) => {
+        const iv = setInterval(() => {
+          if (!state.anim || (type && state.anim.type !== type)) {
+            clearInterval(iv);
+            resolve();
+          }
+        }, 16);
+      });
+    }
+
+    async function swap(arr, i, j, runId) {
+      // a literal swap affects two writes
+      markStep(0, 2);
+      edu("swap", `Trocando posições ${i} e ${j}`);
+      setHighlights({ swap: [i, j] });
+      await waitIfPaused(runId);
+
+      // If animations disabled or prefers-reduced-motion, do immediate swap
+      if (!state.prefs.animations) {
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+        if (state.sortIds && state.sortIds.length === arr.length) [state.sortIds[i], state.sortIds[j]] = [state.sortIds[j], state.sortIds[i]];
+        drawBarsActive();
+        return;
+      }
+
+      // calculate duration based on UI speed
+      const dur = Math.min(160, Math.max(40, Math.floor(delayFromSpeed(+speedSort.value) * 0.9)));
+      state.anim = { type: 'swap', i, j, vi: arr[i], vj: arr[j], start: performance.now(), dur };
+      startAnimLoop();
+      await waitForAnimEnd('swap');
+
+      // finalize swap
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+      if (state.sortIds && state.sortIds.length === arr.length) [state.sortIds[i], state.sortIds[j]] = [state.sortIds[j], state.sortIds[i]];
+      // small pause to show final state
+      state.anim = null;
+      drawBarsActive();
+    }
+
+    async function compare(runId, indices) {
+      markStep(1, 0);
+      edu("cmp", `Comparando ${indices.join(" e ")}`);
+      setHighlights({ compare: indices });
+      await waitIfPaused(runId);
+    }
+
+    async function writeAt(arr, i, val, runId, extra = {}) {
+      markStep(0, 1);
+      const from = arr[i];
+      arr[i] = val;
+      // handle identity if provided
+      if (extra && typeof extra.srcId !== 'undefined') {
+        if (state.sortIds && state.sortIds.length === arr.length) state.sortIds[i] = extra.srcId;
+      } else if (extra && typeof extra.src !== 'undefined') {
+        // source index provided
+        if (state.sortIds && state.sortIds.length === arr.length) state.sortIds[i] = state.sortIds[extra.src];
+      }
+      edu("write", `Escrevendo ${val} em ${i}`);
+      setHighlights({ ...extra, swap: [i] });
+      // visual tween for the write (height tween)
+      if (state.prefs.animations) {
+        const dur = Math.min(140, Math.max(60, Math.floor(delayFromSpeed(+speedSort.value) * 0.8)));
+        state.animWrites.push({ i, from, to: val, start: performance.now(), dur });
+        startAnimLoop();
+      }
+      await waitIfPaused(runId);
+    }
+
+    async function bubbleSort(arr, runId, delay) {
+      const n = arr.length;
+      for (let i = 0; i < n - 1; i++) {
+        for (let j = 0; j < n - i - 1; j++) {
+          if (runId !== state.runId) return;
+          await compare(runId, [j, j + 1]);
+          await sleep(delay);
+          if (arr[j] > arr[j + 1]) {
+            if (runId !== state.runId) return;
+            await swap(arr, j, j + 1, runId);
+            await sleep(delay);
+          }
+        }
+        // mark sorted suffix
+        setHighlights({ range: [n - i - 1, n - 1] });
+      }
+    }
+
+    async function selectionSort(arr, runId, delay) {
+      const n = arr.length;
+      for (let i = 0; i < n - 1; i++) {
+        let min = i;
+        for (let j = i + 1; j < n; j++) {
+          if (runId !== state.runId) return;
+          await compare(runId, [min, j]);
+          await sleep(delay);
+          if (arr[j] < arr[min]) min = j;
+        }
+        if (min !== i) {
+          if (runId !== state.runId) return;
+          await swap(arr, i, min, runId);
+          await sleep(delay);
+        }
+        // show pointers for selection and mark sorted prefix (single call to avoid overwriting)
+        setHighlights({ pointer: { min: min, j: i }, range: [0, i] });
+      }
+    }
+
+    async function insertionSort(arr, runId, delay) {
+      const n = arr.length;
+      for (let i = 1; i < n; i++) {
+        let key = arr[i];
+        const keyId = (state.sortIds && state.sortIds.length === n) ? state.sortIds[i] : undefined;
+        let j = i - 1;
+        while (j >= 0) {
+          if (runId !== state.runId) return;
+          markStep(1, 0);
+          setHighlights({ compare: [j, j + 1], pointer: i });
+          await waitIfPaused(runId);
+          await sleep(delay);
+          if (arr[j] > key) {
+            if (runId !== state.runId) return;
+            await writeAt(arr, j + 1, arr[j], runId, { compare: [j, j + 1], src: j });
+            await sleep(delay);
+            j--;
+          } else break;
+        }
+        if (runId !== state.runId) return;
+        await writeAt(
+          arr,
+          j + 1,
+          key,
+          runId,
+          { pointer: j + 1, ...(keyId !== undefined ? { srcId: keyId } : {}) }
+        );
+        // mark sorted prefix
+        setHighlights({ range: [0, i] });
+        await sleep(delay);
+      }
+    }
+
+    async function shellSort(arr, runId, delay) {
+      const n = arr.length;
+      let gap = Math.floor(n / 2);
+      while (gap > 0) {
+        for (let i = gap; i < n; i++) {
+          let temp = arr[i];
+          const tempId = (state.sortIds && state.sortIds.length === n) ? state.sortIds[i] : undefined;
+          let j = i;
+          while (j >= gap) {
+            if (runId !== state.runId) return;
+            markStep(1, 0);
+            setHighlights({ compare: [j - gap, j], pointer: i });
+            await waitIfPaused(runId);
+            await sleep(delay);
+            if (arr[j - gap] > temp) {
+              await writeAt(arr, j, arr[j - gap], runId, { compare: [j - gap, j], src: j - gap });
+              await sleep(delay);
+              j -= gap;
+            } else break;
+          }
+          if (runId !== state.runId) return;
+          await writeAt(
+            arr,
+            j,
+            temp,
+            runId,
+            { pointer: j, ...(tempId !== undefined ? { srcId: tempId } : {}) }
+          );
+          await sleep(delay);
+        }
+        gap = Math.floor(gap / 2);
+      }
+    }
+
+    async function mergeSort(arr, runId, delay) {
+      const aux = arr.slice();
+      const auxIds = (state.sortIds && state.sortIds.length === arr.length) ? state.sortIds.slice() : null;
+
+      async function merge(lo, mid, hi) {
+        for (let k = lo; k <= hi; k++) {
+          aux[k] = arr[k];
+          if (auxIds) auxIds[k] = state.sortIds[k];
+        }
+        let i = lo, j = mid + 1;
+        for (let k = lo; k <= hi; k++) {
+          if (runId !== state.runId) return;
+          await waitIfPaused(runId);
+
+          if (i > mid) {
+            const srcIdx = j;
+            const v = aux[j++];
+            setHighlights({ swap: [k], range: [lo, hi], pointer: k });
+            if (auxIds) await writeAt(arr, k, v, runId, { srcId: auxIds[srcIdx] });
+            else await writeAt(arr, k, v, runId, {});
+          } else if (j > hi) {
+            const srcIdx = i;
+            const v = aux[i++];
+            setHighlights({ swap: [k], range: [lo, hi], pointer: k });
+            if (auxIds) await writeAt(arr, k, v, runId, { srcId: auxIds[srcIdx] });
+            else await writeAt(arr, k, v, runId, {});
+          } else {
+            await compare(runId, [i, j]);
+            // also highlight the merge range context
+            setHighlights({ compare: [i, j], range: [lo, hi] });
+            await sleep(delay);
+            if (aux[j] < aux[i]) {
+              const srcIdx = j;
+              const v = aux[j++];
+              setHighlights({ swap: [k], range: [lo, hi], pointer: k });
+              if (auxIds) await writeAt(arr, k, v, runId, { srcId: auxIds[srcIdx] });
+              else await writeAt(arr, k, v, runId, {});
+            } else {
+              const srcIdx = i;
+              const v = aux[i++];
+              setHighlights({ swap: [k], range: [lo, hi], pointer: k });
+              if (auxIds) await writeAt(arr, k, v, runId, { srcId: auxIds[srcIdx] });
+              else await writeAt(arr, k, v, runId, {});
+            }
+          }
+          await sleep(delay);
+        }
+      }
+
+      async function sort(lo, hi) {
+        if (runId !== state.runId) return;
+        if (lo >= hi) return;
+        const mid = Math.floor((lo + hi) / 2);
+        await sort(lo, mid);
+        await sort(mid + 1, hi);
+        await merge(lo, mid, hi);
+      }
+
+      await sort(0, arr.length - 1);
+    }
+
+    async function quickSort(arr, runId, delay) {
+      async function partition(lo, hi) {
+        const pivotVal = arr[hi];
+        let i = lo;
+        for (let j = lo; j < hi; j++) {
+          if (runId !== state.runId) return lo;
+          markStep(1, 0);
+          setHighlights({ compare: [j, hi], pivot: hi, range: [lo, hi], pointer: { i, j } });
+          await waitIfPaused(runId);
+          await sleep(delay);
+          if (arr[j] < pivotVal) {
+            await swap(arr, i, j, runId);
+            await sleep(delay);
+            i++;
+          }
+        }
+        await swap(arr, i, hi, runId);
+        await sleep(delay);
+        return i;
+      }
+
+      async function qsort(lo, hi) {
+        if (runId !== state.runId) return;
+        if (lo < hi) {
+          const p = await partition(lo, hi);
+          await qsort(lo, p - 1);
+          await qsort(p + 1, hi);
+        }
+      }
+
+      await qsort(0, arr.length - 1);
+    }
+
+    async function heapSort(arr, runId, delay) {
+      const n = arr.length;
+
+      async function heapify(n, i) {
+        let largest = i;
+        const l = 2 * i + 1;
+        const r = 2 * i + 2;
+
+        if (l < n) {
+          markStep(1, 0);
+          setHighlights({ compare: [l, largest] });
+          await waitIfPaused(runId);
+          await sleep(delay);
+          if (arr[l] > arr[largest]) largest = l;
+        }
+        if (r < n) {
+          markStep(1, 0);
+          setHighlights({ compare: [r, largest] });
+          await waitIfPaused(runId);
+          await sleep(delay);
+          if (arr[r] > arr[largest]) largest = r;
+        }
+        if (largest !== i) {
+          await swap(arr, i, largest, runId);
+          await sleep(delay);
+          await heapify(n, largest);
+        }
+      }
+
+      for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
+        if (runId !== state.runId) return;
+        await heapify(n, i);
+      }
+
+      for (let end = n - 1; end > 0; end--) {
+        if (runId !== state.runId) return;
+        await swap(arr, 0, end, runId);
+        await sleep(delay);
+        // mark sorted suffix for heap
+        setHighlights({ range: [end, n - 1] });
+        await heapify(end, 0);
+      }
+    }
+
+    async function countingSort(arr, runId, delay) {
+      // assumes non-negative small-ish integers
+      const max = Math.max(...arr);
+      const min = Math.min(...arr);
+      const offset = min < 0 ? -min : 0;
+      const k = max + offset;
+      const count = new Array(k + 1).fill(0);
+      state.aux = { kind: "counting", buckets: count, active: -1 };
+
+      // count
+      for (let i = 0; i < arr.length; i++) {
+        if (runId !== state.runId) return;
+        markStep(0, 1);
+        state.aux.active = arr[i] + offset;
+        edu("count", `Counting: count[${arr[i] + offset}]++ (valor=${arr[i]})`);
+        setHighlights({ pointer: i });
+        await waitIfPaused(runId);
+        await sleep(delay);
+        count[arr[i] + offset]++;
+      }
+
+      // prefix sums for stability
+      for (let i = 1; i < count.length; i++) {
+        if (runId !== state.runId) return;
+        count[i] += count[i - 1];
+      }
+      edu("prefix", "Counting: prefix sums (posições finais)");
+
+      // build output
+      const out = new Array(arr.length);
+      const outIds = new Array(arr.length);
+      for (let i = arr.length - 1; i >= 0; i--) {
+        if (runId !== state.runId) return;
+        const v = arr[i] + offset;
+        const pos = --count[v];
+        out[pos] = arr[i];
+        if (state.sortIds && state.sortIds.length === arr.length) outIds[pos] = state.sortIds[i];
+        markStep(1, 1);
+        state.aux.active = v;
+        edu("out", `Counting: out[${pos}] = ${arr[i]} (bucket=${v})`);
+        setHighlights({ compare: [i], swap: [pos], pointer: i });
+        await waitIfPaused(runId);
+        await sleep(delay);
+      }
+
+      // copy back
+      for (let i = 0; i < arr.length; i++) {
+        if (runId !== state.runId) return;
+        edu("writeFinal", `Copiando out[${i}] -> a[${i}]`);
+        await writeAt(arr, i, out[i], runId, { pointer: i, srcId: outIds[i] });
+        await sleep(delay);
+      }
+    }
+
+    async function radixSort(arr, runId, delay) {
+      // LSD radix for non-negative integers
+      const max = Math.max(...arr);
+      let exp = 1;
+      const n = arr.length;
+      const out = new Array(n);
+      let outIds = null;
+
+      while (Math.floor(max / exp) > 0) {
+        if (runId !== state.runId) return;
+
+        const count = new Array(10).fill(0);
+        state.aux = { kind: "radix", buckets: count, activeDigit: -1, exp };
+        edu("pass", `Radix: processando dígito exp=${exp}`);
+        for (let i = 0; i < n; i++) {
+          if (runId !== state.runId) return;
+          const d = Math.floor(arr[i] / exp) % 10;
+          count[d]++;
+          markStep(0, 1);
+          state.aux.activeDigit = d;
+          edu("count", `Radix: count[dígito ${d}]++ (valor=${arr[i]})`);
+          setHighlights({ pointer: i });
+          await waitIfPaused(runId);
+          await sleep(delay);
+        }
+        for (let i = 1; i < 10; i++) count[i] += count[i - 1];
+        edu("prefix", "Radix: prefix sums (posições finais)");
+
+        outIds = new Array(n);
+        for (let i = n - 1; i >= 0; i--) {
+          if (runId !== state.runId) return;
+          const d = Math.floor(arr[i] / exp) % 10;
+          const pos = --count[d];
+          out[pos] = arr[i];
+          if (state.sortIds && state.sortIds.length === arr.length) outIds[pos] = state.sortIds[i];
+          markStep(1, 1);
+          state.aux.activeDigit = d;
+          edu("out", `Radix: distribuindo valor ${arr[i]} (dígito=${d})`);
+          setHighlights({ compare: [i], swap: [count[d]], pointer: i });
+          await waitIfPaused(runId);
+          await sleep(delay);
+        }
+        for (let i = 0; i < n; i++) {
+          if (runId !== state.runId) return;
+          edu("write", `Copiando out[${i}] -> a[${i}]`);
+          await writeAt(
+            arr,
+            i,
+            out[i],
+            runId,
+            { range: [0, n - 1], ...(outIds[i] !== undefined ? { srcId: outIds[i] } : {}) }
+          );
+          await sleep(delay);
+        }
+
+        exp *= 10;
+      }
+    }
+
+    async function runSorting() {
+      stopRun(); // cancels previous
+      state.mode = "sort";
+      setModeUI("sort");
+
+      const runId = ++state.runId;
+      state.running = true;
+      state.paused = false;
+      resetMetrics();
+      setStatus("Executando", true);
+      syncButtons();
+
+      const algo = sortAlgo.value;
+      const delay = delayFromSpeed(+speedSort.value);
+      state.aux = null;
+      edu("loopOuter", `Iniciando ${algo.toUpperCase()}`);
+
+      try {
+        if (algo === "bubble") await bubbleSort(state.sortArr, runId, delay);
+        else if (algo === "selection") await selectionSort(state.sortArr, runId, delay);
+        else if (algo === "insertion") await insertionSort(state.sortArr, runId, delay);
+        else if (algo === "shell") await shellSort(state.sortArr, runId, delay);
+        else if (algo === "merge") await mergeSort(state.sortArr, runId, delay);
+        else if (algo === "quick") await quickSort(state.sortArr, runId, delay);
+        else if (algo === "heap") await heapSort(state.sortArr, runId, delay);
+        else if (algo === "counting") await countingSort(state.sortArr, runId, delay);
+        else if (algo === "radix") await radixSort(state.sortArr, runId, delay);
+      } finally {
+        if (runId === state.runId) {
+          state.metrics.elapsed = performance.now() - state.metrics.t0;
+          state.running = false;
+          state.paused = false;
+          state.stepOnce = false;
+          setHighlights({}); // clear highlights
+          state.aux = null;
+          setEdu("Concluído", -1);
+          setStatus("Concluído", false);
+          syncButtons();
+          renderMetrics();
+        }
+      }
+    }
+
+    // -----------------------------
+    // Search implementations (async)
+    // -----------------------------
+    function requiresSorted(algo) {
+      return ["binary", "jump", "interpolation", "exponential"].includes(algo);
+    }
+
+    function isSortedAsc(arr) {
+      if (!Array.isArray(arr) || arr.length < 2) return true;
+      for (let i = 1; i < arr.length; i++) {
+        if (arr[i - 1] > arr[i]) return false;
+      }
+      return true;
+    }
+
+    function recommendedOrderForSearch(algo) {
+      return requiresSorted(algo) ? "sorted" : "unsorted";
+    }
+
+    function resolveOrderSelection(selection, algo) {
+      if (selection === "sorted") return "sorted";
+      if (selection === "unsorted") return "unsorted";
+      return recommendedOrderForSearch(algo);
+    }
+
+    function getSearchDataStatus() {
+      const algo = searchAlgo.value;
+      const sorted = isSortedAsc(state.searchData);
+      const req = requiresSorted(algo);
+      return { sorted, requiresSorted: req, recommendedOrder: recommendedOrderForSearch(algo) };
+    }
+
+    function renderSearchDataStatus() {
+      if (!searchDataStatus) return;
+      const st = getSearchDataStatus();
+      const dataTxt = st.sorted ? "Ordenado" : "Não ordenado";
+      const recTxt = st.recommendedOrder === "sorted" ? "Ordenado" : "Aleatório";
+      const extra = st.requiresSorted ? " (este algoritmo requer ordenação)" : "";
+      searchDataStatus.textContent = `Status dos dados: ${dataTxt} · Recomendado: ${recTxt}${extra}`;
+    }
+
+    function sortNumeric(arr) {
+      arr.sort((a, b) => a - b);
+      return arr;
+    }
+
+    async function linearSearch(arr, target, runId, delay) {
+      for (let i = 0; i < arr.length; i++) {
+        if (runId !== state.runId) return -1;
+        markStep(1, 0);
+        edu("loop", `Linear: a[${i}]=${arr[i]} ?= ${target}`);
+        setHighlights({ pointer: i, compare: [i] });
+        await waitIfPaused(runId);
+        await sleep(delay);
+        if (arr[i] === target) {
+          setHighlights({ found: i, pointer: i });
+          return i;
+        }
+      }
+      return -1;
+    }
+
+    async function binarySearch(arr, target, runId, delay) {
+      let l = 0, r = arr.length - 1;
+      while (l <= r) {
+        if (runId !== state.runId) return -1;
+        const m = (l + r) >> 1;
+        markStep(1, 0);
+        edu("mid", `Binary: intervalo [${l},${r}], mid=${m} (a[mid]=${arr[m]})`);
+        setHighlights({ range: [l, r], pointer: m, compare: [m] });
+        await waitIfPaused(runId);
+        await sleep(delay);
+        if (arr[m] === target) {
+          setHighlights({ range: [l, r], pointer: m, found: m });
+          return m;
+        }
+        if (arr[m] < target) l = m + 1;
+        else r = m - 1;
+      }
+      return -1;
+    }
+
+    async function jumpSearch(arr, target, runId, delay) {
+      const n = arr.length;
+      const step = Math.floor(Math.sqrt(n));
+      let prev = 0;
+      let curr = 0;
+
+      while (curr < n && arr[Math.min(curr, n - 1)] < target) {
+        if (runId !== state.runId) return -1;
+        markStep(1, 0);
+        edu("jump", `Jump: checando bloco em ${Math.min(curr, n - 1)} (step=${step})`);
+        setHighlights({ pointer: Math.min(curr, n - 1), range: [prev, Math.min(curr, n - 1)], compare: [Math.min(curr, n - 1)] });
+        await waitIfPaused(runId);
+        await sleep(delay);
+        prev = curr;
+        curr += step;
+        if (prev >= n) return -1;
+      }
+
+      const end = Math.min(curr, n - 1);
+      for (let i = prev; i <= end; i++) {
+        if (runId !== state.runId) return -1;
+        markStep(1, 0);
+        edu("loop", `Jump: varredura no bloco [${prev},${end}] (i=${i})`);
+        setHighlights({ range: [prev, end], pointer: i, compare: [i] });
+        await waitIfPaused(runId);
+        await sleep(delay);
+        if (arr[i] === target) {
+          setHighlights({ range: [prev, end], pointer: i, found: i });
+          return i;
+        }
+      }
+      return -1;
+    }
+
+    async function interpolationSearch(arr, target, runId, delay) {
+      let lo = 0, hi = arr.length - 1;
+
+      while (lo <= hi && target >= arr[lo] && target <= arr[hi]) {
+        if (runId !== state.runId) return -1;
+        if (arr[hi] === arr[lo]) {
+          markStep(1, 0);
+          edu("probe", `Interpolation: faixa constante (a[lo]=a[hi]=${arr[lo]})`);
+          setHighlights({ range: [lo, hi], pointer: lo, compare: [lo, hi] });
+          await waitIfPaused(runId);
+          await sleep(delay);
+          if (arr[lo] === target) {
+            setHighlights({ range: [lo, hi], pointer: lo, found: lo });
+            return lo;
+          }
+          return -1;
+        }
+
+        const pos = lo + Math.floor(((target - arr[lo]) * (hi - lo)) / (arr[hi] - arr[lo]));
+        const p = Math.max(lo, Math.min(hi, pos));
+
+        markStep(1, 0);
+        edu("probe", `Interpolation: probe=${p} (lo=${lo}, hi=${hi})`);
+        setHighlights({ range: [lo, hi], pointer: p, compare: [p] });
+        await waitIfPaused(runId);
+        await sleep(delay);
+
+        if (arr[p] === target) {
+          setHighlights({ range: [lo, hi], pointer: p, found: p });
+          return p;
+        }
+        if (arr[p] < target) lo = p + 1;
+        else hi = p - 1;
+      }
+      return -1;
+    }
+
+    async function exponentialSearch(arr, target, runId, delay) {
+      const n = arr.length;
+      if (n === 0) return -1;
+
+      markStep(1, 0);
+      edu("grow", "Exponential: checando a[0]");
+      setHighlights({ pointer: 0, compare: [0], range: [0, 0] });
+      await waitIfPaused(runId);
+      await sleep(delay);
+      if (arr[0] === target) { setHighlights({ found: 0, pointer: 0 }); return 0; }
+
+      let i = 1;
+      while (i < n && arr[i] <= target) {
+        if (runId !== state.runId) return -1;
+        markStep(1, 0);
+        edu("grow", `Exponential: expandindo faixa até i=${i}`);
+        setHighlights({ pointer: i, compare: [i], range: [0, i] });
+        await waitIfPaused(runId);
+        await sleep(delay);
+        i *= 2;
+      }
+
+      let l = Math.floor(i / 2);
+      let r = Math.min(i, n - 1);
+      // binary in range
+      while (l <= r) {
+        if (runId !== state.runId) return -1;
+        const m = (l + r) >> 1;
+        markStep(1, 0);
+        edu("mid", `Exponential: binary em [${l},${r}] (mid=${m})`);
+        setHighlights({ range: [l, r], pointer: m, compare: [m] });
+        await waitIfPaused(runId);
+        await sleep(delay);
+        if (arr[m] === target) { setHighlights({ range: [l, r], pointer: m, found: m }); return m; }
+        if (arr[m] < target) l = m + 1; else r = m - 1;
+      }
+
+      return -1;
+    }
+
+    function buildHashBuckets(arr, bucketCount = 14) {
+      const buckets = new Array(bucketCount).fill(0).map(() => []);
+      for (const v of arr) {
+        const idx = (v % bucketCount + bucketCount) % bucketCount;
+        buckets[idx].push(v);
+      }
+      return buckets;
+    }
+
+    async function hashLookup(arr, target, runId, delay) {
+      // Visual: convert array into "bucket heights" bars, then search bucket linearly
+      const bucketCount = 14;
+      const prevView = state.searchView;
+      try {
+        edu("build", `Hash: construindo ${bucketCount} buckets`);
+        const buckets = buildHashBuckets(arr, bucketCount);
+        const bucketHeights = buckets.map(b => b.length * 10 + 6);
+        // persist max for the temporary view
+        bucketHeights._maxVal = Math.max(...bucketHeights);
+
+        // draw buckets first
+        state.searchView = bucketHeights;
+        drawBarsActive();
+        await sleep(delay * 2);
+
+        const b = (target % bucketCount + bucketCount) % bucketCount;
+        edu("bucket", `Hash: ${target} % ${bucketCount} = ${b}`);
+
+        // focus bucket
+        for (let i = 0; i < bucketCount; i++) {
+          if (runId !== state.runId) return -1;
+          markStep(1, 0);
+          if (i === b) edu("bucket", `Hash: focando bucket ${b}`);
+          setHighlights({ pointer: i, compare: [i], found: (i === b ? i : -1) });
+          await waitIfPaused(runId);
+          await sleep(delay);
+        }
+
+        // scan bucket contents (simulate)
+        const list = buckets[b];
+        for (let i = 0; i < list.length; i++) {
+          if (runId !== state.runId) return -1;
+          markStep(1, 0);
+          edu("loop", `Hash: varrendo bucket ${b} (${i + 1}/${list.length})`);
+          setHighlights({ pointer: b, compare: [b], found: b });
+          await waitIfPaused(runId);
+          await sleep(delay);
+          if (list[i] === target) {
+            return b; // return bucket index
+          }
+        }
+        return -1;
+      } finally {
+        // Restore numeric view
+        state.searchView = state.searchData;
+        setHighlights({});
+        drawBarsActive();
+        // preserve previous reference if it was already numeric
+        if (prevView === state.searchData) state.searchView = prevView;
+      }
+    }
+
+    async function runSearching(opts = {}) {
+      stopRun();
+      state.mode = "search";
+      setModeUI("search");
+      setPseudo("search", searchAlgo.value);
+
+      const runId = ++state.runId;
+      state.running = true;
+      state.paused = false;
+      resetMetrics();
+      state.aux = null;
+      hideSearchPrereqCallout();
+      setStatus("Executando", true);
+      syncButtons();
+
+      const algo = searchAlgo.value;
+      const arr = state.searchData; // Algo runs on DATA (never mutate here)
+      state.searchView = state.searchData; // render what we search
+      const delay = delayFromSpeed(+speedSearch.value);
+      const target = Number(targetVal.value);
+      edu("loop", `Buscando alvo ${target}`);
+
+      const req = requiresSorted(algo);
+      const sorted = isSortedAsc(state.searchData);
+      const allowInvalid = !!opts.allowInvalid;
+      const invalid = req && !sorted;
+
+      if (invalid && !allowInvalid) {
+        // Should be handled by the inline callout, but keep a safe fallback.
+        setStatus("Dados ordenados necessários", false);
+        setEdu("Pré-condição violada: array não ordenado. Execução bloqueada.", -1);
+        state.running = false;
+        state.paused = false;
+        state.stepOnce = false;
+        syncButtons();
+        renderMetrics();
+        showSearchPrereqCallout();
+        return;
+      }
+
+      if (invalid && allowInvalid) {
+        setStatus("Executando (pré-condição violada)", true);
+      }
+
+      drawBarsActive(); // keep dataset as-is
+
+      try {
+        let idx = -1;
+        if (algo === "linear") idx = await linearSearch(state.searchData, target, runId, delay);
+        else if (algo === "binary") idx = await binarySearch(state.searchData, target, runId, delay);
+        else if (algo === "jump") idx = await jumpSearch(state.searchData, target, runId, delay);
+        else if (algo === "interpolation") idx = await interpolationSearch(state.searchData, target, runId, delay);
+        else if (algo === "exponential") idx = await exponentialSearch(state.searchData, target, runId, delay);
+        else if (algo === "hash") idx = await hashLookup(state.searchData, target, runId, delay);
+
+        if (runId !== state.runId) return;
+
+        if (algo !== "hash") {
+          if (idx >= 0) {
+            setHighlights({ found: idx, pointer: idx });
+            setStatus(invalid ? "Encontrado (pré-condição violada; resultado pode estar incorreto)" : "Encontrado", false);
+          } else {
+            setHighlights({});
+            setStatus(invalid ? "Não encontrado (pré-condição violada; resultado pode estar incorreto)" : "Não encontrado", false);
+          }
+        } else {
+          if (idx >= 0) {
+            setStatus("Bucket encontrado", false);
+          } else {
+            setStatus(invalid ? "Não encontrado (pré-condição violada; resultado pode estar incorreto)" : "Não encontrado", false);
+          }
+        }
+
+      } finally {
+        if (runId === state.runId) {
+          state.metrics.elapsed = performance.now() - state.metrics.t0;
+          state.running = false;
+          state.paused = false;
+          state.stepOnce = false;
+          state.aux = null;
+          state.searchView = state.searchData;
+          syncButtons();
+          renderMetrics();
+          renderSearchDataStatus();
+        }
+      }
+    }
+
+    // -----------------------------
+    // Pathfinding (grid) UI + algorithms
+    // -----------------------------
+    function gapForCols(cols) {
+      if (cols >= 36) return 1;
+      if (cols >= 28) return 2;
+      return 3;
+    }
+
+    function estimateRows(cols) {
+      const rect = document.querySelector(".vizInner")?.getBoundingClientRect() || { width: window.innerWidth * 0.6, height: window.innerHeight * 0.6 };
+      const gap = gapForCols(cols);
+      const availW = Math.max(260, rect.width - 32);
+      const availH = Math.max(220, rect.height - 32);
+      const cell = Math.max(1, Math.floor((availW - gap * (cols - 1)) / cols));
+      const rows = Math.max(8, Math.floor((availH + gap) / (cell + gap)));
+      return rows;
+    }
+
+    function initGrid() {
+      state.grid.cols = +gridCols.value;
+      state.grid.rows = estimateRows(state.grid.cols);
+      gridRows.value = String(state.grid.rows);
+      gridRowsVal.textContent = `${state.grid.rows}`;
+      state.grid.diagonal = !!allowDiagonal.checked;
+
+      // clamp start/end
+      const clampCell = (p) => ({
+        r: Math.max(0, Math.min(state.grid.rows - 1, p.r)),
+        c: Math.max(0, Math.min(state.grid.cols - 1, p.c))
+      });
+      state.grid.start = clampCell(state.grid.start);
+      state.grid.end = clampCell(state.grid.end);
+
+      const total = state.grid.cols * state.grid.rows;
+      state.grid.cells = new Array(total).fill(0).map(() => ({
+        wall: false, visited: false, frontier: false, path: false, w: 1
+      }));
+
+      // ensure start/end not walls
+      idxOf(state.grid.start).wall = false;
+      idxOf(state.grid.start).w = 1;
+      idxOf(state.grid.end).wall = false;
+      idxOf(state.grid.end).w = 1;
+
+      renderGrid();
+      renderRangeValues();
+      state.grid.inited = true;
+    }
+
+    function idx(r, c) { return r * state.grid.cols + c; }
+    function idxOf(p) { return state.grid.cells[idx(p.r, p.c)]; }
+
+    function renderGrid() {
+      const cols = state.grid.cols, rows = state.grid.rows;
+      gridRows.value = String(rows);
+      gridRowsVal.textContent = `${rows}`;
+      const gap = gapForCols(cols);
+      const rect = gridStage.getBoundingClientRect();
+      const availW = Math.max(260, rect.width - 24);
+      const availH = Math.max(220, rect.height - 24);
+      const cell = Math.max(1, Math.floor(Math.min(
+        (availW - gap * (cols - 1)) / cols,
+        (availH - gap * (rows - 1)) / rows
+      )));
+
+      gridBoard.style.gap = `${gap}px`;
+      gridBoard.style.gridTemplateColumns = `repeat(${cols}, ${cell}px)`;
+      gridBoard.style.gridTemplateRows = `repeat(${rows}, ${cell}px)`;
+      gridBoard.style.width = `${cols * cell + gap * (cols - 1)}px`;
+      gridBoard.style.height = `${rows * cell + gap * (rows - 1)}px`;
+
+      // Rebuild DOM only when dimensions change
+      const needRebuild = gridBoard.childElementCount !== cols * rows;
+      if (needRebuild) {
+        gridBoard.innerHTML = "";
+        const frag = document.createDocumentFragment();
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.dataset.r = r;
+            cell.dataset.c = c;
+            // add inner spans for direction arrow and weight label
+            const spanDir = document.createElement("span");
+            spanDir.className = "cell-dir";
+            cell.appendChild(spanDir);
+            const spanWeight = document.createElement("span");
+            spanWeight.className = "cell-weight";
+            cell.appendChild(spanWeight);
+            frag.appendChild(cell);
+          }
+        }
+        gridBoard.appendChild(frag);
+      }
+
+      // Paint classes
+      for (const el of gridBoard.children) {
+        const r = +el.dataset.r;
+        const c = +el.dataset.c;
+        const s = state.grid.cells[idx(r, c)];
+        el.className = "cell";
+        if (s.wall) el.classList.add("wall");
+        if ((s.w ?? 1) > 1) {
+          el.classList.add("weighted");
+          el.dataset.w = String(s.w);
+          const wSpan = el.querySelector('.cell-weight');
+          if (wSpan) wSpan.textContent = String(s.w);
+        } else {
+          el.dataset.w = "";
+          const wSpan = el.querySelector('.cell-weight');
+          if (wSpan) wSpan.textContent = '';
+        }
+        if (s.visited) el.classList.add("visited");
+        if (s.frontier) el.classList.add("frontier");
+        if (s.path) el.classList.add("path");
+        if (r === state.grid.start.r && c === state.grid.start.c) el.classList.add("start");
+        if (r === state.grid.end.r && c === state.grid.end.c) el.classList.add("end");
+      }
+    }
+
+
+    // Updated to accept an optional visual direction so we can draw arrows
+    function dirChar(dir) {
+      switch (dir) {
+        case 'up': return '↑';
+        case 'down': return '↓';
+        case 'left': return '←';
+        case 'right': return '→';
+        case 'ul': return '↖';
+        case 'ur': return '↗';
+        case 'dl': return '↙';
+        case 'dr': return '↘';
+        default: return '';
+      }
+    }
+
+    function updateCellVisual(r, c, direction = null) {
+      const i = r * state.grid.cols + c;
+      const el = gridBoard.children[i];
+      if (!el) return;
+
+      const s = state.grid.cells[i];
+      // Mantemos as classes base
+      el.className = "cell";
+      if (s.wall) el.classList.add("wall");
+
+      // Peso
+      const wSpan = el.querySelector('.cell-weight');
+      if ((s.w ?? 1) > 1) {
+        el.classList.add("weighted");
+        el.dataset.w = String(s.w);
+        if (wSpan) wSpan.textContent = String(s.w);
+      } else {
+        el.dataset.w = "";
+        if (wSpan) wSpan.textContent = '';
+      }
+
+      // Estados
+      if (s.visited) el.classList.add("visited");
+      if (s.frontier) el.classList.add("frontier");
+      if (s.path) el.classList.add("path");
+
+      // Start/End
+      if (r === state.grid.start.r && c === state.grid.start.c) el.classList.add("start");
+      if (r === state.grid.end.r && c === state.grid.end.c) el.classList.add("end");
+
+      // --- Direção ---
+      const dirSpan = el.querySelector('.cell-dir');
+      // Persistência da direção no estado: se passada, guarde em s.dir
+      if (direction) {
+        s.dir = direction;
+        el.dataset.dir = direction;
+      } else if (s.dir) {
+        // use the persisted direction
+        el.dataset.dir = s.dir;
+      } else if (!s.visited && !s.frontier && !s.path) {
+        // Limpa direção se o nó for resetado completamente
+        delete el.dataset.dir;
+      }
+      if (dirSpan) dirSpan.textContent = el.dataset.dir ? dirChar(el.dataset.dir) : '';
+    }
+
+    // Converte um delta em string de direção usada pelo CSS
+    function getDirectionStr(fromR, fromC, toR, toC) {
+      const dr = toR - fromR;
+      const dc = toC - fromC;
+      if (dr === -1 && dc === 0) return "up";
+      if (dr === 1 && dc === 0) return "down";
+      if (dr === 0 && dc === -1) return "left";
+      if (dr === 0 && dc === 1) return "right";
+      // Diagonais
+      if (dr === -1 && dc === -1) return "ul";
+      if (dr === -1 && dc === 1) return "ur";
+      if (dr === 1 && dc === -1) return "dl";
+      if (dr === 1 && dc === 1) return "dr";
+      return null;
+    }
+
+    function clearPathStates(keepWalls = true) {
+      for (const c of state.grid.cells) {
+        c.visited = false;
+        c.frontier = false;
+        c.path = false;
+        // limpar custos e meta-dados do algoritmo
+        delete c.g;
+        delete c.h;
+        delete c.f;
+        // limpar direção persistida
+        delete c.dir;
+        if (!keepWalls) {
+          c.wall = false;
+          c.w = 1;
+        }
+      }
+      // remover setas visuais do DOM
+      for (const el of gridBoard.children) {
+        delete el.dataset.dir;
+      }
+      // keep start/end clear
+      idxOf(state.grid.start).wall = false;
+      idxOf(state.grid.start).w = 1;
+      idxOf(state.grid.end).wall = false;
+      idxOf(state.grid.end).w = 1;
+      renderGrid();
+    }
+
+    function neighbors(r, c) {
+      const res = [];
+      if (r > 0) res.push([r - 1, c, false]);
+      if (r < state.grid.rows - 1) res.push([r + 1, c, false]);
+      if (c > 0) res.push([r, c - 1, false]);
+      if (c < state.grid.cols - 1) res.push([r, c + 1, false]);
+
+      if (!state.grid.diagonal) return res;
+      const cand = [
+        [r - 1, c - 1], [r - 1, c + 1], [r + 1, c - 1], [r + 1, c + 1]
+      ];
+      for (const [nr, nc] of cand) {
+        if (nr < 0 || nc < 0 || nr >= state.grid.rows || nc >= state.grid.cols) continue;
+        // avoid corner-cutting through walls
+        const w1 = state.grid.cells[idx(r, nc)]?.wall;
+        const w2 = state.grid.cells[idx(nr, c)]?.wall;
+        if (w1 || w2) continue;
+        res.push([nr, nc, true]);
+      }
+      return res;
+    }
+
+    function key(r, c) { return `${r},${c}`; }
+
+    // -----------------------------
+    // Maze generation (grid)
+    // -----------------------------
+    function makeRng(seed) {
+      let t = seed >>> 0;
+      return () => {
+        t += 0x6D2B79F5;
+        let r = Math.imul(t ^ (t >>> 15), 1 | t);
+        r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+        return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function mazeParamsFromComplexity(value) {
+      const v = Math.max(10, Math.min(100, Number(value) || 10));
+      const t = (v - 10) / 90;
+      const braidChance = 0.38 + (0.05 - 0.38) * t;
+      const roomChance = 0.12 + (0.02 - 0.12) * t;
+      const weightChance = 0.01 + (0.04 - 0.01) * t;
+      return { braidChance, roomChance, weightChance };
+    }
+
+    function mazeArea() {
+      const rows = state.grid.rows;
+      const cols = state.grid.cols;
+      let r0 = 1;
+      let c0 = 1;
+      let r1 = rows - 2;
+      let c1 = cols - 2;
+      if (r1 % 2 === 0) r1--;
+      if (c1 % 2 === 0) c1--;
+      const valid = r1 >= r0 && c1 >= c0;
+      return { r0, c0, r1, c1, rows, cols, valid };
+    }
+
+    function mazePassageCoords(area) {
+      const coords = [];
+      if (!area.valid) return coords;
+      for (let r = area.r0; r <= area.r1; r += 2) {
+        for (let c = area.c0; c <= area.c1; c += 2) {
+          coords.push({ r, c });
+        }
+      }
+      return coords;
+    }
+
+    function mazePassageNeighbors(r, c, area) {
+      const res = [];
+      const dirs = [[-2, 0], [2, 0], [0, -2], [0, 2]];
+      for (const [dr, dc] of dirs) {
+        const nr = r + dr;
+        const nc = c + dc;
+        if (nr < area.r0 || nr > area.r1 || nc < area.c0 || nc > area.c1) continue;
+        res.push({ r: nr, c: nc, wall: { r: r + dr / 2, c: c + dc / 2 } });
+      }
+      return res;
+    }
+
+    function resetGridForMaze(show) {
+      for (const cell of state.grid.cells) {
+        cell.wall = true;
+        cell.w = 1;
+        cell.visited = false;
+        cell.frontier = false;
+        cell.path = false;
+        delete cell.g;
+        delete cell.h;
+        delete cell.f;
+        delete cell.dir;
+      }
+      for (const el of gridBoard.children) {
+        delete el.dataset.dir;
+      }
+      if (show) renderGrid();
+      clearOverlay();
+    }
+
+    function openCell(r, c) {
+      const cell = state.grid.cells[idx(r, c)];
+      if (!cell) return false;
+      if (!cell.wall && (cell.w ?? 1) === 1) return false;
+      cell.wall = false;
+      cell.w = 1;
+      return true;
+    }
+
+    async function carveCells(coords, opts) {
+      if (opts.runId !== state.runId) return false;
+      let changedCount = 0;
+      for (const p of coords) {
+        if (openCell(p.r, p.c)) changedCount++;
+      }
+      if (changedCount > 0) markStep(0, changedCount);
+      if (opts.animate && changedCount > 0) {
+        for (const p of coords) updateCellVisual(p.r, p.c);
+        await sleep(opts.delay);
+      }
+      return true;
+    }
+
+    async function mazeBacktracker(area, opts) {
+      const passages = mazePassageCoords(area);
+      if (!passages.length) return;
+      const visited = new Set();
+      const start = passages[Math.floor(opts.rng() * passages.length)];
+      const stack = [start];
+      visited.add(key(start.r, start.c));
+      await waitIfPaused(opts.runId);
+      await carveCells([start], opts);
+      let ops = 0;
+
+      while (stack.length) {
+        if (opts.runId !== state.runId) return;
+        await waitIfPaused(opts.runId);
+        const cur = stack[stack.length - 1];
+        const options = mazePassageNeighbors(cur.r, cur.c, area)
+          .filter(n => !visited.has(key(n.r, n.c)));
+
+        if (options.length) {
+          const pick = options[Math.floor(opts.rng() * options.length)];
+          visited.add(key(pick.r, pick.c));
+          stack.push({ r: pick.r, c: pick.c });
+          await carveCells([pick.wall, { r: pick.r, c: pick.c }], opts);
+        } else {
+          stack.pop();
+        }
+        if (!opts.animate && ++ops % opts.yieldEvery === 0) await sleep(0);
+      }
+    }
+
+    async function mazePrim(area, opts) {
+      const passages = mazePassageCoords(area);
+      if (!passages.length) return;
+      const visited = new Set();
+      const start = passages[Math.floor(opts.rng() * passages.length)];
+      const frontier = [];
+      const addFrontier = (p) => {
+        for (const n of mazePassageNeighbors(p.r, p.c, area)) {
+          const nk = key(n.r, n.c);
+          if (visited.has(nk)) continue;
+          frontier.push({ from: { r: p.r, c: p.c }, to: { r: n.r, c: n.c }, wall: n.wall });
+        }
+      };
+
+      visited.add(key(start.r, start.c));
+      await waitIfPaused(opts.runId);
+      await carveCells([start], opts);
+      addFrontier(start);
+
+      let ops = 0;
+      while (frontier.length) {
+        if (opts.runId !== state.runId) return;
+        await waitIfPaused(opts.runId);
+        const idxF = Math.floor(opts.rng() * frontier.length);
+        const edge = frontier.splice(idxF, 1)[0];
+        const nk = key(edge.to.r, edge.to.c);
+        if (visited.has(nk)) continue;
+        visited.add(nk);
+        await carveCells([edge.wall, edge.to], opts);
+        addFrontier(edge.to);
+        if (!opts.animate && ++ops % opts.yieldEvery === 0) await sleep(0);
+      }
+    }
+
+    function dsuCreate(n) {
+      const parent = new Array(n);
+      const rank = new Array(n).fill(0);
+      for (let i = 0; i < n; i++) parent[i] = i;
+      function find(x) {
+        let p = x;
+        while (parent[p] !== p) p = parent[p];
+        while (parent[x] !== x) {
+          const next = parent[x];
+          parent[x] = p;
+          x = next;
+        }
+        return p;
+      }
+      function union(a, b) {
+        let ra = find(a);
+        let rb = find(b);
+        if (ra === rb) return false;
+        if (rank[ra] < rank[rb]) [ra, rb] = [rb, ra];
+        parent[rb] = ra;
+        if (rank[ra] === rank[rb]) rank[ra]++;
+        return true;
+      }
+      return { find, union };
+    }
+
+    function shuffleWithRng(arr, rng) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    async function mazeKruskal(area, opts) {
+      const passages = mazePassageCoords(area);
+      if (!passages.length) return;
+      const idByKey = new Map();
+      passages.forEach((p, i) => idByKey.set(key(p.r, p.c), i));
+      const edges = [];
+      for (const p of passages) {
+        if (p.r + 2 <= area.r1) {
+          edges.push({
+            a: { r: p.r, c: p.c },
+            b: { r: p.r + 2, c: p.c },
+            wall: { r: p.r + 1, c: p.c }
+          });
+        }
+        if (p.c + 2 <= area.c1) {
+          edges.push({
+            a: { r: p.r, c: p.c },
+            b: { r: p.r, c: p.c + 2 },
+            wall: { r: p.r, c: p.c + 1 }
+          });
+        }
+      }
+      shuffleWithRng(edges, opts.rng);
+      const dsu = dsuCreate(passages.length);
+      let ops = 0;
+
+      for (const edge of edges) {
+        if (opts.runId !== state.runId) return;
+        await waitIfPaused(opts.runId);
+        const aId = idByKey.get(key(edge.a.r, edge.a.c));
+        const bId = idByKey.get(key(edge.b.r, edge.b.c));
+        if (dsu.union(aId, bId)) {
+          await carveCells([edge.wall, edge.a, edge.b], opts);
+        }
+        if (!opts.animate && ++ops % opts.yieldEvery === 0) await sleep(0);
+      }
+    }
+
+    function passageDegree(r, c, area) {
+      let count = 0;
+      for (const n of mazePassageNeighbors(r, c, area)) {
+        const w = state.grid.cells[idx(n.wall.r, n.wall.c)];
+        if (w && !w.wall) count++;
+      }
+      return count;
+    }
+
+    async function braidMaze(area, opts) {
+      if (opts.braidChance <= 0) return;
+      const passages = mazePassageCoords(area);
+      let ops = 0;
+      for (const p of passages) {
+        if (opts.runId !== state.runId) return;
+        await waitIfPaused(opts.runId);
+        if (passageDegree(p.r, p.c, area) !== 1) continue;
+        if (opts.rng() > opts.braidChance) continue;
+        const candidates = mazePassageNeighbors(p.r, p.c, area)
+          .filter(n => state.grid.cells[idx(n.wall.r, n.wall.c)].wall);
+        if (!candidates.length) continue;
+        const pick = candidates[Math.floor(opts.rng() * candidates.length)];
+        await carveCells([pick.wall], opts);
+        if (!opts.animate && ++ops % opts.yieldEvery === 0) await sleep(0);
+      }
+    }
+
+    async function softenMaze(area, opts) {
+      if (opts.roomChance <= 0) return;
+      let ops = 0;
+      for (let r = area.r0; r <= area.r1; r++) {
+        for (let c = area.c0; c <= area.c1; c++) {
+          if (opts.runId !== state.runId) return;
+          if (!state.grid.cells[idx(r, c)].wall) continue;
+          let openN = 0;
+          if (r > 0 && !state.grid.cells[idx(r - 1, c)].wall) openN++;
+          if (r < state.grid.rows - 1 && !state.grid.cells[idx(r + 1, c)].wall) openN++;
+          if (c > 0 && !state.grid.cells[idx(r, c - 1)].wall) openN++;
+          if (c < state.grid.cols - 1 && !state.grid.cells[idx(r, c + 1)].wall) openN++;
+          if (openN >= 2 && opts.rng() < opts.roomChance) {
+            await waitIfPaused(opts.runId);
+            await carveCells([{ r, c }], opts);
+          }
+          if (++ops % opts.yieldEvery === 0) {
+            await waitIfPaused(opts.runId);
+            if (!opts.animate) await sleep(0);
+          }
+        }
+      }
+    }
+
+    function listOpenCells() {
+      const res = [];
+      for (let r = 0; r < state.grid.rows; r++) {
+        for (let c = 0; c < state.grid.cols; c++) {
+          if (!state.grid.cells[idx(r, c)].wall) res.push({ r, c });
+        }
+      }
+      return res;
+    }
+
+    function bfsFarthest(start) {
+      const rows = state.grid.rows;
+      const cols = state.grid.cols;
+      const total = rows * cols;
+      const dist = new Int32Array(total);
+      dist.fill(-1);
+      const q = new Array(total);
+      let head = 0;
+      let tail = 0;
+      const sIdx = idx(start.r, start.c);
+      dist[sIdx] = 0;
+      q[tail++] = sIdx;
+      let farIdx = sIdx;
+
+      while (head < tail) {
+        const cur = q[head++];
+        const r = Math.floor(cur / cols);
+        const c = cur - r * cols;
+        const d = dist[cur];
+        if (d > dist[farIdx]) farIdx = cur;
+
+        for (const [nr, nc] of neighbors(r, c)) {
+          const ni = idx(nr, nc);
+          if (dist[ni] >= 0) continue;
+          if (state.grid.cells[ni].wall) continue;
+          dist[ni] = d + 1;
+          q[tail++] = ni;
+        }
+      }
+
+      return { far: { r: Math.floor(farIdx / cols), c: farIdx % cols }, dist };
+    }
+
+    function hasPathBetween(start, end) {
+      if (!start || !end) return false;
+      const s = state.grid.cells[idx(start.r, start.c)];
+      const e = state.grid.cells[idx(end.r, end.c)];
+      if (!s || !e || s.wall || e.wall) return false;
+      const { dist } = bfsFarthest(start);
+      return dist[idx(end.r, end.c)] >= 0;
+    }
+
+    function chooseMazeEndpoints(prevStart, prevEnd, rng) {
+      let openCells = listOpenCells();
+      if (!openCells.length) {
+        for (const cell of state.grid.cells) {
+          cell.wall = false;
+          cell.w = 1;
+        }
+        openCells = listOpenCells();
+      }
+
+      if (prevStart && prevEnd) {
+        const s = state.grid.cells[idx(prevStart.r, prevStart.c)];
+        const e = state.grid.cells[idx(prevEnd.r, prevEnd.c)];
+        if (s && e && !s.wall && !e.wall && hasPathBetween(prevStart, prevEnd)) {
+          return { start: prevStart, end: prevEnd, moved: false };
+        }
+      }
+
+      if (openCells.length === 1 && state.grid.rows * state.grid.cols > 1) {
+        const only = openCells[0];
+        let opened = false;
+        for (let r = 0; r < state.grid.rows; r++) {
+          for (let c = 0; c < state.grid.cols; c++) {
+            if (r === only.r && c === only.c) continue;
+            openCell(r, c);
+            opened = true;
+            break;
+          }
+          if (opened) break;
+        }
+        if (opened) openCells = listOpenCells();
+      }
+
+      if (openCells.length === 1) {
+        return { start: openCells[0], end: openCells[0], moved: true };
+      }
+
+      const seed = openCells[Math.floor(rng() * openCells.length)];
+      const first = bfsFarthest(seed).far;
+      const secondRes = bfsFarthest(first);
+      let end = secondRes.far;
+      let start = first;
+      if (start.r === end.r && start.c === end.c && openCells.length > 1) {
+        const alt = openCells.find(p => p.r !== start.r || p.c !== start.c);
+        if (alt) end = alt;
+      }
+      return { start, end, moved: true };
+    }
+
+    function applyMazeWeights(weightChance, rng) {
+      if (weightChance <= 0) return 0;
+      let count = 0;
+      for (let r = 0; r < state.grid.rows; r++) {
+        for (let c = 0; c < state.grid.cols; c++) {
+          const cell = state.grid.cells[idx(r, c)];
+          if (cell.wall) continue;
+          if (r === state.grid.start.r && c === state.grid.start.c) continue;
+          if (r === state.grid.end.r && c === state.grid.end.c) continue;
+          if (rng() < weightChance) {
+            cell.w = 5;
+            count++;
+          }
+        }
+      }
+      return count;
+    }
+
+    function gridHasWeights() {
+      for (const cell of state.grid.cells) {
+        if (!cell.wall && (cell.w ?? 1) > 1) return true;
+      }
+      return false;
+    }
+
+    function clearGridWeights() {
+      for (const cell of state.grid.cells) {
+        if (!cell.wall) cell.w = 1;
+      }
+      idxOf(state.grid.start).w = 1;
+      idxOf(state.grid.end).w = 1;
+    }
+
+    function drawPathOverlay(points) {
+      if (!pathOverlay || !pathOverlayCtx || !points || points.length < 2) return;
+      const overlayRect = pathOverlay.getBoundingClientRect();
+      const boardRect = gridBoard.getBoundingClientRect();
+      const firstCell = gridBoard.children[0];
+      if (!firstCell) return;
+      const cellRect = firstCell.getBoundingClientRect();
+      const gap = parseFloat(getComputedStyle(gridBoard).gap || "0");
+      const cellW = cellRect.width;
+      const cellH = cellRect.height;
+      const offsetX = boardRect.left - overlayRect.left;
+      const offsetY = boardRect.top - overlayRect.top;
+
+      const toPoint = (p) => ({
+        x: offsetX + p.c * (cellW + gap) + cellW / 2,
+        y: offsetY + p.r * (cellH + gap) + cellH / 2,
+      });
+
+      pathOverlayCtx.save();
+      pathOverlayCtx.lineWidth = 2;
+      pathOverlayCtx.strokeStyle = COLORS.a2 || "rgba(182,255,92,0.4)";
+      pathOverlayCtx.globalAlpha = 0.35;
+      pathOverlayCtx.lineJoin = "round";
+      pathOverlayCtx.lineCap = "round";
+      const first = toPoint(points[0]);
+      pathOverlayCtx.beginPath();
+      pathOverlayCtx.moveTo(first.x, first.y);
+      for (let i = 1; i < points.length; i++) {
+        const p = toPoint(points[i]);
+        pathOverlayCtx.lineTo(p.x, p.y);
+      }
+      pathOverlayCtx.stroke();
+      pathOverlayCtx.restore();
+    }
+
+    async function runMazeGeneration() {
+      stopRun();
+      state.mode = "path";
+      setModeUI("path");
+
+      if (!state.grid.inited) initGrid();
+
+      const runId = ++state.runId;
+      state.running = true;
+      state.paused = false;
+      resetMetrics();
+      clearEdu();
+      syncButtons();
+
+      const algo = mazeAlgo?.value || "backtracker";
+      const algoLabel =
+        algo === "prim" ? "Prim" :
+          algo === "kruskal" ? "Kruskal" :
+            "Backtracker";
+      setStatus(`Gerando labirinto (${algoLabel})...`, true);
+
+      const prevStart = { ...state.grid.start };
+      const prevEnd = { ...state.grid.end };
+      const animate = !!(mazeAnimate?.checked && state.prefs.animations);
+      const baseDelay = delayFromSpeed(+speedPath.value);
+      const delay = Math.max(1, Math.floor(baseDelay * 0.6));
+      const params = mazeParamsFromComplexity(+mazeComplexity.value);
+      const rng = makeRng((Date.now() ^ (runId * 2654435761)) >>> 0);
+      const opts = {
+        runId,
+        animate,
+        delay,
+        rng,
+        braidChance: params.braidChance,
+        roomChance: params.roomChance,
+        yieldEvery: 240,
+      };
+      const area = mazeArea();
+
+      try {
+        resetGridForMaze(animate);
+        if (!area.valid) {
+          for (const cell of state.grid.cells) {
+            cell.wall = false;
+            cell.w = 1;
+          }
+        } else {
+          if (algo === "prim") await mazePrim(area, opts);
+          else if (algo === "kruskal") await mazeKruskal(area, opts);
+          else await mazeBacktracker(area, opts);
+
+          if (runId !== state.runId) return;
+          await braidMaze(area, opts);
+          if (runId !== state.runId) return;
+          await softenMaze(area, opts);
+        }
+
+        if (runId !== state.runId) return;
+
+        const selection = chooseMazeEndpoints(prevStart, prevEnd, rng);
+        state.grid.start = { r: selection.start.r, c: selection.start.c };
+        state.grid.end = { r: selection.end.r, c: selection.end.c };
+        idxOf(state.grid.start).wall = false;
+        idxOf(state.grid.start).w = 1;
+        idxOf(state.grid.end).wall = false;
+        idxOf(state.grid.end).w = 1;
+
+        applyMazeWeights(params.weightChance, rng);
+
+        if (!hasPathBetween(state.grid.start, state.grid.end)) {
+          for (const cell of state.grid.cells) {
+            cell.wall = false;
+            cell.w = 1;
+          }
+          const fallback = chooseMazeEndpoints(state.grid.start, state.grid.end, rng);
+          state.grid.start = { r: fallback.start.r, c: fallback.start.c };
+          state.grid.end = { r: fallback.end.r, c: fallback.end.c };
+        }
+
+        renderGrid();
+        const moved = selection.moved;
+        setStatus(moved ? "Labirinto gerado (start/end reposicionados)" : "Labirinto gerado", false);
+      } finally {
+        if (runId === state.runId) {
+          state.metrics.elapsed = performance.now() - state.metrics.t0;
+          state.running = false;
+          state.paused = false;
+          state.stepOnce = false;
+          syncButtons();
+          renderMetrics();
+        }
+      }
+    }
+
+    async function runPathfinding(opts = {}) {
+      stopRun();
+      state.mode = "path";
+      setModeUI("path");
+      setPseudo("path", pathAlgo.value);
+      hidePathPrereqCallout();
+
+      if (state.pathEnv !== "grid" || !PATH_ENV_ALGOS[state.pathEnv]?.has(pathAlgo.value)) {
+        setStatus("Não implementado ainda", false);
+        clearEdu();
+        syncButtons();
+        return;
+      }
+
+      const algo = pathAlgo.value;
+      const hasWeights = gridHasWeights();
+      let ignoresWeights = (algo === "bfs" || algo === "dfs") && hasWeights;
+      const allowWeightedWarning = !!opts.allowWeightedWarning;
+      if (ignoresWeights && !allowWeightedWarning) {
+        setStatus("Pesos detectados (aviso)", false);
+        showPathPrereqCallout("BFS/DFS ignoram pesos. Remova os pesos ou continue mesmo assim.", "Remover pesos e executar");
+        return;
+      }
+      if (opts.clearWeights) {
+        clearGridWeights();
+        ignoresWeights = false;
+      }
+
+      const runId = ++state.runId;
+      state.running = true;
+      state.paused = false;
+      resetMetrics();
+      setStatus(ignoresWeights ? "Executando (pesos ignorados)" : "Executando", true);
+      syncButtons();
+
+      clearPathStates(true);
+
+      const delay = delayFromSpeed(+speedPath.value);
+
+      const start = state.grid.start;
+      const end = state.grid.end;
+      edu("pop", `Iniciando ${algo.toUpperCase()} de (${start.r},${start.c}) até (${end.r},${end.c})`);
+
+      const prev = new Map();
+      const dist = new Map();
+      const pq = []; // simple array priority queue for this UI
+
+      function pushPQ(node, pr) {
+        pq.push({ node, pr });
+      }
+      function popPQ() {
+        let best = 0;
+        for (let i = 1; i < pq.length; i++) if (pq[i].pr < pq[best].pr) best = i;
+        return pq.splice(best, 1)[0];
+      }
+      function heuristic(a, b) {
+        const dx = Math.abs(a.r - b.r);
+        const dy = Math.abs(a.c - b.c);
+        if (!state.grid.diagonal) return dx + dy;
+        const mode = astarHeuristic.value;
+        if (mode === "euclidean") return Math.hypot(dx, dy);
+        if (mode === "octile") {
+          const D = 1;
+          const D2 = Math.SQRT2;
+          return D * (dx + dy) + (D2 - 2 * D) * Math.min(dx, dy);
+        }
+        return dx + dy;
+      }
+
+      const startK = key(start.r, start.c);
+      const endK = key(end.r, end.c);
+
+      try {
+        if (algo === "bfs") {
+          const q = [start];
+          let head = 0; // O(1) dequeue
+          const seen = new Set([startK]);
+
+          while (head < q.length) {
+            if (runId !== state.runId) return;
+            await waitIfPaused(runId);
+
+            const cur = q[head++];
+            const ck = key(cur.r, cur.c);
+            edu("pop", `BFS: visitando (${cur.r},${cur.c})`);
+
+            if (ck !== startK && ck !== endK) {
+              const cell = idxOf(cur);
+              cell.visited = true;
+              updateCellVisual(cur.r, cur.c);
+              // som de visita
+              playGridTone(cur.c, state.grid.cols, cur.r, state.grid.rows, false);
+            }
+
+            markStep(1, 0);
+            await sleep(delay);
+            if (runId !== state.runId) return;
+
+            if (ck === endK) break;
+
+            for (const [nr, nc] of neighbors(cur.r, cur.c)) {
+              const nk = key(nr, nc);
+              const cell = state.grid.cells[idx(nr, nc)];
+              if (cell.wall) continue;
+              if (seen.has(nk)) continue;
+              seen.add(nk);
+              prev.set(nk, ck);
+              // Visual: direção do pai (cur) para o filho (nr,nc)
+              const visualDir = getDirectionStr(cur.r, cur.c, nr, nc);
+              cell.dir = visualDir; // persist direction in state
+              cell.frontier = true;
+              updateCellVisual(nr, nc);
+              // som espacial para fronteira adicionada
+              playGridTone(nc, state.grid.cols, nr, state.grid.rows, false);
+              q.push({ r: nr, c: nc });
+              edu("relax", `BFS: adicionando (${nr},${nc}) à fila`);
+
+              markStep(0, 1);
+              await sleep(Math.max(4, Math.floor(delay * 0.65)));
+              if (runId !== state.runId) return;
+              cell.frontier = false;
+              updateCellVisual(nr, nc);
+            }
+          }
+        }
+
+        if (algo === "dfs") {
+          const st = [];
+          st.push(start);
+          const seen = new Set([startK]);
+
+          while (st.length) {
+            if (runId !== state.runId) return;
+            await waitIfPaused(runId);
+
+            const cur = st.pop();
+            const ck = key(cur.r, cur.c);
+            edu("pop", `DFS: visitando (${cur.r},${cur.c})`);
+
+            if (ck !== startK && ck !== endK) {
+              idxOf(cur).visited = true;
+              updateCellVisual(cur.r, cur.c);
+              playGridTone(cur.c, state.grid.cols, cur.r, state.grid.rows, false);
+            }
+
+            markStep(1, 0);
+            await sleep(delay);
+            if (runId !== state.runId) return;
+
+            if (ck === endK) break;
+
+            // reverse for a slightly more consistent visual
+            const neigh = neighbors(cur.r, cur.c).reverse();
+            for (const [nr, nc] of neigh) {
+              const nk = key(nr, nc);
+              const cell = state.grid.cells[idx(nr, nc)];
+              if (cell.wall) continue;
+              if (seen.has(nk)) continue;
+              seen.add(nk);
+              prev.set(nk, ck);
+              const visualDir = getDirectionStr(cur.r, cur.c, nr, nc);
+              cell.dir = visualDir;
+              cell.frontier = true;
+              updateCellVisual(nr, nc);
+              playGridTone(nc, state.grid.cols, nr, state.grid.rows, false);
+              st.push({ r: nr, c: nc });
+              edu("relax", `DFS: empilhando (${nr},${nc})`);
+
+              markStep(0, 1);
+              await sleep(Math.max(4, Math.floor(delay * 0.65)));
+              if (runId !== state.runId) return;
+              cell.frontier = false;
+              updateCellVisual(nr, nc);
+            }
+          }
+        }
+
+        if (algo === "dijkstra" || algo === "astar") {
+          const closed = new Set();
+          pushPQ(start, 0);
+          dist.set(startK, 0);
+
+          while (pq.length) {
+            if (runId !== state.runId) return;
+            await waitIfPaused(runId);
+
+            const { node: cur } = popPQ();
+            const ck = key(cur.r, cur.c);
+            if (closed.has(ck)) continue;
+            closed.add(ck);
+            edu("pop", `${algo.toUpperCase()}: expandindo (${cur.r},${cur.c})`);
+
+            if (ck !== startK && ck !== endK) {
+              idxOf(cur).visited = true;
+              updateCellVisual(cur.r, cur.c);
+              playGridTone(cur.c, state.grid.cols, cur.r, state.grid.rows, false);
+            }
+
+            markStep(1, 0);
+            await sleep(delay);
+            if (runId !== state.runId) return;
+
+            if (ck === endK) break;
+
+            const base = dist.get(ck) ?? Infinity;
+            for (const [nr, nc, isDiag] of neighbors(cur.r, cur.c)) {
+              const nk = key(nr, nc);
+              const cell = state.grid.cells[idx(nr, nc)];
+              if (cell.wall) continue;
+
+              const w = (cell.w ?? 1);
+              const stepCost = w * (isDiag ? Math.SQRT2 : 1);
+              const nd = base + stepCost;
+              const old = dist.get(nk);
+              if (old === undefined || nd < old) {
+                dist.set(nk, nd);
+                prev.set(nk, ck);
+
+                // Salva custos para tooltip e decisão
+                cell.g = nd; // custo do início até aqui
+                const h = (algo === "astar") ? heuristic({ r: nr, c: nc }, end) : 0;
+                cell.h = h;
+                cell.f = nd + h;
+
+                // Direção visual: do pai (cur) para o filho (nr,nc)
+                const visualDir = getDirectionStr(cur.r, cur.c, nr, nc);
+                cell.dir = visualDir;
+
+                pushPQ({ r: nr, c: nc }, nd + h);
+                edu("relax", `${algo.toUpperCase()}: relax (${nr},${nc}) custo=${nd.toFixed(2)}${(algo === "astar") ? ` (h=${h.toFixed(2)})` : ""}`);
+
+                cell.frontier = true;
+                markStep(0, 1);
+                updateCellVisual(nr, nc);
+                playGridTone(nc, state.grid.cols, nr, state.grid.rows, false);
+                await sleep(Math.max(4, Math.floor(delay * 0.6)));
+                if (runId !== state.runId) return;
+                cell.frontier = false;
+                updateCellVisual(nr, nc);
+              }
+            }
+          }
+        }
+
+        // reconstruct path
+        if (runId !== state.runId) return;
+        let curK = endK;
+        const path = [];
+        while (curK && curK !== startK) {
+          path.push(curK);
+          curK = prev.get(curK);
+          if (path.length > state.grid.cells.length) break;
+        }
+
+        if (curK === startK) {
+          const ordered = path.slice().reverse().map((pos) => {
+            const [r, c] = pos.split(",").map(Number);
+            return { r, c };
+          });
+          // show path
+          // We'll iterate from start -> end and set path + visual directions
+          let prevCell = { r: start.r, c: start.c };
+          for (const p of ordered) {
+            if (runId !== state.runId) return;
+            await waitIfPaused(runId);
+            const r = p.r;
+            const c = p.c;
+            if (!(r === start.r && c === start.c) && !(r === end.r && c === end.c)) {
+              state.grid.cells[idx(r, c)].path = true;
+              const dir = getDirectionStr(prevCell.r, prevCell.c, r, c);
+              state.grid.cells[idx(r, c)].dir = dir;
+              updateCellVisual(r, c);
+              // Som de caminho (brilhante)
+              playGridTone(c, state.grid.cols, r, state.grid.rows, true);
+              prevCell = { r, c };
+            }
+            markStep(0, 1);
+            edu("relax", `Reconstruindo caminho: (${r},${c})`);
+            await sleep(Math.max(4, Math.floor(delay * 0.6)));
+            if (runId !== state.runId) return;
+          }
+          clearOverlay();
+          drawPathOverlay([start, ...ordered]);
+          setStatus("Caminho encontrado", false);
+        } else {
+          clearOverlay();
+          setStatus("Sem caminho", false);
+        }
+
+      } finally {
+        if (runId === state.runId) {
+          state.metrics.elapsed = performance.now() - state.metrics.t0;
+          state.running = false;
+          state.paused = false;
+          state.stepOnce = false;
+          syncButtons();
+          renderMetrics();
+          // clear highlights for path mode
+          setHighlights({});
+        }
+      }
+    }
+
+    // Grid interaction
+    function currentTool() {
+      return state.grid.tool || "wall";
+    }
+
+    function applyTool(r, c, tool) {
+      const p = { r, c };
+      const isStart = (r === state.grid.start.r && c === state.grid.start.c);
+      const isEnd = (r === state.grid.end.r && c === state.grid.end.c);
+
+      if (tool === "start") {
+        if (isEnd) return;
+        const old = state.grid.start;
+        state.grid.start = { r, c };
+        idxOf(state.grid.start).wall = false;
+        idxOf(state.grid.start).w = 1;
+        updateCellVisual(old.r, old.c);
+        updateCellVisual(r, c);
+      } else if (tool === "end") {
+        if (isStart) return;
+        const old = state.grid.end;
+        state.grid.end = { r, c };
+        idxOf(state.grid.end).wall = false;
+        idxOf(state.grid.end).w = 1;
+        updateCellVisual(old.r, old.c);
+        updateCellVisual(r, c);
+      } else if (tool === "erase") {
+        if (isStart || isEnd) return;
+        state.grid.cells[idx(r, c)].wall = false;
+        state.grid.cells[idx(r, c)].w = 1;
+        updateCellVisual(r, c);
+      } else if (tool === "weight") {
+        if (isStart || isEnd) return;
+        state.grid.cells[idx(r, c)].wall = false;
+        state.grid.cells[idx(r, c)].w = 5;
+        updateCellVisual(r, c);
+      } else {
+        if (isStart || isEnd) return;
+        state.grid.cells[idx(r, c)].wall = true;
+        state.grid.cells[idx(r, c)].w = 1;
+        updateCellVisual(r, c);
+      }
+      // renderGrid(); // Removed full re-render
+    }
+
+    function gridPointer(e) {
+      const el = e.target.closest(".cell");
+      if (!el) return null;
+      return { r: +el.dataset.r, c: +el.dataset.c };
+    }
+
+    gridBoard.addEventListener("pointerdown", (e) => {
+      if (state.running) return;
+      const p = gridPointer(e);
+      if (!p) {
+        return;
+      }
+      state.grid.dragging = true;
+      const isStart = (p.r === state.grid.start.r && p.c === state.grid.start.c);
+      const isEnd = (p.r === state.grid.end.r && p.c === state.grid.end.c);
+      const tool = currentTool();
+      state.grid.dragMode = isStart ? "dragStart" : (isEnd ? "dragEnd" : tool);
+      gridBoard.setPointerCapture(e.pointerId);
+      if (state.grid.dragMode === "dragStart") applyTool(p.r, p.c, "start");
+      else if (state.grid.dragMode === "dragEnd") applyTool(p.r, p.c, "end");
+      else applyTool(p.r, p.c, state.grid.dragMode);
+    });
+
+    gridBoard.addEventListener("pointerup", (e) => {
+      state.grid.dragging = false;
+      try { gridBoard.releasePointerCapture(e.pointerId); } catch (_) { }
+    });
+
+    gridBoard.addEventListener("pointermove", (e) => {
+      if (state.grid.dragging) {
+        if (state.running) return;
+        const p = gridPointer(e);
+        if (!p) return;
+        if (state.grid.dragMode === "dragStart") applyTool(p.r, p.c, "start");
+        else if (state.grid.dragMode === "dragEnd") applyTool(p.r, p.c, "end");
+        else applyTool(p.r, p.c, state.grid.dragMode);
+        return;
+      }
+      const p = gridPointer(e);
+      if (!p) {
+        hideTip();
+        return;
+      }
+      const isStart = (p.r === state.grid.start.r && p.c === state.grid.start.c);
+      const isEnd = (p.r === state.grid.end.r && p.c === state.grid.end.c);
+      const cell = state.grid.cells[idx(p.r, p.c)];
+      let msg = `Coordenada: (${p.r},${p.c})`;
+
+      if (isStart) msg += "\n📍 Início";
+      else if (isEnd) msg += "\n🏁 Objetivo";
+      else if (cell.wall) msg += "\n🧱 Parede";
+      else if ((cell.w ?? 1) > 1) msg += `\n⚖️ Peso: ${cell.w}`;
+
+      // --- NOVA PARTE: Dados do Algoritmo ---
+      if (state.mode === "path" && (cell.visited || cell.frontier)) {
+        // Se tiver dados de custo calculados
+        if (cell.g !== undefined) {
+          msg += `\n──────────`;
+          if (pathAlgo.value === "astar") {
+            msg += `\nF = G + H`;
+            msg += `\n${cell.f?.toFixed(1)} = ${cell.g?.toFixed(1)} + ${cell.h?.toFixed(1)}`;
+          } else if (pathAlgo.value === "dijkstra") {
+            msg += `\nDistância: ${cell.g?.toFixed(1)}`;
+          }
+        }
+      }
+
+      showTipAt(e.clientX, e.clientY, msg);
+    });
+    gridBoard.addEventListener("pointerleave", hideTip);
+
+    // -----------------------------
+    // Mode switching
+    // -----------------------------
+    function setModeUI(mode) {
+      state.mode = mode;
+
+      // mode segmented control
+      modeButtons.forEach(b => {
+        const active = b?.dataset?.mode === mode;
+        b?.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+
+      // panels
+      panelSort.classList.toggle("hidden", mode !== "sort");
+      panelSearch.classList.toggle("hidden", mode !== "search");
+      panelPath.classList.toggle("hidden", mode !== "path");
+
+      // stage
+      const isPath = mode === "path";
+      const showGrid = isPath && state.pathEnv === "grid";
+      canvas.classList.toggle("hidden", isPath && showGrid);
+      gridStage.classList.toggle("hidden", !showGrid);
+      if (pathOverlay) pathOverlay.classList.toggle("hidden", !showGrid);
+      if (!showGrid) clearOverlay();
+
+      if (mode === "sort") {
+        stageKicker.textContent = "sorting";
+        stageHeadline.textContent = "Visualização de Ordenação";
+        setPseudo("sort", sortAlgo.value);
+        fitCanvas();
+        drawBars(state.sortArr, {});
+      } else if (mode === "search") {
+        stageKicker.textContent = "array search";
+        stageHeadline.textContent = "Visualização de Busca em Array";
+        setPseudo("search", searchAlgo.value);
+        state.searchView = state.searchData;
+        fitCanvas();
+        drawBars(state.searchView || state.searchData, {});
+        renderSearchDataStatus();
+      } else {
+        stageKicker.textContent = "pathfinding";
+        setPseudo("path", pathAlgo.value);
+        syncPathEnvUI();
+      }
+
+      // A* UI
+      syncPathAlgoUI();
+
+      clearEdu();
+      setHighlights({});
+      hideSearchPrereqCallout();
+      hidePathPrereqCallout();
+      renderAlgoInfo();
+      syncButtons();
+    }
+
+    modeButtons.forEach(b => {
+      b?.addEventListener("click", () => {
+        if (state.running) stopRun();
+        const mode = b.dataset.mode;
+        if (!mode) return;
+        setModeUI(mode);
+      });
+    });
+
+    // -----------------------------
+    // Control wiring
+    // -----------------------------
+    // Range live labels
+    [sizeSort, speedSort, sizeSearch, speedSearch, gridCols, gridRows, speedPath, idaLimit, mazeComplexity, graphNodes, graphDensity, matrixSize, matrixDensity].forEach(el => {
+      el.addEventListener("input", renderRangeValues);
+    });
+
+    genSort.addEventListener("click", () => {
+      if (state.running) stopRun();
+      state.sortArr = genArray(+sizeSort.value, 160, { withIds: true });
+      setHighlights({});
+      state.aux = null;
+      drawBars(state.sortArr, {});
+      setStatus("Pronto", false);
+    });
+
+    shuffleSort.addEventListener("click", () => {
+      if (state.running) stopRun();
+      shufflePair(state.sortArr, state.sortIds);
+      setHighlights({});
+      state.aux = null;
+      drawBars(state.sortArr, {});
+      setStatus("Pronto", false);
+    });
+
+    runSort.addEventListener("click", runSorting);
+    stepSort.addEventListener("click", stepRun);
+
+    pauseSort.addEventListener("click", () => {
+      if (!state.running) return;
+      if (state.paused) resumeRun();
+      else pauseRun();
+      // toggle label
+    });
+
+    stopSort.addEventListener("click", stopRun);
+
+    // Search panel
+    function setSearchOrderSelection(next) {
+      const allowed = new Set(["recommended", "sorted", "unsorted"]);
+      const v = allowed.has(next) ? next : "recommended";
+      state.search.order = v;
+
+      const label =
+        v === "sorted" ? "Ordenado" :
+          v === "unsorted" ? "Aleatório" :
+            "Recomendado";
+      if (searchOrderLabel) searchOrderLabel.textContent = label;
+
+      // buttons
+      if (searchOrder) {
+        for (const b of searchOrder.querySelectorAll("button[data-order]")) {
+          const on = b.dataset.order === v;
+          b.setAttribute("aria-pressed", on ? "true" : "false");
+        }
+      }
+      renderSearchDataStatus();
+    }
+
+    if (searchOrder) {
+      searchOrder.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-order]");
+        if (!btn) return;
+        if (state.running) return;
+        setSearchOrderSelection(btn.dataset.order);
+        hideSearchPrereqCallout();
+      });
+    }
+
+    function generateSearchDataset(orderSelection, opts = {}) {
+      const algo = searchAlgo.value;
+      const selection = orderSelection || state.search.order || "recommended";
+      const order = resolveOrderSelection(selection, algo); // sorted|unsorted
+      const data = genArray(+sizeSearch.value, 160, { withIds: false });
+      if (order === "sorted") sortNumeric(data);
+      state.searchData = data;
+      state.searchView = state.searchData;
+      // choose a target in-range for demos when not quiet
+      if (!opts.quiet && targetVal) {
+        try { targetVal.value = String(data[randInt(0, data.length - 1)]); } catch (_) { }
+      }
+      setHighlights({});
+      state.aux = null;
+      if (!opts.quiet) {
+        drawBars(state.searchView, {});
+        renderSearchDataStatus();
+        setStatus("Pronto", false);
+      }
+    }
+
+    genSearch.addEventListener("click", () => {
+      if (state.running) stopRun();
+      hideSearchPrereqCallout();
+      generateSearchDataset();
+    });
+
+    runSearch.addEventListener("click", () => {
+      if (state.running) return;
+      hideSearchPrereqCallout();
+      const st = getSearchDataStatus();
+      if (st.requiresSorted && !st.sorted) {
+        showSearchPrereqCallout();
+        setStatus("Dados ordenados necessários", false);
+        setEdu("Pré-condição violada: array não ordenado.", -1);
+        return;
+      }
+      runSearching({ allowInvalid: false });
+    });
+
+    // Search prerequisite callout actions
+    searchCancelRun?.addEventListener("click", () => {
+      hideSearchPrereqCallout();
+      setStatus("Pronto", false);
+      clearEdu();
+    });
+    searchRunAnyway?.addEventListener("click", () => {
+      hideSearchPrereqCallout();
+      runSearching({ allowInvalid: true });
+    });
+    searchGenSortedRun?.addEventListener("click", () => {
+      hideSearchPrereqCallout();
+      generateSearchDataset("sorted");
+      runSearching({ allowInvalid: false });
+    });
+
+    // Path prerequisite callout actions
+    pathCancelRun?.addEventListener("click", () => {
+      hidePathPrereqCallout();
+      setStatus("Pronto", false);
+      clearEdu();
+    });
+    pathRunAnyway?.addEventListener("click", () => {
+      hidePathPrereqCallout();
+      runPathfinding({ allowWeightedWarning: true });
+    });
+    pathFixAndRun?.addEventListener("click", () => {
+      hidePathPrereqCallout();
+      runPathfinding({ allowWeightedWarning: true, clearWeights: true });
+    });
+
+    stepSearch.addEventListener("click", stepRun);
+
+    pauseSearch.addEventListener("click", () => {
+      if (!state.running) return;
+      if (state.paused) resumeRun(); else pauseRun();
+    });
+
+    stopSearch.addEventListener("click", stopRun);
+
+    // Path panel
+    function rebuildGrid() {
+      if (state.running) stopRun();
+      initGrid();
+      setStatus("Pronto", false);
+    }
+    if (pathEnv) {
+      pathEnv.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-env]");
+        if (!btn) return;
+        const nextEnv = btn.dataset.env;
+        if (!nextEnv) return;
+        if (state.running) stopRun();
+        setPathEnv(nextEnv);
+        syncPathEnvUI();
+        syncPathAlgoUI();
+      });
+    }
+    gridCols.addEventListener("input", rebuildGrid);
+    // gridRows is readonly in the UI; no need to bind an input handler
+    // gridRows.addEventListener("input", rebuildGrid);
+    allowDiagonal.addEventListener("change", () => {
+      state.grid.diagonal = !!allowDiagonal.checked;
+    });
+    astarHeuristic.addEventListener("change", () => {
+      // no-op: used by heuristic()
+    });
+
+    clearPath.addEventListener("click", () => {
+      if (state.running) stopRun();
+      clearPathStates(false);
+      setStatus("Pronto", false);
+    });
+
+    randomWalls.addEventListener("click", () => {
+      if (state.running) stopRun();
+      clearPathStates(false);
+      // noise density based on size
+      const density = 0.3;
+      for (let r = 0; r < state.grid.rows; r++) {
+        for (let c = 0; c < state.grid.cols; c++) {
+          if ((r === state.grid.start.r && c === state.grid.start.c) || (r === state.grid.end.r && c === state.grid.end.c)) continue;
+          state.grid.cells[idx(r, c)].wall = Math.random() < density;
+        }
+      }
+      renderGrid();
+      setStatus("Pronto", false);
+    });
+
+    genMaze.addEventListener("click", () => {
+      if (state.running) stopRun();
+      runMazeGeneration();
+    });
+
+    runPath.addEventListener("click", runPathfinding);
+    stepPath.addEventListener("click", stepRun);
+
+    pausePath.addEventListener("click", () => {
+      if (!state.running) return;
+      if (state.paused) resumeRun(); else pauseRun();
+    });
+
+    stopPath.addEventListener("click", stopRun);
+
+    // Path tools segmented
+    function setPathTool(tool) {
+      const allowed = new Set(["wall", "erase", "weight", "start", "end"]);
+      const t = allowed.has(tool) ? tool : "wall";
+      state.grid.tool = t;
+      if (!pathTools) return;
+      for (const b of pathTools.querySelectorAll("button[data-tool]")) {
+        const on = b.dataset.tool === t;
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      }
+    }
+
+    if (pathTools) {
+      pathTools.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-tool]");
+        if (!btn) return;
+        if (state.running) return;
+        setPathTool(btn.dataset.tool);
+      });
+    }
+
+    // Preferences
+    soundEnabled.addEventListener("change", () => {
+      state.prefs.sound = !!soundEnabled.checked;
+      savePrefs();
+      if (state.prefs.sound && ensureAudio()) {
+        try { audio.ctx.resume?.(); } catch (_) { }
+      }
+    });
+    tipsEnabled.addEventListener("change", () => {
+      state.prefs.tips = !!tipsEnabled.checked;
+      savePrefs();
+      if (!state.prefs.tips) hideTip();
+    });
+    hotkeysEnabled.addEventListener("change", () => {
+      state.prefs.hotkeys = !!hotkeysEnabled.checked;
+      savePrefs();
+    });
+    // animations toggle
+    animEnabled.addEventListener("change", () => {
+      state.prefs.animations = !!animEnabled.checked;
+      savePrefs();
+    });
+
+    // Cards (Collapse)
+    const PANELS_KEY = "algoviz_panels_v2";
+    const COLLAPSIBLE_CARDS = ["panelControls", "panelInfo", "panelMetrics", "panelPseudo", "panelGlobal"];
+
+    function loadPanels() {
+      try {
+        const raw = localStorage.getItem(PANELS_KEY);
+        if (!raw) return {};
+        const v = JSON.parse(raw);
+        return (v && typeof v === "object") ? v : {};
+      } catch (_) {
+        return {};
+      }
+    }
+
+    function savePanels(next) {
+      try { localStorage.setItem(PANELS_KEY, JSON.stringify(next)); } catch (_) { }
+    }
+
+    function setCardCollapsed(cardId, collapsed) {
+      const card = $("#" + cardId);
+      if (!card) return;
+      card.dataset.collapsed = collapsed ? "true" : "false";
+      const btn = card.querySelector("button[data-collapse]");
+      if (btn) {
+        btn.setAttribute("aria-label", collapsed ? "Expandir" : "Minimizar");
+        btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+      }
+    }
+
+    $$("button[data-collapse]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cardId = btn.dataset.collapse;
+        if (!cardId) return;
+        const card = $("#" + cardId);
+        if (!card) return;
+        const collapsed = !(card.dataset.collapsed === "true");
+        setCardCollapsed(cardId, collapsed);
+        const st = loadPanels();
+        st[cardId] = collapsed;
+        savePanels(st);
+      });
+    });
+
+    // Hotkeys
+    window.addEventListener("keydown", (e) => {
+      if (!state.prefs.hotkeys) return;
+      const tag = document.activeElement?.tagName;
+      if (tag && ["INPUT", "TEXTAREA", "SELECT"].includes(tag)) return;
+      if (e.key === "Escape" && !state.running) {
+        if (state.mode === "search" && searchPrereqCallout && !searchPrereqCallout.classList.contains("hidden")) {
+          e.preventDefault();
+          hideSearchPrereqCallout();
+          setStatus("Pronto", false);
+          clearEdu();
+          return;
+        }
+        if (state.mode === "path" && pathPrereqCallout && !pathPrereqCallout.classList.contains("hidden")) {
+          e.preventDefault();
+          hidePathPrereqCallout();
+          setStatus("Pronto", false);
+          clearEdu();
+          return;
+        }
+      }
+      if (e.key === " ") {
+        if (!state.running) return;
+        e.preventDefault();
+        if (state.paused) resumeRun(); else pauseRun();
+      } else if (e.key === "ArrowRight" || e.key === "n" || e.key === "N") {
+        if (!state.running || !state.paused) return;
+        e.preventDefault();
+        stepRun();
+      } else if (e.key === "g" || e.key === "G") {
+        if (state.running) return;
+        e.preventDefault();
+        if (state.mode === "sort") genSort.click();
+        else if (state.mode === "search") genSearch.click();
+      } else if (e.key === "Escape") {
+        if (!state.running) return;
+        e.preventDefault();
+        stopRun();
+      }
+    });
+
+    // Initialize defaults
+    function boot() {
+      // Ensure DOM order matches the intended sidebar hierarchy (also improves keyboard navigation).
+      const scroll = document.querySelector(".sidebarScroll");
+      if (scroll) {
+        [panelControls, panelInfo, panelMetrics, panelPseudo, panelGlobal].filter(Boolean).forEach(el => scroll.appendChild(el));
+      }
+
+      loadPrefs();
+      soundEnabled.checked = state.prefs.sound;
+      tipsEnabled.checked = state.prefs.tips;
+      hotkeysEnabled.checked = state.prefs.hotkeys;
+      animEnabled.checked = state.prefs.animations;
+      setSearchOrderSelection("recommended");
+      renderRangeValues();
+
+      state.sortArr = genArray(+sizeSort.value, 160, { withIds: true });
+      // Boot Search dataset follows the same "Generate (Recommended)" rule.
+      generateSearchDataset("recommended", { quiet: true });
+
+      setPathTool(state.grid.tool || "wall");
+
+      const panels = loadPanels();
+      for (const id of COLLAPSIBLE_CARDS) {
+        setCardCollapsed(id, !!panels[id]);
+      }
+
+      setModeUI("sort");
+      setHighlights({});
+      fitCanvas();
+      setStatus("Pronto", false);
+      syncButtons();
+    }
+    boot();
+  </script>
+</body>
+
+</html>
