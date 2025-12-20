@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Saga de Felipe Kikuti Maia | 199X - 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700;900&family=Playfair+Display:ital,wght@1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff0055; /* Rosa Choque (Amor não correspondido) */
+            --secondary: #00d4ff; /* Azul Frio (Lágrimas) */
+            --bg: #0a0a0a;
+            --text: #e0e0e0;
+            --card-bg: #161616;
+            --accent: #ffb703;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+        }
+
+        /* --- HERO SECTION --- */
+        header {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+            text-align: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 4rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            animation: glitch 2s infinite;
+        }
+
+        header p {
+            font-size: 1.5rem;
+            opacity: 0.8;
+            max-width: 600px;
+        }
+
+        .scroll-down {
+            position: absolute;
+            bottom: 30px;
+            animation: bounce 2s infinite;
+            font-size: 2rem;
+            color: var(--secondary);
+        }
+
+        /* --- TIMELINE SECTION --- */
+        section {
+            padding: 80px 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 60px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .timeline-item {
+            background: var(--card-bg);
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 4px solid var(--primary);
+            border-radius: 0 10px 10px 0;
+            transform: translateX(-50px);
+            opacity: 0;
+            transition: all 0.8s ease;
+            position: relative;
+        }
+
+        .timeline-item.visible {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .timeline-date {
+            font-weight: 900;
+            color: var(--secondary);
+            font-size: 1.2rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* --- STATS DASHBOARD --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            text-align: center;
+        }
+
+        .stat-card {
+            background: #111;
+            padding: 30px;
+            border: 1px solid #333;
+            border-radius: 15px;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        /* --- THE YASMIN SHRINE --- */
+        .yasmin-section {
+            background: linear-gradient(to bottom, #0a0a0a, #1a0505);
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            border: 1px solid var(--primary);
+        }
+
+        .yasmin-quote {
+            font-style: italic;
+            font-size: 1.2rem;
+            color: #aaa;
+            margin-top: 20px;
+        }
+
+        /* --- INTERACTIVE ELEMENTS --- */
+        .btn-glow {
+            padding: 15px 40px;
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 20px;
+            text-transform: uppercase;
+        }
+
+        .btn-glow:hover {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 0 20px var(--primary);
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            text-align: center;
+            padding: 40px;
+            background: #000;
+            font-size: 0.9rem;
+            color: #555;
+            border-top: 1px solid #222;
+        }
+
+        /* ANIMATIONS */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-10px);}
+            60% {transform: translateY(-5px);}
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: 2px 2px var(--primary); }
+            50% { text-shadow: -2px -2px var(--secondary); }
+            100% { text-shadow: 2px 2px var(--primary); }
+        }
+
+        .highlight {
+            color: var(--accent);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>FELIPE KIKUTI MAIA</h1>
+        <p>O homem. A lenda. O observador de japonesas.</p>
+        <p style="font-size: 0.9rem; margin-top: 10px; color: var(--primary);">Sorocaba • Est. 2000s • Situação Atual: Complicada (2026)</p>
+        <div class="scroll-down">↓</div>
+    </header>
+
+    <section id="biography">
+        <h2 class="section-title">A Trilha dos Gapes</h2>
+
+        <div class="timeline-item">
+            <span class="timeline-date">Início dos Anos 2000</span>
+            <h3>O Êxodo de Guaíra</h3>
+            <p>Nascido nas terras de Guaíra, o jovem Feka foi transplantado para Sorocaba. Mal sabia a cidade que estava recebendo aquele que se tornaria seu maior colecionador de foras.</p>
+        </div>
+
+        <div class="timeline-item">
+            <span class="timeline-date">Era Salesiano</span>
+            <h3>A Formação do Caráter (e dos Traumas)</h3>
+            <p>No Salesiano Sorocaba, alianças foram forjadas. Ao lado de seu <em>BFF</em> <strong>Vini Marks</strong>, Feka navegou pelas águas turbulentas da puberdade.</p>
+            <p>Foi aqui que conheceu <strong>Henrique Excel</strong>. O primeiro amor. A paixão avassaladora que terminou em tragédia grega: Henrique o trocou por uma lésbica e, posteriormente, pelo resto da população masculina.</p>
+        </div>
+
+        <div class="timeline-item">
+            <span class="timeline-date">A Descoberta da Vocação</span>
+            <h3>O Efeito "Japa"</h3>
+            <p>Após a desilusão, Feka descobriu seu verdadeiro Norte magnético: <strong>Mulheres descendentes de japoneses</strong>. A pioneira foi <em>Guh Japa</em>, também do Salesiano São José. Resultado? A segunda grande vocação de Feka: <strong>nunca ser correspondido</strong>.</p>
+        </div>
+
+        <div class="timeline-item" style="border-left-color: var(--accent);">
+            <span class="timeline-date">O Marco Histórico de 2015</span>
+            <h3>O Incidente Kelrie</h3>
+            <p>No sétimo ano, o impossível aconteceu. <strong>Kelrie</strong>, movida por desejos misteriosos, beijou Felipe. Relatos indicam que foi "contra a vontade dele", mas os fatos permanecem: foi o último contato físico feminino registrado até a data atual de dezembro de 2026.</p>
+        </div>
+
+        <div class="timeline-item">
+            <span class="timeline-date">Ensino Médio</span>
+            <h3>A Migração para o Colégio Ser</h3>
+            <p>Buscando novos ares (e novos gapes), Feka rejeitou o Anglo e partiu para o <strong>Colégio Ser</strong>. Lá, cercou-se de amizades duvidosas, conselheiros do caos e profetas do fracasso.</p>
+        </div>
+    </section>
+
+    <section id="stats">
+        <h2 class="section-title">Feka Analytics 2026</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">11</div>
+                <p>Anos sem contato feminino (Recorde Estadual)</p>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">∞</div>
+                <p>Japonesas observadas à distância</p>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">0%</div>
+                <p>Taxa de Sucesso no Flerte</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="yasmin">
+        <div class="yasmin-section">
+            <h2 style="color: var(--primary); font-size: 3rem; margin-bottom: 20px;">YASMIN SAYURI</h2>
+            <h3>A Musa Inalcançável do Colégio Ser</h3>
+            <p style="margin-top: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                Ela era desejada por todos. Feka, sem autoestima e armado apenas com sua timidez, optou pela estratégia do <strong>"Observador Silencioso"</strong>. 
+            </p>
+            <p style="margin-top: 10px;">
+                Falaram-se poucas vezes. Minutos preciosos que Feka repassa em sua mente em loop 4K até hoje. O tempo que não passou com ela, passou olhando para ela.
+            </p>
+            <div class="yasmin-quote">
+                "Amar é observar de longe para não incomodar." — Feka, provavelmente.
+            </div>
+            
+            <button class="btn-glow" onclick="alert('Erro 404: Coragem não encontrada. Tente novamente em 2027.')">Tentar ligar para Yasmin</button>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2026 Felipe Kikuti Maia. Todos os direitos reservados à solidão.</p>
+        <p style="margin-top: 10px; font-size: 0.8rem; color: #333;">Site desenvolvido por IA (Inteligência Amorosa Inexistente). História em construção...</p>
+    </footer>
+
+    <script>
+        // Script para animação de scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.timeline-item').forEach(item => {
+            observer.observe(item);
+        });
+    </script>
+</body>
+</html>
